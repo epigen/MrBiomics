@@ -1,4 +1,4 @@
-# 🚀 MR.PARETO - Modules & Recipes for Pragmatic Augmentation of Research Efficiency Towards Optimum
+# 🚀 MrBiomics - Modules & Recipes augment Bioinformatics for Multi-Omics Analysis at Scale 🧬 
 > _"For many outcomes, roughly 80% of consequences come from 20% of causes (the "vital few")."_ - The Pareto Principle by Vilfredo Pareto
 
 Get 80% of all standard (biomedical) data science analyses done semi-automated with 20% of the effort, by leveraging [Snakemake's](https://snakemake.github.io/) module functionality to use and combine pre-existing workflows into arbitrarily complex analyses.
