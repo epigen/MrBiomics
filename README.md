@@ -18,7 +18,7 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 # 🧩 Modules
 > _"Is it functional, multifunctional, durable, well-fitted, simple, easy to maintain, and thoroughly tested? Does it provide added value, and doesn't cause unnecessary harm? Can it be simpler? Is it an innovation?"_ - Patagonia Design Principles
 
-**Modules** are Snakemake workflows, consisting of **Rules** for multi-step analyses, that are independent and self-contained. A `{module}` can be general-purpose (e.g., Unsupervised Analysis) or modality-specific (e.g., ATAC-seq processing). Currently, the following **nine modules** are available, ordered by their applicability from general to specific:
+**Modules** are Snakemake workflows, consisting of **Rules** for multi-step analyses, that are **independent**, **single-purpose**, and sufficiently abstracted to be **compatible** with most up- and downstream analyses. A `{module}` can be general-purpose (e.g., Unsupervised Analysis) or modality-specific (e.g., ATAC-seq processing). Currently, the following **nine modules** are available, ordered by their applicability from general to specific:
 
 | Module | Type (Data Modality) | DOI | Stars |
 | :---: | :---: | :---: | :---: |
