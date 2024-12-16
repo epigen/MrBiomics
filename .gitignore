@@ -127,3 +127,30 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Exclude the non-source code-related directories from git.
+data
+data/
+*/data/*
+
+resources
+*/resources/*
+resources/
+
+results
+*/results/*
+results/
+
+logs
+*/logs/*
+logs/
+
+metadata
+*/metadata/*
+metadata/
+
+*/jupyter.log
+
+# macOS specific files
+*DS_Store*
+._*

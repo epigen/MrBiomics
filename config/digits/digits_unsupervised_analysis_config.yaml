@@ -4,11 +4,10 @@
 # memory in MB
 mem: '32000'
 threads: 2
-partition: 'shortq'
 
 ##### GENERAL #####
-annotation: config/MyData/digits_unsupervised_analysis_annotation.csv
-result_path: results/MyData
+annotation: config/digits/digits_unsupervised_analysis_annotation.csv
+result_path: results/digits
 project_name: digits
 
 ##### PCA #####
@@ -26,7 +25,7 @@ pca:
 # densmap flag: perform densMAP  (0==no, 1==yes) on top of UMAP with all parameter combinations (https://umap-learn.readthedocs.io/en/latest/densmap_demo.html)
 # connectivity visualization flag (0==no, 1==yes), computational expensive (slow), recommendation 0 for exploration and 1 for validation
 umap:
-    metrics: ['euclidean']
+    metrics: ['euclidean','correlation']
     n_neighbors: [15]
     min_dist: [0.1]
     n_components: [2,3]
@@ -42,15 +41,15 @@ umap:
 heatmap:
     metrics: ['correlation','cosine']
     hclust_methods: ['complete']
-    n_observations: 1000 # random sampled proportion float (0-1] or absolute number as integer
-    n_features: 0.5 # highly variable features proportion float (0-1] or absolute number as integer
+    n_observations: 1 # random sampled proportion float (0-1] or absolute number as integer
+    n_features: 1 # highly variable features proportion float (0-1] or absolute number as integer
     
 ##### LEIDEN #####
 # Leiden clustering applied on UMAP KNN graphs specified by the respective parameters (metric, n_neighbors).
 # Leiden algorithm specific parameters (partition_types, resolutions, n_iterations) -> https://leidenalg.readthedocs.io/en/stable/index.html
 # To skip Leiden clustering, leave the "metrics" parameter empty i.e., []
 leiden:
-    metrics: ['euclidean'] # has to be a subset of above's UMAP parameters
+    metrics: ['euclidean','correlation'] # has to be a subset of above's UMAP parameters
     n_neighbors: [15] # has to be a subset of above's UMAP parameters
     partition_types: ["RBConfigurationVertexPartition", "ModularityVertexPartition"]
     resolutions: [0.5,1,1.5,2,4] # only used for relevant partition_types

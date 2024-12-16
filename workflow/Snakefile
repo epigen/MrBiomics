@@ -1,3 +1,7 @@
+
+##### global workflow dependencies #####
+conda: "envs/global.yaml"
+
 ##### libraries #####
 import os
 import sys
@@ -5,15 +9,16 @@ import pandas as pd
 import yaml
 from snakemake.utils import min_version
 
+##### set minimum snakemake version #####
+min_version("8.25.3")
+
 ##### setup report #####
 report: os.path.join("report", "workflow.rst")
 
 ##### utility functions #####
+# UNUSED
 
-##### set minimum snakemake version #####
-min_version("7.15.2")
-
-##### set & load config and sample annotation sheets #####
+##### load configs #####
 configfile: os.path.join("config","config.yaml")
 
 # load configs for all workflows and datasets
@@ -29,29 +34,27 @@ for ds in config["workflows"]:
     
 
 ##### load rules (one per dataset) #####
-include: os.path.join("rules", "MyData.smk")
-include: os.path.join("rules", "ATACseq.smk")
+include: os.path.join("rules", "digits.smk")
+# include: os.path.join("rules", "ATACseq.smk")
 
 #### Target Rule ####
-
 rule all:
     input:
-        #### MyData Analysis
-        rules.MyData_unsupervised_analysis_all.input,
-        #### ATACseq Analysis Recipe
-#         rules.ATACseq_ngs_fetch_all.input,
-        rules.ATACseq_atacseq_pipeline_all.input,
-        rules.ATACseq_genome_tracks_all.input,
-        rules.ATACseq_spilterlize_integrate_all.input,
-        rules.ATACseq_unsupervised_analysis_all.input,
-        rules.ATACseq_dea_limma_all.input,
-        rules.ATACseq_enrichment_analysis_all.input,
+        #### digits Analysis ####
+        rules.digits_unsupervised_analysis_all.input,
+        #### ATACseq Analysis Recipe ####
+        # rules.ATACseq_ngs_fetch_all.input,
+        # rules.ATACseq_atacseq_pipeline_all.input,
+        # rules.ATACseq_genome_tracks_all.input,
+        # rules.ATACseq_spilterlize_integrate_all.input,
+        # rules.ATACseq_unsupervised_analysis_all.input,
+        # rules.ATACseq_dea_limma_all.input,
+        # rules.ATACseq_enrichment_analysis_all.input,
+    # important for module usage
     default_target: True
     params:
-        # cluster parameters
-        partition=config.get("partition"),
-    threads: config.get("threads", 1)
+    threads: 1
     resources:
-        mem_mb=1000,
+        mem_mb=8000,
     log:
         os.path.join("logs","rules","all.log")

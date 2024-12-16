@@ -1,0 +1,2 @@
+﻿name,data,metadata,samples_by_features
+digits,data/digits/digits_data.csv,data/digits/digits_labels.csv,1

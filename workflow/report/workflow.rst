@@ -1,0 +1,1 @@
+`MrBiomics <https://github.com/epigen/MrBiomics>`_: Modules & Recipes augment Bioinformatics for Multi-Omics Analyses at Scale
