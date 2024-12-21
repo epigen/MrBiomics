@@ -1,4 +1,4 @@
-# 🚀🧬 MrBiomics: <ins>M</ins>odules & <ins>R</ins>ecipes augment <ins>Bio</ins>informatics for Multi-<ins>Omics</ins> Analyses at <ins>S</ins>cale
+# 🚀🧬 MrBiomics: <ins>M</ins>odules & <ins>R</ins>ecipes augment <ins>Bio</ins>informatics for Multi-<ins>Omics</ins> Analyses
 > _"For many outcomes, roughly 80% of consequences come from 20% of causes (the "vital few")."_ - The Pareto Principle by Vilfredo Pareto
 
 Get 80% of all standard (biomedical) data science analyses done semi-automated with 20% of the effort, by leveraging [Snakemake's](https://snakemake.github.io/) module functionality to use and combine pre-existing workflows into arbitrarily complex analyses.
