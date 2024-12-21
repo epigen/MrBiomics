@@ -1,6 +1,6 @@
 
 ##### global workflow dependencies #####
-conda: "envs/global.yaml"
+# conda: "envs/global.yaml"
 
 ##### libraries #####
 import os
@@ -34,12 +34,15 @@ for ds in config["workflows"]:
     
 
 ##### load rules (one per dataset) #####
+include: os.path.join("rules", "quickstart.smk")
 include: os.path.join("rules", "digits.smk")
 # include: os.path.join("rules", "ATACseq.smk")
 
 #### Target Rule ####
 rule all:
     input:
+        #### QUICKSTART ####
+        rules.quickstart_enrichment_analysis_all.input,
         #### digits Analysis ####
         rules.digits_unsupervised_analysis_all.input,
         #### ATACseq Analysis Recipe ####

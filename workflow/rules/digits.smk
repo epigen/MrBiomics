@@ -18,8 +18,7 @@ rule load_digits:
 ### digits - Unsupervised Analysis ####
 module digits_unsupervised_analysis:
     snakefile:
-        "/research/home/sreichl/projects/unsupervised_analysis/workflow/Snakefile" # absolute path to my current clone
-        # github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.0") # Snakemake issue: https://github.com/snakemake/snakemake/issues/3212
+        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.1")
     config:
         config_wf["digits_unsupervised_analysis"]
 
