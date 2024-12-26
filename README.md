@@ -78,13 +78,13 @@ Three components are required to use a module within your Snakemake workflow (i.
 
 **Recipes** are combinations of existing modules into end-to-end best practice analyses. They can be used as templates for standard analyses by leveraging existing modules, thereby enabling fast iterations and progression into the unknown. This represents "functional knowledge management". Every recipe is described and presented using a [wiki](https://github.com/epigen/MrBiomics/wiki) page by application to a publicly available dataset.
 
-| Recipe | Description | # Modules | Results |
-| :---: | :---: | :---: | :---: |
-| [ATAC-seq Analysis](../../wiki/ATACseq-Analysis-Recipe) | From raw BAM files to enrichemnts of differentially accessible regions. | 6(-7) | ... |
-| [RNA-seq Analysis](../../wiki/RNAseq-Analysis-Recipe) | From raw BAM files to enrichemnts of differentially expressed genes. | 6(-7) | ... |
-| [Integrative ATAC-seq & RNA-seq Analysis](../../wiki/Integrative-Analysis-Recipe) | From count matrices to epigenetic potential and relative transcriptional abundance. | 7(-8) | ... |
-| [scRNA-seq Analysis](../../wiki/scRNAseq-Analysis-Recipe) | From count matrix to enrichemnts of differentially expressed genes. | 5(-6) | ... |
-| [scCRISPR-seq Analysis](../../wiki/scCRISPRseq-Analysis-Recipe) | From count matrix to knockout phenotype enrichemnts. | 6(-7) | ... |
+| Recipe | Description | # Modules |
+| :---: | :---: | :---: |
+| [ATAC-seq Analysis](../../wiki/ATACseq-Analysis-Recipe) | From raw BAM files to enrichemnts of differentially accessible regions. | 6(-7) |
+| [RNA-seq Analysis](../../wiki/RNAseq-Analysis-Recipe) | From raw BAM files to enrichemnts of differentially expressed genes. | 6(-7) |
+| [Integrative ATAC-seq & RNA-seq Analysis](../../wiki/Integrative-Analysis-Recipe) | From count matrices to epigenetic potential and relative transcriptional abundance. | 7(-8) |
+| [scRNA-seq Analysis](../../wiki/scRNAseq-Analysis-Recipe) | From count matrix to enrichemnts of differentially expressed genes. | 5(-6) |
+| [scCRISPR-seq Analysis](../../wiki/scCRISPRseq-Analysis-Recipe) | From count matrix to knockout phenotype enrichemnts. | 6(-7) |
 
 **Usage:** Process each dataset module by module. Check the results of each module to inform the configuration of the next module. This iterative method allows for quick initial completion, followed by refinement in subsequent iterations based on feedback from yourself or collaborators. Adjustments in later iterations are straightforward, requiring only changes to individual configurations or annotations. Ultimately you end up with a reproducible and readable end-to-end analysis for each dataset.
 
