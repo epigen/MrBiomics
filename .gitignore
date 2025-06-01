@@ -145,11 +145,16 @@ logs
 */logs/*
 logs/
 
+
 metadata
 */metadata/*
 metadata/
 
 */jupyter.log
+
+.snakemake
+*/.snakemake/*
+.snakemake/
 
 # macOS specific files
 *DS_Store*

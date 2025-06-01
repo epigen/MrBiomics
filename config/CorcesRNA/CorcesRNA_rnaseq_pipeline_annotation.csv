@@ -1,0 +1,49 @@
+sample_name,read_type,bam_file,strandedness,run_accession,read_count,donor,cell_type,cell_type_details,base_count,library
+Bcell_1022,paired,results/CorcesRNA/fetch_ngs/SRR2753073/SRR2753073.bam,,SRR2753073,16443651,D1022,Bcell,CD19+CD20+ B cell,2499434952,RNA
+CD4Tcell_2596,paired,results/CorcesRNA/fetch_ngs/SRR2753078/SRR2753078.bam,,SRR2753078,36215008,D2596,CD4Tcell,CD4+ T cell,5504681216,RNA
+CD4Tcell_1022,paired,results/CorcesRNA/fetch_ngs/SRR2753074/SRR2753074.bam,,SRR2753074,22804345,D1022,CD4Tcell,CD4+ T cell,3466260440,RNA
+CLP_2596,paired,results/CorcesRNA/fetch_ngs/SRR2753080/SRR2753080.bam,,SRR2753080,36061663,D2596,CLP,common lymphoid progenitor cell,5481372776,RNA
+NKcell_1022,paired,results/CorcesRNA/fetch_ngs/SRR2753076/SRR2753076.bam,,SRR2753076,13989928,D1022,NKcell,CD56+ natural killer cell,2126469056,RNA
+CD4Tcell_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753088/SRR2753088.bam,,SRR2753088,65644118,D5852,CD4Tcell,CD4+ T cell,4726376496,RNA
+CD8Tcell_2596,paired,results/CorcesRNA/fetch_ngs/SRR2753079/SRR2753079.bam,,SRR2753079,33528178,D2596,CD8Tcell,CD8+ T cell,5096283056,RNA
+Mono_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753094/SRR2753094.bam,,SRR2753094,62755298,D5852,Mono,CD14+ monocyte cell,4518381456,RNA
+Ery_2596,paired,results/CorcesRNA/fetch_ngs/SRR2753081/SRR2753081.bam,,SRR2753081,29607196,D2596,Ery,CD71+GPA+ erythroblast cell,4500293792,RNA
+GMP_6792,paired,results/CorcesRNA/fetch_ngs/SRR2753097/SRR2753097.bam,,SRR2753097,49328538,D6792,GMP,granulocyte macrophage progenitor cell,7331206342,RNA
+MPP_6792,paired,results/CorcesRNA/fetch_ngs/SRR2753101/SRR2753101.bam,,SRR2753101,52716828,D6792,MPP,multipotent progenitor cell,7839953375,RNA
+NKcell_5483,paired,results/CorcesRNA/fetch_ngs/SRR2753086/SRR2753086.bam,,SRR2753086,21603396,D5483,NKcell,CD56+ natural killer cell,3283716192,RNA
+LMPP_7256,paired,results/CorcesRNA/fetch_ngs/SRR2753107/SRR2753107.bam,,SRR2753107,17040701,D7256,LMPP,lymphoid-primed multipotent progenitor cell,2570943342,RNA
+Bcell_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753111/SRR2753111.bam,,SRR2753111,36660429,D7653,Bcell,CD19+CD20+ B cell,2639550888,RNA
+CD8Tcell_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753089/SRR2753089.bam,,SRR2753089,60298297,D5852,CD8Tcell,CD8+ T cell,4341477384,RNA
+MEP_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753118/SRR2753118.bam,,SRR2753118,22121067,D7653,MEP,megakaryocyte erythroid progenitor cell,1592716824,RNA
+Mono_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753119/SRR2753119.bam,,SRR2753119,41560078,D7653,Mono,CD14+ monocyte cell,2992325616,RNA
+NKcell_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753121/SRR2753121.bam,,SRR2753121,24323975,D7653,NKcell,CD56+ natural killer cell,1751326200,RNA
+MEP_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753093/SRR2753093.bam,,SRR2753093,45672916,D5852,MEP,megakaryocyte erythroid progenitor cell,3288449952,RNA
+CMP_6792,paired,results/CorcesRNA/fetch_ngs/SRR2753096/SRR2753096.bam,,SRR2753096,49519317,D6792,CMP,common myeloid progenitor cell,7355711797,RNA
+CD8Tcell_1022,paired,results/CorcesRNA/fetch_ngs/SRR2753075/SRR2753075.bam,,SRR2753075,18036702,D1022,CD8Tcell,CD8+ T cell,2741578704,RNA
+Bcell_2596,paired,results/CorcesRNA/fetch_ngs/SRR2753077/SRR2753077.bam,,SRR2753077,35474667,D2596,Bcell,CD19+CD20+ B cell,5392149384,RNA
+HSC_6792,paired,results/CorcesRNA/fetch_ngs/SRR2753098/SRR2753098.bam,,SRR2753098,32677993,D6792,HSC,hematopoietic stem cell,4860537950,RNA
+NKcell_2596,paired,results/CorcesRNA/fetch_ngs/SRR2753082/SRR2753082.bam,,SRR2753082,39108681,D2596,NKcell,CD56+ natural killer cell,5944519512,RNA
+CLP_5483,paired,results/CorcesRNA/fetch_ngs/SRR2753083/SRR2753083.bam,,SRR2753083,24277471,D5483,CLP,common lymphoid progenitor cell,3690175592,RNA
+CMP_7256,paired,results/CorcesRNA/fetch_ngs/SRR2753104/SRR2753104.bam,,SRR2753104,18904881,D7256,CMP,common myeloid progenitor cell,2850923869,RNA
+Ery_5483,paired,results/CorcesRNA/fetch_ngs/SRR2753084/SRR2753084.bam,,SRR2753084,15383079,D5483,Ery,CD71+GPA+ erythroblast cell,2338228008,RNA
+MEP_7256,paired,results/CorcesRNA/fetch_ngs/SRR2753108/SRR2753108.bam,,SRR2753108,28460696,D7256,MEP,megakaryocyte erythroid progenitor cell,4293997439,RNA
+LMPP_5483,paired,results/CorcesRNA/fetch_ngs/SRR2753085/SRR2753085.bam,,SRR2753085,18495706,D5483,LMPP,lymphoid-primed multipotent progenitor cell,2811347312,RNA
+Bcell_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753087/SRR2753087.bam,,SRR2753087,61891904,D5852,Bcell,CD19+CD20+ B cell,4456217088,RNA
+CMP_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753090/SRR2753090.bam,,SRR2753090,58521754,D5852,CMP,common myeloid progenitor cell,4213566288,RNA
+GMP_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753091/SRR2753091.bam,,SRR2753091,36852637,D5852,GMP,granulocyte macrophage progenitor cell,2653389864,RNA
+GMP_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753115/SRR2753115.bam,,SRR2753115,36559830,D7653,GMP,granulocyte macrophage progenitor cell,2632307760,RNA
+HSC_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753092/SRR2753092.bam,,SRR2753092,51930751,D5852,HSC,hematopoietic stem cell,3739014072,RNA
+MPP_5852,paired,results/CorcesRNA/fetch_ngs/SRR2753095/SRR2753095.bam,,SRR2753095,52870726,D5852,MPP,multipotent progenitor cell,3806692272,RNA
+LMPP_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753117/SRR2753117.bam,,SRR2753117,40411965,D7653,LMPP,lymphoid-primed multipotent progenitor cell,2909661480,RNA
+MEP_6792,paired,results/CorcesRNA/fetch_ngs/SRR2753099/SRR2753099.bam,,SRR2753099,58333253,D6792,MEP,megakaryocyte erythroid progenitor cell,8674978721,RNA
+Mono_6792,paired,results/CorcesRNA/fetch_ngs/SRR2753100/SRR2753100.bam,,SRR2753100,32884930,D6792,Mono,CD14+ monocyte cell,4891033210,RNA
+CLP_6926,paired,results/CorcesRNA/fetch_ngs/SRR2753102/SRR2753102.bam,,SRR2753102,21904864,D6926,CLP,common lymphoid progenitor cell,3329539328,RNA
+Ery_6926,paired,results/CorcesRNA/fetch_ngs/SRR2753103/SRR2753103.bam,,SRR2753103,17608107,D6926,Ery,CD71+GPA+ erythroblast cell,2676432264,RNA
+GMP_7256,paired,results/CorcesRNA/fetch_ngs/SRR2753105/SRR2753105.bam,,SRR2753105,62939555,D7256,GMP,granulocyte macrophage progenitor cell,9501273445,RNA
+HSC_7256,paired,results/CorcesRNA/fetch_ngs/SRR2753106/SRR2753106.bam,,SRR2753106,18926056,D7256,HSC,hematopoietic stem cell,2855964484,RNA
+MPP_7256,paired,results/CorcesRNA/fetch_ngs/SRR2753110/SRR2753110.bam,,SRR2753110,30092151,D7256,MPP,multipotent progenitor cell,4540790024,RNA
+CD4Tcell_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753112/SRR2753112.bam,,SRR2753112,25610992,D7653,CD4Tcell,CD4+ T cell,1843991424,RNA
+CD8Tcell_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753113/SRR2753113.bam,,SRR2753113,21805741,D7653,CD8Tcell,CD8+ T cell,1570013352,RNA
+CMP_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753114/SRR2753114.bam,,SRR2753114,32085734,D7653,CMP,common myeloid progenitor cell,2310172848,RNA
+HSC_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753116/SRR2753116.bam,,SRR2753116,16871773,D7653,HSC,hematopoietic stem cell,1214767656,RNA
+MPP_7653,paired,results/CorcesRNA/fetch_ngs/SRR2753120/SRR2753120.bam,,SRR2753120,14625280,D7653,MPP,multipotent progenitor cell,1053020160,RNA

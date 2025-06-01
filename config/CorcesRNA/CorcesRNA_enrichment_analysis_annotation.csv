@@ -1,0 +1,14 @@
+name,features_path,background_name,background_path,group
+Bcell,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/Bcell_featureScores_annot.csv,,,cell_types
+GMP,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/GMP_featureScores_annot.csv,,,cell_types
+MEP,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/MEP_featureScores_annot.csv,,,cell_types
+HSC,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/HSC_featureScores_annot.csv,,,cell_types
+CMP,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/CMP_featureScores_annot.csv,,,cell_types
+Ery,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/Ery_featureScores_annot.csv,,,cell_types
+MPP,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/MPP_featureScores_annot.csv,,,cell_types
+CD4Tcell,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/CD4Tcell_featureScores_annot.csv,,,cell_types
+Mono,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/Mono_featureScores_annot.csv,,,cell_types
+LMPP,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/LMPP_featureScores_annot.csv,,,cell_types
+NKcell,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/NKcell_featureScores_annot.csv,,,cell_types
+CD8Tcell,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/CD8Tcell_featureScores_annot.csv,,,cell_types
+CLP,results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/feature_lists/CLP_featureScores_annot.csv,,,cell_types

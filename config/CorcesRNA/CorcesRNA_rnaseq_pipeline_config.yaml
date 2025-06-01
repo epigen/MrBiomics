@@ -1,0 +1,36 @@
+
+##### RESOURCES #####
+# memory in MB
+mem: '64000'
+
+##### GENERAL #####
+project_name: CorcesRNA # name of the project/dataset
+result_path: results/CorcesRNA/ # path to the output folder
+annotation: config/CorcesRNA/CorcesRNA_rnaseq_pipeline_annotation.csv # path to annotation file, specified in config/README.md
+
+##### RESOURCES #####
+
+ref:
+  # Ensembl species name
+  species: homo_sapiens
+  # Ensembl release (make sure to take one where snpeff data is available, check 'snpEff databases' output)
+  release: 100
+  # Genome build
+  build: GRCh38
+
+##### PROCESSING #####
+
+# (nextera) adapter fasta (.fa) file and/or nucleotide adapter sequence of the used RNA-seq protocol
+# used by fastp for adapter triming, if provided
+# if not available/applicable leave empty: ""
+adapter_fasta: ""
+
+# fastp specific arguments for adapter trimming and quality control filtering
+# see: https://github.com/OpenGene/fastp
+# useful parameters are --adapter_sequence GTCTCGTGGGCTCGG/auto TODO
+# or provide (nextera) adapter fasta (.fa) file and/or nucleotide adapter sequence of the used protocol --adapter_fasta path/to/adapters.fa
+fastp_args: "--adapter_sequence auto --trim_poly_g"
+
+# STAR aligner specific arguments
+# see: https://github.com/alexdobin/STAR
+star_args: "--alignIntronMax 1000000 --alignIntronMin 20 --alignMatesGapMax 1000000 --alignSJDBoverhangMin 1 --alignSJoverhangMin 8 --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04 --outFilterMultimapNmax 20 --outFilterType BySJout"

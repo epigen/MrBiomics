@@ -12,21 +12,21 @@ workflows:
         enrichment_analysis: "config/quickstart/quickstart_enrichment_analysis_config.yaml"
     digits:
         unsupervised_analysis: "config/digits/digits_unsupervised_analysis_config.yaml"
-    # RNAseq:
-        # ngs_fetch: "config/RNAseq/RNAseq_ngs_fetch_config.yaml"
-        # rnaseq_pipeline: "config/RNAseq/RNAseq_rnaseq_pipeline_config.yaml"
-        # genome_tracks: "config/RNAseq/RNAseq_genome_tracks_config.yaml"
-        # spilterlize_integrate: "config/RNAseq/RNAseq_spilterlize_integrate_config.yaml"
-        # unsupervised_analysis: "config/RNAseq/RNAseq_unsupervised_analysis_config.yaml"
-        # dea_limma: "config/RNAseq/RNAseq_dea_limma_config.yaml"
-        # enrichment_analysis: "config/RNAseq/RNAseq_enrichment_analysis_config.yaml"
-    # ATACseq:
-    #     ngs_fetch: "config/ATACseq/ATACseq_ngs_fetch_config.yaml"
-    #     atacseq_pipeline: "config/ATACseq/ATACseq_atacseq_pipeline_config.yaml"
-    #     genome_tracks: "config/ATACseq/ATACseq_genome_tracks_config.yaml"
-    #     spilterlize_integrate: "config/ATACseq/ATACseq_spilterlize_integrate_config.yaml"
-    #     unsupervised_analysis: "config/ATACseq/ATACseq_unsupervised_analysis_config.yaml"
-    #     dea_limma: "config/ATACseq/ATACseq_dea_limma_config.yaml"
-    #     enrichment_analysis: "config/ATACseq/ATACseq_enrichment_analysis_config.yaml"
+    CorcesRNA:
+        fetch_ngs: "config/CorcesRNA/CorcesRNA_fetch_ngs_config.yaml"
+        rnaseq_pipeline: "config/CorcesRNA/CorcesRNA_rnaseq_pipeline_config.yaml"
+        genome_tracks: "config/CorcesRNA/CorcesRNA_genome_tracks_config.yaml"
+        spilterlize_integrate: "config/CorcesRNA/CorcesRNA_spilterlize_integrate_config.yaml"
+        unsupervised_analysis: "config/CorcesRNA/CorcesRNA_unsupervised_analysis_config.yaml"
+        dea_limma: "config/CorcesRNA/CorcesRNA_dea_limma_config.yaml"
+        enrichment_analysis: "config/CorcesRNA/CorcesRNA_enrichment_analysis_config.yaml"
+    CorcesATAC:
+        fetch_ngs: "config/CorcesATAC/CorcesATAC_fetch_ngs_config.yaml"
+        atacseq_pipeline: "config/CorcesATAC/CorcesATAC_atacseq_pipeline_config.yaml"
+    #     genome_tracks: "config/CorcesATAC/CorcesATAC_genome_tracks_config.yaml"
+    #     spilterlize_integrate: "config/CorcesATAC/CorcesATAC_spilterlize_integrate_config.yaml"
+    #     unsupervised_analysis: "config/CorcesATAC/CorcesATAC_unsupervised_analysis_config.yaml"
+    #     dea_limma: "config/CorcesATAC/CorcesATAC_dea_limma_config.yaml"
+    #     enrichment_analysis: "config/CorcesATAC/CorcesATAC_enrichment_analysis_config.yaml"
         
 

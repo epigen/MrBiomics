@@ -15,13 +15,11 @@ min_version("8.25.3")
 ##### setup report #####
 report: os.path.join("report", "workflow.rst")
 
-##### utility functions #####
-# UNUSED
-
 ##### load configs #####
 configfile: os.path.join("config","config.yaml")
 
-# load configs for all workflows and datasets
+##### utility functions #####
+# prepare configs for all workflows and datasets
 config_wf = dict()
 
 for ds in config["workflows"]:
@@ -34,27 +32,39 @@ for ds in config["workflows"]:
     
 
 ##### load rules (one per dataset) #####
-include: os.path.join("rules", "quickstart.smk")
-include: os.path.join("rules", "digits.smk")
-# include: os.path.join("rules", "ATACseq.smk")
+# include: os.path.join("rules", "quickstart.smk")
+# include: os.path.join("rules", "digits.smk")
+include: os.path.join("rules", "CorcesRNA.smk")
+# include: os.path.join("rules", "CorcesATAC.smk")
+
 
 #### Target Rule ####
 rule all:
     input:
         #### QUICKSTART ####
-        rules.quickstart_enrichment_analysis_all.input,
+        # rules.quickstart_enrichment_analysis_all.input,
         #### digits Analysis ####
-        rules.digits_unsupervised_analysis_all.input,
-        #### ATACseq Analysis Recipe ####
-        # rules.ATACseq_ngs_fetch_all.input,
-        # rules.ATACseq_atacseq_pipeline_all.input,
-        # rules.ATACseq_genome_tracks_all.input,
-        # rules.ATACseq_spilterlize_integrate_all.input,
-        # rules.ATACseq_unsupervised_analysis_all.input,
-        # rules.ATACseq_dea_limma_all.input,
-        # rules.ATACseq_enrichment_analysis_all.input,
-    # important for module usage
-    default_target: True
+        # rules.digits_unsupervised_analysis_all.input,
+        #### ATAC-seq Analysis Recipe (CorcesATAC) ####
+        # rules.CorcesATAC_fetch_ngs_all.input,
+        # rules.get_CorcesATAC_resources.output,
+        # rules.CorcesATAC_atacseq_pipeline_all.input,
+        # rules.CorcesATAC_genome_tracks_all.input,
+        # rules.CorcesATAC_spilterlize_integrate_all.input,
+        # rules.CorcesATAC_unsupervised_analysis_all.input,
+        # rules.CorcesATAC_dea_limma_all.input,
+        # rules.CorcesATAC_enrichment_analysis_all.input,
+        #### RNA-seq Analysis Recipe (CorcesRNA) ####
+        rules.CorcesRNA_fetch_ngs_all.input,
+        rules.CorcesRNA_rnaseq_pipeline_all.input,
+        rules.CorcesRNA_genome_tracks_all.input,
+        rules.CorcesRNA_spilterlize_integrate_all.input,
+        rules.CorcesRNA_unsupervised_analysis_all.input,
+        rules.CorcesRNA_dea_limma_all.input,
+        rules.CorcesRNA_enrichment_analysis_all.input,
+        rules.CorcesRNA_reconstruct_lineage.output, # custom rule
+        rules.CorcesRNA_figures.output, # custom rule (maybe only un-commented rule in the end?)
+    default_target: True # important for module usage
     params:
     threads: 1
     resources:

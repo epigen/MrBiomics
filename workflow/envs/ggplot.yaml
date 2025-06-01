@@ -1,0 +1,30 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - r-ggplot2
+  - r-tidyr
+  - r-tibble
+  - r-patchwork
+  - r-scales
+  - r-dplyr
+  - r-reshape2
+  - r-pheatmap
+  - r-ggrepel
+  - r-stringr
+  - r-gridGraphics
+  - r-ggplotify
+  - r-directlabels
+  - r-data.table
+  - r-svglite
+  - r-sna
+  - r-RColorBrewer
+  - r-Hmisc
+  - r-cairo
+  - cairo
+  - pango
+  - libpng
+  - libjpeg-turbo
+  - libtiff
+  - gtk2

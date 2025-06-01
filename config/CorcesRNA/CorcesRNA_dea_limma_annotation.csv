@@ -1,0 +1,2 @@
+﻿name,data,metadata,formula,block_var,comparisons,calcNormFactors_method,voom,eBayes,limma_trend,OvA
+normCQN,results/CorcesRNA/spilterlize_integrate/all/normCQN.csv,results/CorcesRNA/spilterlize_integrate/all/annotation.csv,~ 0 + cell_type + donor,0,,0,0,1,1,cell_type

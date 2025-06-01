@@ -1,0 +1,68 @@
+
+##### RESOURCES #####
+mem: '8000' #  memory allocation in MB
+threads: 4 # used to parallelize download and potential FASTQ to gzip conversion
+
+##### GENERAL #####
+project_name: CorcesRNA # name of the project/dataset
+result_path: results/CorcesRNA/ # path to the output folder
+
+# flag to download and merge only the metadata of all accessions without sequence files
+metadata_only: 0 # options: 0 (no), 1 (yes)
+
+# define output format of sequence files as fastq.gz (fastq) or unmapped/unaligned/raw bam (bam) files
+output_format: bam # options: "bam" or "fastq"
+
+# accession IDs from public repositories (GEO, SRA, ENA/EBI, GSA, DDBJ)
+# For a list of supported accession ids see: https://github.com/BioOmics/iSeq
+accession_ids:
+    - SRR2753073
+    - SRR2753078
+    - SRR2753074
+    - SRR2753080
+    - SRR2753076
+    - SRR2753088
+    - SRR2753079
+    - SRR2753094
+    - SRR2753081
+    - SRR2753097
+    - SRR2753101
+    - SRR2753086
+    - SRR2753107
+    - SRR2753111
+    - SRR2753089
+    - SRR2753118
+    - SRR2753119
+    - SRR2753121
+    - SRR2753093
+    - SRR2753096
+    - SRR2753075
+    - SRR2753077
+    - SRR2753098
+    - SRR2753082
+    - SRR2753083
+    - SRR2753104
+    - SRR2753084
+    - SRR2753108
+    - SRR2753085
+    - SRR2753087
+    - SRR2753109
+    - SRR2753090
+    - SRR2753091
+    - SRR2753115
+    - SRR2753092
+    - SRR2753095
+    - SRR2753117
+    - SRR2753099
+    - SRR2753100
+    - SRR2753102
+    - SRR2753103
+    - SRR2753105
+    - SRR2753106
+    - SRR2753110
+    - SRR2753112
+    - SRR2753113
+    - SRR2753114
+    - SRR2753116
+    - SRR2753120
+    # - GSE74246
