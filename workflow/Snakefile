@@ -63,7 +63,7 @@ rule all:
         rules.CorcesRNA_dea_limma_all.input,
         rules.CorcesRNA_enrichment_analysis_all.input,
         rules.CorcesRNA_reconstruct_lineage.output, # custom rule
-        rules.CorcesRNA_figures.output, # custom rule (maybe only un-commented rule in the end?)
+        rules.CorcesRNA_plots.output, # custom rule
     default_target: True # important for module usage
     params:
     threads: 1

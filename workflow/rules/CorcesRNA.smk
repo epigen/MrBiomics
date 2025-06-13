@@ -15,7 +15,8 @@ use rule * from CorcesRNA_fetch_ngs as CorcesRNA_fetch_ngs_*
 ### CorcesRNA - RNA-seq processing ####
 module CorcesRNA_rnaseq_pipeline:
     snakefile:
-        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.1.0")
+        # "/home/sreichl/projects/rnaseq_pipeline/workflow/Snakefile"
+        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.1.1")
     config:
         config_wf["CorcesRNA_rnaseq_pipeline"]
 
@@ -24,7 +25,7 @@ use rule * from CorcesRNA_rnaseq_pipeline as CorcesRNA_rnaseq_pipeline_*
 #### CorcesRNA - Genome Tracks #### 
 module CorcesRNA_genome_tracks:
     snakefile:
-        github("epigen/genome_tracks", path="workflow/Snakefile", tag="v2.0.2")
+        github("epigen/genome_tracks", path="workflow/Snakefile", tag="v2.0.3")
     config:
         config_wf["CorcesRNA_genome_tracks"]
 
@@ -33,6 +34,7 @@ use rule * from CorcesRNA_genome_tracks as CorcesRNA_genome_tracks_*
 #### CorcesRNA - Spilterlize & Integrate #### 
 module CorcesRNA_spilterlize_integrate:
     snakefile:
+        # "/home/sreichl/projects/spilterlize_integrate/workflow/Snakefile"
         github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.1")
     config:
         config_wf["CorcesRNA_spilterlize_integrate"]
@@ -51,7 +53,9 @@ use rule * from CorcesRNA_unsupervised_analysis as CorcesRNA_unsupervised_analys
 #### CorcesRNA - Differential Expression Analysis #### 
 module CorcesRNA_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.1")
+        # "/home/sreichl/projects/dea_limma/workflow/Snakefile"
+        # github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.1")
+        github("epigen/dea_limma", path="workflow/Snakefile", branch="main")
     config:
         config_wf["CorcesRNA_dea_limma"]
 
@@ -86,23 +90,20 @@ rule CorcesRNA_reconstruct_lineage:
     script:
         "../scripts/crossprediction.py"
 
-#### CorcesRNA - Figures (custom rule) ####
-rule CorcesRNA_figures:
+#### CorcesRNA - Plots for wiki (custom rule) ####
+rule CorcesRNA_plots:
     input:
-        enrichment_results = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv"),
-        crossprediction_adj_mtx = os.path.join("results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"),
+        enrichment_plot = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png"),
     output:
-        enrichment_plot = os.path.join("docs/CorcesRNA/enrichment_analysis.pdf"),
-        crossprediction_plot = os.path.join("docs/CorcesRNA/crossprediction_plot.pdf"),
-    params:
-        figure_theme_path = workflow.source_path("../scripts/figure_theme.R"),
-        adj_p = 0.05, # unused
+        enrichment_plot = os.path.join("docs/CorcesRNA/cell_types_Azimuth_2023_summary.png"),
     resources:
-        mem_mb=config.get("mem", "16000"),
+        mem_mb="1000",
     threads: config.get("threads", 1)
-    conda:
-        "../envs/ggplot.yaml"
     log:
-        os.path.join("logs","rules","CorcesRNA_figures.log"),
-    script:
-        "../scripts/CorcesRNA_figures.R"
+        os.path.join("logs","rules","CorcesRNA_plots.log"),
+    shell:
+        """
+        cp {input[0]} {output[0]}
+        """
+
+
