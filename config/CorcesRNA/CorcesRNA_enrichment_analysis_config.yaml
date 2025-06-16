@@ -22,6 +22,7 @@ genome: 'hg38'
 # JSON example content: { "MyDB_Term1": ["geneA","geneB","geneC"],"MyDB_Term2": ["geneX","geneY","geneZ"]}
 local_databases:
     Azimuth_2023: "resources/Azimuth_2023.gmt"
+    ReactomePathways: "resources/ReactomePathways.gmt"
 
 ## LOLA compatible region set databases
 # loaded using loadRegionDB() (https://code.databio.org/LOLA/reference/loadRegionDB.html)

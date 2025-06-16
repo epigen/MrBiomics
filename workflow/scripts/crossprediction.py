@@ -10,6 +10,11 @@ import numpy as np
 import sklearn
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LogisticRegressionCV
+# for visualization
+import networkx as nx
+import matplotlib.pyplot as plt
+# pydot is used as the interface to Graphviz
+import pydot
 
 #### configs
 
@@ -20,10 +25,12 @@ metadata_path = snakemake.input["metadata"]
 # output
 adjacency_matrix_path = snakemake.output["adjacency_matrix"]
 top_features_path =  snakemake.output["top_features"]
+graph_path = snakemake.output["graph"]
 
 # params
 group_var = snakemake.params["group_var"]
 top_features_n = 5
+prune_th = 0.2
 
 ### Load & prepare data and metadata
 data = pd.read_csv(data_path, index_col=0, header=0)
@@ -99,3 +106,53 @@ for class_name, features in top_features_per_class.items():
 
 # save top features
 pd.DataFrame(top_features_per_class).to_csv(top_features_path)
+
+#################################################################
+#### HIERARCHICAL VISUALIZATION WITH GRAPHVIZ ####
+#################################################################
+
+# --- Pruning the Adjacency Matrix ---
+# conn_viz = conn_norm.copy()
+conn_viz = pd.read_csv(adjacency_matrix_path, index_col=0, header=0)
+conn_viz[conn_viz < prune_th] = 0
+
+# Create a directed graph from the PRUNED adjacency matrix
+G = nx.from_pandas_adjacency(conn_viz, create_using=nx.DiGraph())
+
+# --- Visualization Setup ---
+# A wider figure is better for hierarchical layouts
+plt.figure(figsize=(4, 4))
+
+# Use graphviz_layout to create a hierarchical ("dot") layout.
+# - 'prog="dot"' specifies the hierarchical layout engine.
+# - The engine automatically places nodes with an in-degree of 0 (like HSC) at the top.
+# - It also handles disconnected components by plotting them separately.
+pos = nx.drawing.nx_pydot.graphviz_layout(G, prog='dot')
+
+# --- Drawing the Graph ---
+edge_weights = [G[u][v]['weight'] for u, v in G.edges()]
+
+nx.draw_networkx_nodes(G, pos, node_size=300, node_color='skyblue')
+nx.draw_networkx_edges(
+    G,
+    pos,
+    width=[w * 4 for w in edge_weights],
+    edge_color='grey',
+    node_size=300,
+    arrowstyle='->',
+    arrowsize=15,
+    connectionstyle='arc3,rad=0.2' # Use slight curves for clarity
+)
+
+# Draw labels
+nx.draw_networkx_labels(
+    G,
+    pos,
+    font_size=6,
+    font_family='sans-serif'
+)
+
+# save plot
+plt.axis('off')
+plt.savefig(graph_path, dpi=300, bbox_inches='tight')
+# plt.show()

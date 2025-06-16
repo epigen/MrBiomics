@@ -78,6 +78,7 @@ rule CorcesRNA_reconstruct_lineage:
     output:
         adjacency_matrix = os.path.join("results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"),
         top_features = os.path.join("results/CorcesRNA/special_analyses/crossprediction/top_features.csv"),
+        graph = os.path.join("results/CorcesRNA/special_analyses/crossprediction/graph.png"),
     params:
         group_var = "cell_type",
     resources:
@@ -106,9 +107,10 @@ CorcesRNA_plots_map = {
     "normCQN_integrated_HVF_PCA.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
     "normCQN_integrated_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
     "normCQN_integrated_HVF_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
-    # "Mono_adjp.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/volcano/markerGenes/Mono_adjp.png",
     "markerGenes.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/heatmap/markerGenes.png",
     "cell_types_Azimuth_2023_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png",
+    "cell_types_ReactomePathways_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_summary.png",
+    "crossprediction_graph": "results/CorcesRNA/special_analyses/crossprediction/graph.png",
 }
 
 # Copy input to outputs to include the plot in the repo and wiki
