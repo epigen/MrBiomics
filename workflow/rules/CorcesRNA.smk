@@ -110,7 +110,7 @@ CorcesRNA_plots_map = {
     "markerGenes.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/heatmap/markerGenes.png",
     "cell_types_Azimuth_2023_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png",
     "cell_types_ReactomePathways_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_summary.png",
-    "crossprediction_graph": "results/CorcesRNA/special_analyses/crossprediction/graph.png",
+    "crossprediction_graph.png": "results/CorcesRNA/special_analyses/crossprediction/graph.png",
 }
 
 # Copy input to outputs to include the plot in the repo and wiki
