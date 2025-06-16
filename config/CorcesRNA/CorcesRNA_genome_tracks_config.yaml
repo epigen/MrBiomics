@@ -42,7 +42,7 @@ width: 20
 base_buffer: 2000
 
 # file type of the plot, options are "svg","pdf","png"
-file_type: "pdf"
+file_type: "svg"
 
 # define custom colors (in HEX) for groups from the annotation file
 track_colors:

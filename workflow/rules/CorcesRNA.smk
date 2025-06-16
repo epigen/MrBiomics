@@ -91,31 +91,37 @@ rule CorcesRNA_reconstruct_lineage:
         "../scripts/crossprediction.py"
 
 #### CorcesRNA - Copy selected plots for documentation and visualization in wiki (custom rule) ####
+# Define the mapping of input to output files
+CorcesRNA_plots_map = {
+    "CD34.svg": "results/CorcesRNA/genome_tracks/tracks/CD34.svg",
+    "CD4.svg": "results/CorcesRNA/genome_tracks/tracks/CD4.svg",
+    "MS4A1.svg": "results/CorcesRNA/genome_tracks/tracks/MS4A1.svg",
+    "filtered.png": "results/CorcesRNA/spilterlize_integrate/all/plots/filtered.png",
+    "normCQN.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN.png",
+    "normCQN_integrated.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_integrated.png",
+    "filtered_CFA.png": "results/CorcesRNA/spilterlize_integrate/all/plots/filtered_CFA.png",
+    "normCQN_CFA.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_CFA.png",
+    "normCQN_integrated_CFA.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_integrated_CFA.png",
+    "normCQN_integrated_PCA.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
+    "normCQN_integrated_HVF_PCA.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
+    "normCQN_integrated_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
+    "normCQN_integrated_HVF_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
+    # "Mono_adjp.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/volcano/markerGenes/Mono_adjp.png",
+    "markerGenes.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/heatmap/markerGenes.png",
+    "cell_types_Azimuth_2023_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png",
+}
+
+# Copy input to outputs to include the plot in the repo and wiki
 rule CorcesRNA_plots:
     input:
-        genome_tracks_MS4A1  = os.path.join("results/CorcesRNA/genome_tracks/tracks/MS4A1.pdf"),
-        spilterlize_integrate_filtered = os.path.join("results/CorcesRNA/spilterlize_integrate/all/plots/filtered.png"),
-        spilterlize_integrate_normCQN = os.path.join("results/CorcesRNA/spilterlize_integrate/all/plots/normCQN.png"),
-        spilterlize_integrate_normCQN_integrated = os.path.join("results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_integrated.png"),
-        enrichment_analysis_summary = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png"),
+        [CorcesRNA_plots_map[plot] for plot in CorcesRNA_plots_map]
     output:
-        genome_tracks_MS4A1  = os.path.join("docs/CorcesRNA/MS4A1.pdf"),
-        spilterlize_integrate_filtered = os.path.join("docs/CorcesRNA/filtered.png"),
-        spilterlize_integrate_normCQN = os.path.join("docs/CorcesRNA/normCQN.png"),
-        spilterlize_integrate_normCQN_integrated = os.path.join("docs/CorcesRNA/normCQN_integrated.png"),
-        enrichment_analysis_summary = os.path.join("docs/CorcesRNA/cell_types_Azimuth_2023_summary.png"),
+        [f"docs/CorcesRNA/{plot}" for plot in CorcesRNA_plots_map]
     resources:
         mem_mb="1000",
     threads: config.get("threads", 1)
     log:
-        os.path.join("logs","rules","CorcesRNA_plots.log"),
-    shell:
-        """
-        cp {input[0]} {output[0]}
-        cp {input[1]} {output[1]}
-        cp {input[2]} {output[2]}
-        cp {input[3]} {output[3]}
-        cp {input[4]} {output[4]}
-        """
-
-
+        "logs/rules/CorcesRNA_plots.log",
+    run:
+        for i, o in zip(input, output):
+            shell(f"cp {i} {o}")
