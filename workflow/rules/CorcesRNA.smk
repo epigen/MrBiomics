@@ -93,8 +93,10 @@ rule CorcesRNA_reconstruct_lineage:
 #### CorcesRNA - Plots for wiki (custom rule) ####
 rule CorcesRNA_plots:
     input:
+        genome_track_MS4A1  = os.path.join("results/CorcesRNA/genome_tracks/tracks/MS4A1.pdf"),
         enrichment_plot = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png"),
     output:
+        genome_track_MS4A1  = os.path.join("docs/CorcesRNA/MS4A1.pdf"),
         enrichment_plot = os.path.join("docs/CorcesRNA/cell_types_Azimuth_2023_summary.png"),
     resources:
         mem_mb="1000",
@@ -104,6 +106,7 @@ rule CorcesRNA_plots:
     shell:
         """
         cp {input[0]} {output[0]}
+        cp {input[1]} {output[1]}
         """
 
 

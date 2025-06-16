@@ -1,6 +1,6 @@
 # Snakemake file for creating the figure for the manuscript
 
-# TODO: think of sensible place to put plots? maybe MrBiomics/docs/figure1
+# TODO: think of sensible place to put plots? maybe MrBiomics/docs/figure1 or MrBiomics/results/figures?
 
 #### CorcesRNA - Figures (custom rule) ####
 rule CorcesRNA_figures:
