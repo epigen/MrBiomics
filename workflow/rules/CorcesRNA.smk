@@ -90,14 +90,20 @@ rule CorcesRNA_reconstruct_lineage:
     script:
         "../scripts/crossprediction.py"
 
-#### CorcesRNA - Plots for wiki (custom rule) ####
+#### CorcesRNA - Copy selected plots for documentation and visualization in wiki (custom rule) ####
 rule CorcesRNA_plots:
     input:
-        genome_track_MS4A1  = os.path.join("results/CorcesRNA/genome_tracks/tracks/MS4A1.pdf"),
-        enrichment_plot = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png"),
+        genome_tracks_MS4A1  = os.path.join("results/CorcesRNA/genome_tracks/tracks/MS4A1.pdf"),
+        spilterlize_integrate_filtered = os.path.join("results/CorcesRNA/spilterlize_integrate/all/plots/filtered.png"),
+        spilterlize_integrate_normCQN = os.path.join("results/CorcesRNA/spilterlize_integrate/all/plots/normCQN.png"),
+        spilterlize_integrate_normCQN_integrated = os.path.join("results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_integrated.png"),
+        enrichment_analysis_summary = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png"),
     output:
-        genome_track_MS4A1  = os.path.join("docs/CorcesRNA/MS4A1.pdf"),
-        enrichment_plot = os.path.join("docs/CorcesRNA/cell_types_Azimuth_2023_summary.png"),
+        genome_tracks_MS4A1  = os.path.join("docs/CorcesRNA/MS4A1.pdf"),
+        spilterlize_integrate_filtered = os.path.join("docs/CorcesRNA/filtered.png"),
+        spilterlize_integrate_normCQN = os.path.join("docs/CorcesRNA/normCQN.png"),
+        spilterlize_integrate_normCQN_integrated = os.path.join("docs/CorcesRNA/normCQN_integrated.png"),
+        enrichment_analysis_summary = os.path.join("docs/CorcesRNA/cell_types_Azimuth_2023_summary.png"),
     resources:
         mem_mb="1000",
     threads: config.get("threads", 1)
@@ -107,6 +113,9 @@ rule CorcesRNA_plots:
         """
         cp {input[0]} {output[0]}
         cp {input[1]} {output[1]}
+        cp {input[2]} {output[2]}
+        cp {input[3]} {output[3]}
+        cp {input[4]} {output[4]}
         """
 
 
