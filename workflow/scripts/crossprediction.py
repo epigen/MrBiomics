@@ -21,6 +21,7 @@ import pydot
 # input
 data_path = snakemake.input["data"]
 metadata_path = snakemake.input["metadata"]
+feature_annotation_path = snakemake.input["feature_annotation"]
 
 # output
 adjacency_matrix_path = snakemake.output["adjacency_matrix"]
@@ -31,6 +32,7 @@ graph_path = snakemake.output["graph"]
 group_var = snakemake.params["group_var"]
 top_features_n = 5
 prune_th = 0.2
+feature_annotation_var = 
 
 ### Load & prepare data and metadata
 data = pd.read_csv(data_path, index_col=0, header=0)

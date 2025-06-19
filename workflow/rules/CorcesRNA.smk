@@ -95,25 +95,24 @@ rule CorcesRNA_reconstruct_lineage:
 # Define the mapping of input to output files
 CorcesRNA_plots_map = {
     "CD34.svg": "results/CorcesRNA/genome_tracks/tracks/CD34.svg",
-    "CD4.svg": "results/CorcesRNA/genome_tracks/tracks/CD4.svg",
     "MS4A1.svg": "results/CorcesRNA/genome_tracks/tracks/MS4A1.svg",
     "filtered.png": "results/CorcesRNA/spilterlize_integrate/all/plots/filtered.png",
-    "normCQN.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN.png",
     "normCQN_integrated.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_integrated.png",
     "filtered_CFA.png": "results/CorcesRNA/spilterlize_integrate/all/plots/filtered_CFA.png",
-    "normCQN_CFA.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_CFA.png",
     "normCQN_integrated_CFA.png": "results/CorcesRNA/spilterlize_integrate/all/plots/normCQN_integrated_CFA.png",
     "normCQN_integrated_PCA.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
     "normCQN_integrated_HVF_PCA.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
     "normCQN_integrated_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
     "normCQN_integrated_HVF_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
     "markerGenes.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/heatmap/markerGenes.png",
+    "Bcell_ReactomePathways.png": "results/CorcesRNA/enrichment_analysis/Bcell/preranked_GSEApy/ReactomePathways/Bcell_ReactomePathways.png",
+    "Bcell_Azimuth_2023.png": "results/CorcesRNA/enrichment_analysis/Bcell/preranked_GSEApy/Azimuth_2023/Bcell_Azimuth_2023.png",
     "cell_types_Azimuth_2023_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_summary.png",
     "cell_types_ReactomePathways_summary.png": "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_summary.png",
     "crossprediction_graph.png": "results/CorcesRNA/special_analyses/crossprediction/graph.png",
 }
 
-# Copy input to outputs to include the plot in the repo and wiki
+# Copy input to outputs to include the plots in the repo and wiki
 rule CorcesRNA_plots:
     input:
         [CorcesRNA_plots_map[plot] for plot in CorcesRNA_plots_map]
