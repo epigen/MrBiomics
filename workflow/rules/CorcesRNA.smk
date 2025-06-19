@@ -75,12 +75,16 @@ rule CorcesRNA_reconstruct_lineage:
     input:
         data = os.path.join("results/CorcesRNA/spilterlize_integrate/all/normCQN_integrated_HVF.csv"),
         metadata = os.path.join("results/CorcesRNA/spilterlize_integrate/all/annotation.csv"),
+        feature_annotation = os.path.join("results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv"),
     output:
         adjacency_matrix = os.path.join("results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"),
         top_features = os.path.join("results/CorcesRNA/special_analyses/crossprediction/top_features.csv"),
         graph = os.path.join("results/CorcesRNA/special_analyses/crossprediction/graph.png"),
     params:
         group_var = "cell_type",
+        top_features_n = 5,
+        prune_th = 0.2,
+        feature_annotation_var = "external_gene_name",
     resources:
         mem_mb=config.get("mem", "16000"),
     threads: config.get("threads", 1)

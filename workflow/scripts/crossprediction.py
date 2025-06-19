@@ -30,13 +30,14 @@ graph_path = snakemake.output["graph"]
 
 # params
 group_var = snakemake.params["group_var"]
-top_features_n = 5
-prune_th = 0.2
-feature_annotation_var = 
+top_features_n = snakemake.params["top_features_n"]
+prune_th = snakemake.params["prune_th"]
+feature_annotation_var = snakemake.params["feature_annotation_var"]
 
 ### Load & prepare data and metadata
 data = pd.read_csv(data_path, index_col=0, header=0)
 metadata = pd.read_csv(metadata_path, index_col=0, header=0)
+feature_annotation = pd.read_csv(feature_annotation_path, index_col=0, header=0)
 
 # sort them the same
 data = data.loc[:,metadata.index]
@@ -58,7 +59,10 @@ clf = LogisticRegression(
     l1_ratio=0.5
 )
 
-#### get connectivity matrix from LOO-CV strategy prediction probabilities
+#################################################################
+#### Get connectivity matrix from LOO-CV strategy prediction probabilities
+#################################################################
+
 classnames, groups = np.unique(y, return_inverse=True)
 cv = sklearn.model_selection.LeaveOneGroupOut()
 pred = sklearn.model_selection.cross_val_predict(estimator=clf, X=X, y=y, groups=groups, cv=cv, n_jobs=-1, method='predict_proba')
@@ -82,7 +86,9 @@ if sum(np.diag(conn_norm)!=0)>0:
 # save normalized probability connectivity matrix
 conn_norm.to_csv(adjacency_matrix_path)
 
+#################################################################
 #### Train Complete Model and Extract Top Features per Class
+#################################################################
 
 # Train the classifier on the entire dataset
 clf.fit(X, y)
@@ -99,15 +105,17 @@ for i, class_name in enumerate(clf.classes_):
     # Use np.argsort to get indices that would sort the array, then take the last {top_features_n} i.e., largest
     top_features_per_class[class_name] = data.index[np.argsort(class_coeffs)[-top_features_n:]][::-1] # Reverse to show most important first
 
-# Print results
-print("Top {} features per class:".format(top_features_n))
+# Create a mapping dictionary
+feature_name_map = feature_annotation[feature_annotation_var].to_dict()
+# Iterate through the original dictionary and map features to annotation
+top_features_mapped = {}
 for class_name, features in top_features_per_class.items():
-    print(f"\nClass: {class_name}")
-    for j, feature in enumerate(features):
-        print(f"  {j+1}. {feature}")
+    # For each list of feature IDs, create a new list with the corresponding alternative names.
+    # The .get(feature, feature) method ensures that if an ID is not found in the map, the original ID is used instead.
+    top_features_mapped[class_name] = [feature_name_map.get(feature, feature) for feature in features]
 
 # save top features
-pd.DataFrame(top_features_per_class).to_csv(top_features_path)
+pd.DataFrame(top_features_mapped).to_csv(top_features_path)
 
 #################################################################
 #### HIERARCHICAL VISUALIZATION WITH GRAPHVIZ ####
