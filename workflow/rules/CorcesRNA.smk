@@ -15,8 +15,7 @@ use rule * from CorcesRNA_fetch_ngs as CorcesRNA_fetch_ngs_*
 ### CorcesRNA - RNA-seq processing ####
 module CorcesRNA_rnaseq_pipeline:
     snakefile:
-        # "/home/sreichl/projects/rnaseq_pipeline/workflow/Snakefile"
-        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.1.1")
+        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.2.0")
     config:
         config_wf["CorcesRNA_rnaseq_pipeline"]
 
@@ -34,7 +33,6 @@ use rule * from CorcesRNA_genome_tracks as CorcesRNA_genome_tracks_*
 #### CorcesRNA - Spilterlize & Integrate #### 
 module CorcesRNA_spilterlize_integrate:
     snakefile:
-        # "/home/sreichl/projects/spilterlize_integrate/workflow/Snakefile"
         github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.1")
     config:
         config_wf["CorcesRNA_spilterlize_integrate"]
@@ -53,8 +51,6 @@ use rule * from CorcesRNA_unsupervised_analysis as CorcesRNA_unsupervised_analys
 #### CorcesRNA - Differential Expression Analysis #### 
 module CorcesRNA_dea_limma:
     snakefile:
-        # "/home/sreichl/projects/dea_limma/workflow/Snakefile"
-        # github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.1")
         github("epigen/dea_limma", path="workflow/Snakefile", branch="main")
     config:
         config_wf["CorcesRNA_dea_limma"]
@@ -98,6 +94,7 @@ rule CorcesRNA_reconstruct_lineage:
 #### CorcesRNA - Copy selected plots for documentation and visualization in wiki (custom rule) ####
 # Define the mapping of input to output files
 CorcesRNA_plots_map = {
+    "sample_annotation.png": "results/CorcesRNA/rnaseq_pipeline/report/sample_annotation.png",
     "CD34.svg": "results/CorcesRNA/genome_tracks/tracks/CD34.svg",
     "MS4A1.svg": "results/CorcesRNA/genome_tracks/tracks/MS4A1.svg",
     "filtered.png": "results/CorcesRNA/spilterlize_integrate/all/plots/filtered.png",
