@@ -78,7 +78,7 @@ Three components are required to use a module within your Snakemake workflow (i.
 # 📜 Recipes
 > _"Civilization advances by extending the number of important operations which we can perform without thinking of them."_ - Alfred North Whitehead, author of _Principia Mathematica_
 
-**Recipes** are combinations of existing modules into end-to-end best practice analyses. They can be used as templates for standard analyses by leveraging existing modules, thereby enabling fast iterations and progression into the unknown. This represents "functional knowledge management". Every recipe is described and presented using a [wiki](https://github.com/epigen/MrBiomics/wiki) page by application to a publicly available dataset.
+**Recipes** are combinations of existing modules into comprehensive end-to-end best practice analyses. They can be used as templates for standard analyses by leveraging existing modules, thereby enabling fast iterations and progression into the unknown. This represents our lab's **Functional Knowledge Management** effort. Every recipe is described and presented using a dedicated [wiki](https://github.com/epigen/MrBiomics/wiki) page through application to a publicly available dataset.
 
 | Recipe | Description | # Modules used |
 | :---: | :---: | :---: |
@@ -89,7 +89,7 @@ Three components are required to use a module within your Snakemake workflow (i.
 | [scCRISPR-seq Analysis](../../wiki/scCRISPR%E2%80%90seq-Analysis-Recipe) | From count matrix to knockout phenotype enrichemnts. | 6(-7) |
 
 > [!TIP]
-> In our wiki we provide instructions on [How to use Recipes](../../wiki/How-to-use-Recipes) and every Recipe is described in detail on their respective wiki page, linked above.
+> In our wiki we provide instructions on [How to use Recipes](../../wiki/How-to-use-Recipes) and every Recipe is described in detail on their respective wiki page linked above.
 
 > [!NOTE]  
 > ⭐️ **Star this repository and share recipes you find valuable** 📤 — help others find them, and guide our future work!
