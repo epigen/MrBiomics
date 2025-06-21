@@ -82,11 +82,11 @@ Three components are required to use a module within your Snakemake workflow (i.
 
 | Recipe | Description | # Modules used |
 | :---: | :---: | :---: |
-| [RNA-seq Analysis](../../wiki/RNA%E2%80%90seq-Analysis-Recipe) | From raw BAM files to enrichemnts of differentially expressed genes. | 7 |
-| [ATAC-seq Analysis](../../wiki/ATAC%E2%80%90seq-Analysis-Recipe) | From raw BAM files to enrichemnts of differentially accessible regions. | 7 |
-| [Integrative ATAC-seq & RNA-seq Analysis](../../wiki/Integrative-Analysis-Recipe) | From count matrices to epigenetic potential and relative transcriptional abundance. | 8 |
-| [scRNA-seq Analysis](../../wiki/scRNA%E2%80%90seq-Analysis-Recipe) | From count matrix to enrichemnts of differentially expressed genes. | 5(-6) |
-| [scCRISPR-seq Analysis](../../wiki/scCRISPR%E2%80%90seq-Analysis-Recipe) | From count matrix to knockout phenotype enrichemnts. | 6(-7) |
+| [RNA-seq Analysis](../../wiki/RNA%E2%80%90seq-Analysis-Recipe) | From uBAM files to enrichments of differentially expressed genes. | 7 |
+| [ATAC-seq Analysis](../../wiki/ATAC%E2%80%90seq-Analysis-Recipe) | From uBAM files to enrichments of differentially accessible regions. | 7 |
+| [Integrative ATAC-seq & RNA-seq Analysis](../../wiki/Integrative-Analysis-Recipe) | From count matrices to epigenetic potential and transcriptional abundance. | 8 |
+| [scRNA-seq Analysis](../../wiki/scRNA%E2%80%90seq-Analysis-Recipe) | From count matrix to enrichments of differentially expressed genes. | 5(-6) |
+| [scCRISPR-seq Analysis](../../wiki/scCRISPR%E2%80%90seq-Analysis-Recipe) | From count matrix to knockout phenotype enrichments. | 6(-7) |
 
 > [!TIP]
 > In our wiki we provide instructions on [How to use Recipes](../../wiki/How-to-use-Recipes) and every Recipe is described in detail on their respective wiki page linked above.
