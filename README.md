@@ -9,13 +9,19 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 # ⏳ TL;DR - More Time for Science!
 > _"Programming is about trying to make the future less painful. It’s about making things easier for our teammates."_ from _The Pragmatic Programmer_ by Andy Hunt & Dave Thomas
 - **Why**: Time is the most precious resource. By taking care of efficiency (i.e., maximum output with limited resources) scientists can re-distribute their time to focus on effectiveness (i.e., the biggest impact possible).
-- **How**: Use the latest developments in workflow management to (re-)use and combine independent computational modules into arbitrarily complex analyses to leverage modern innovation methods (e.g., fast prototyping, design thinking, and agile concepts).
+- **How**: **Systematic Functional Knowledge Management**. Leverage the latest developments in workflow management to (re-)use and combine independent computational modules into arbitrarily complex analyses to benefit from modern innovation methods (e.g., fast prototyping, design thinking, and agile concepts).
 - **What**: **Independent** and **single-purpose** computational **Modules**, implemented as Snakemake workflows, encode standard approaches that are used to scale, automate, and parallelize analyses. **Recipes** combine modules into end-to-end best practice workflows, thereby accelerating analyses to the point of the unknown. Snakemake's module functionality enables **Projects** to combine modules, recipes and custom code into arbitrarily complex multi-omics analyses at scale. 
 
 ![Illustration of MrBiomics Modules, Recipes and Projects](docs/Figure1.png) *Illustration of MrBiomics Modules, Recipes and Projects*
 
 > [!NOTE]  
 > Altogether this enables complex, portable, transparent, reproducible, and documented analyses of multi-mics data at scale.
+
+# 🧠 Systematic Functional Knowledge Management
+**Systematic Functional Knowledge Management (SFKM)** is our knowledge-management approach in which validated best practices are captured as executable software functions, modules, or recipes.
+- Each artefact simultaneously **documents** the know-how and **performs** the task, creating a living, testable, and composable code collection that closes the gap between theory and practice.
+- Rigorous **modularity and version control** keep every function self-contained, tested, and repository-tracked, enabling safe reuse and continuous evolution.
+- As a **compounding asset base** new functions can be built on earlier ones, steadily expanding an ever-richer compendium of trusted solutions.
 
 # 🧩 Modules
 > _"Is it functional, multifunctional, durable, well-fitted, simple, easy to maintain, and thoroughly tested? Does it provide added value, and doesn't cause unnecessary harm? Can it be simpler? Is it an innovation?"_ - Patagonia Design Principles
@@ -78,7 +84,7 @@ Three components are required to use a module within your Snakemake workflow (i.
 # 📜 Recipes
 > _"Civilization advances by extending the number of important operations which we can perform without thinking of them."_ - Alfred North Whitehead, author of _Principia Mathematica_
 
-**Recipes** are combinations of existing modules into end-to-end best practice analyses. They can be used as templates for standard analyses by leveraging existing modules, thereby enabling fast iterations and progression into the unknown. This represents "functional knowledge management". Every recipe is described and presented using a [wiki](https://github.com/epigen/MrBiomics/wiki) page by application to a publicly available dataset.
+**Recipes** are combinations of existing modules into end-to-end best practice analyses. They can be used as templates for standard analyses by leveraging existing modules, thereby enabling fast iterations and progression into the unknown. Every recipe is described and presented using a [wiki](https://github.com/epigen/MrBiomics/wiki) page by application to a publicly available dataset.
 
 | Recipe | Description | # Modules used |
 | :---: | :---: | :---: |
