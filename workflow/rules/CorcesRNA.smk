@@ -3,7 +3,7 @@
 # Subset of GEO SuperSeries: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75384
 # Subset of GEO SuperSeries for **unstranded** RNA: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE74246
 
-### CorcesRNA - Fetch NGS (optional) ####
+### CorcesRNA - Fetch NGS ####
 module CorcesRNA_fetch_ngs:
     snakefile:
        github("epigen/fetch_ngs", path="workflow/Snakefile", tag="v1.0.5")
@@ -15,7 +15,7 @@ use rule * from CorcesRNA_fetch_ngs as CorcesRNA_fetch_ngs_*
 ### CorcesRNA - RNA-seq processing ####
 module CorcesRNA_rnaseq_pipeline:
     snakefile:
-        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.2.0")
+        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.2.1")
     config:
         config_wf["CorcesRNA_rnaseq_pipeline"]
 
@@ -24,7 +24,7 @@ use rule * from CorcesRNA_rnaseq_pipeline as CorcesRNA_rnaseq_pipeline_*
 #### CorcesRNA - Genome Tracks #### 
 module CorcesRNA_genome_tracks:
     snakefile:
-        github("epigen/genome_tracks", path="workflow/Snakefile", tag="v2.0.3")
+        github("epigen/genome_tracks", path="workflow/Snakefile", tag="v2.0.5")
     config:
         config_wf["CorcesRNA_genome_tracks"]
 
@@ -42,7 +42,7 @@ use rule * from CorcesRNA_spilterlize_integrate as CorcesRNA_spilterlize_integra
 ### CorcesRNA - Unsupervised Analysis ####
 module CorcesRNA_unsupervised_analysis:
     snakefile:
-        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.1")
+        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.2")
     config:
         config_wf["CorcesRNA_unsupervised_analysis"]
 
@@ -60,7 +60,7 @@ use rule * from CorcesRNA_dea_limma as CorcesRNA_dea_limma_*
 #### CorcesRNA - Enrichment Analysis ####
 module CorcesRNA_enrichment_analysis:
     snakefile:
-        github("epigen/enrichment_analysis", path="workflow/Snakefile", tag="v2.0.2")
+        github("epigen/enrichment_analysis", path="workflow/Snakefile", tag="v2.0.3")
     config:
         config_wf["CorcesRNA_enrichment_analysis"]
 

@@ -23,10 +23,10 @@ workflows:
     CorcesATAC:
         fetch_ngs: "config/CorcesATAC/CorcesATAC_fetch_ngs_config.yaml"
         atacseq_pipeline: "config/CorcesATAC/CorcesATAC_atacseq_pipeline_config.yaml"
-    #     genome_tracks: "config/CorcesATAC/CorcesATAC_genome_tracks_config.yaml"
-    #     spilterlize_integrate: "config/CorcesATAC/CorcesATAC_spilterlize_integrate_config.yaml"
-    #     unsupervised_analysis: "config/CorcesATAC/CorcesATAC_unsupervised_analysis_config.yaml"
-    #     dea_limma: "config/CorcesATAC/CorcesATAC_dea_limma_config.yaml"
-    #     enrichment_analysis: "config/CorcesATAC/CorcesATAC_enrichment_analysis_config.yaml"
+        genome_tracks: "config/CorcesATAC/CorcesATAC_genome_tracks_config.yaml"
+        spilterlize_integrate: "config/CorcesATAC/CorcesATAC_spilterlize_integrate_config.yaml"
+        unsupervised_analysis: "config/CorcesATAC/CorcesATAC_unsupervised_analysis_config.yaml"
+        dea_limma: "config/CorcesATAC/CorcesATAC_dea_limma_config.yaml"
+        enrichment_analysis: "config/CorcesATAC/CorcesATAC_enrichment_analysis_config.yaml"
         
 
