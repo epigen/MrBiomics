@@ -21,7 +21,6 @@ configfile: os.path.join("config","config.yaml")
 ##### utility functions #####
 # prepare configs for all workflows and datasets
 config_wf = dict()
-
 for ds in config["workflows"]:
     for wf in config["workflows"][ds]:
         with open(config["workflows"][ds][wf], 'r') as stream:
@@ -67,7 +66,6 @@ rule all:
         # rules.CorcesRNA_reconstruct_lineage.output, # custom rule
         # rules.CorcesRNA_plots.output, # custom rule
     default_target: True # important for module usage
-    params:
     threads: 1
     resources:
         mem_mb=8000,
