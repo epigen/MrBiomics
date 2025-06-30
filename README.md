@@ -17,8 +17,10 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 > [!NOTE]  
 > Altogether this enables complex, portable, transparent, reproducible, and documented analyses of multi-mics data at scale.
 
-# 🧠 Systematic Functional Knowledge Management
-**Systematic Functional Knowledge Management (SFKM)** is our knowledge-management approach in which validated best practices are captured as executable software functions, modules, or recipes.
+# 🧠 Functional Knowledge Management
+> _"The best documentation is automation."_ - Wise Person on the Internet
+
+**Functional Knowledge Management (FKM)** is our knowledge-management approach in which validated best practices are captured as executable software functions, modules, or recipes.
 - Each artefact simultaneously **documents** the know-how and **performs** the task, creating a living, testable, and composable code collection that closes the gap between theory and practice.
 - Rigorous **modularity and version control** keep every function self-contained, tested, and repository-tracked, enabling safe reuse and continuous evolution.
 - As a **compounding asset base** new functions can be built on earlier ones, steadily expanding an ever-richer compendium of trusted solutions.
