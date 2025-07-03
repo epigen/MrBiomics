@@ -66,7 +66,7 @@ use rule * from CorcesATAC_spilterlize_integrate as CorcesATAC_spilterlize_integ
 ### CorcesATAC - Unsupervised Analysis ####
 module CorcesATAC_unsupervised_analysis:
     snakefile:
-        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.2")
+        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.3")
     config:
         config_wf["CorcesATAC_unsupervised_analysis"]
 
@@ -75,7 +75,7 @@ use rule * from CorcesATAC_unsupervised_analysis as CorcesATAC_unsupervised_anal
 #### CorcesATAC - Differential Accessibility Analysis #### 
 module CorcesATAC_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", branch="main")
+        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.3")
     config:
         config_wf["CorcesATAC_dea_limma"]
 
@@ -156,15 +156,18 @@ CorcesATAC_plots_map = {
     "normCQN_integrated_HVF_PCA.png": "results/CorcesATAC/unsupervised_analysis/normCQN_integrated_HVF/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
     "normCQN_integrated_UMAP.png": "results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
     "normCQN_integrated_HVF_UMAP.png": "results/CorcesATAC/unsupervised_analysis/normCQN_integrated_HVF/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
+    "dea_stats.png": "results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/plots/stats.png",
     "markerGenes.png": "results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/plots/heatmap/markerGenes.png",
     "Bcell_up_ReactomePathways.png": "results/CorcesATAC/enrichment_analysis/Bcell_up/GREAT/ReactomePathways/Bcell_up_ReactomePathways.png",
     "Bcell_up_Azimuth_2023.png": "results/CorcesATAC/enrichment_analysis/Bcell_up/GREAT/Azimuth_2023/Bcell_up_Azimuth_2023.png",
-    "cell_types_Azimuth_2023_summary.png": "results/CorcesATAC/enrichment_analysis/cell_types/GREAT/Azimuth_2023/cell_types_Azimuth_2023_summary.png",
-    "cell_types_ReactomePathways_summary.png": "results/CorcesATAC/enrichment_analysis/cell_types/GREAT/ReactomePathways/cell_types_ReactomePathways_summary.png",
+    "cell_types_Azimuth_2023_summary.png": "results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_summary.png",
+    "cell_types_ReactomePathways_summary.png": "results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/ReactomePathways/cell_types_up_ReactomePathways_summary.png",
     "crossprediction_graph.png": "results/CorcesATAC/special_analyses/crossprediction/graph.png",
 }
 
 # Copy input to outputs to include the plots in the repo and wiki
+# This rule can only be used for docs after all results (including untracked ones: volcano and unsuervised analysis plots)
+# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
 rule CorcesATAC_plots:
     input:
         [CorcesATAC_plots_map[plot] for plot in CorcesATAC_plots_map]

@@ -1,0 +1,3 @@
+﻿name,data,metadata,samples_by_features
+normCQN_integrated,results/CorcesATAC/spilterlize_integrate/all/normCQN_integrated.csv,results/CorcesATAC/spilterlize_integrate/all/annotation.csv,0
+normCQN_integrated_HVF,results/CorcesATAC/spilterlize_integrate/all/normCQN_integrated_HVF.csv,results/CorcesATAC/spilterlize_integrate/all/annotation.csv,0

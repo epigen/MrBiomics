@@ -1,0 +1,61 @@
+
+##### RESOURCES #####
+# memory (mem) in MB
+mem: '4000'
+threads: 1
+
+##### GENERAL #####
+project_name: CorcesATAC
+result_path: results/CorcesATAC/
+sample_annotation: config/CorcesATAC/CorcesATAC_genome_tracks_annotation.csv
+email: sreichl@cemm.at # used for UCSC hub generation
+
+##### PROCESSING #####
+# genome label for UCSC hub (hg38, mm10) and IGV-report
+genome: "hg38"
+
+# bigWig coverage generation using deepTools::bamCoverage
+# https://deeptools.readthedocs.io/en/develop/content/tools/bamCoverage.html
+# recommendation for RNA-seq: "-p max --binSize 10  --normalizeUsing RPGC --effectiveGenomeSize 2407883318"
+# recommendation for ATAC-seq: "-p max --binSize 10  --normalizeUsing RPGC --effectiveGenomeSize 2407883318 --extendReads 175"
+# genome sizes (https://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html): hg38=2747877777, mm10=2407883318 
+bamCoverage_parameters: "-p max --binSize 10  --normalizeUsing RPGC --effectiveGenomeSize 2747877777 --extendReads 175"
+
+##### TRACK ANNOTATION #####
+# comma separated table (CSV) where each line is either a gene name (e.g., Tmem26) or a genomic region (e.g., chr4:88521700-88524300)
+# columns: gene_region, ymax (y-axis scale of plotted tracks, if 0 auto-scale is used)
+gene_list: config/CorcesATAC/CorcesATAC_genome_tracks_marker_genes.csv
+
+# 12 column BED file annotation of the respective genome used for the annotation of the track (*.gz)
+# e.g., for mm10 from UCSC as gzip https://genome.ucsc.edu/cgi-bin/hgTables assembly:mm10 -> track:NCBI RefSeq -> table:refFlat; output format: BED
+genome_bed: resources/hg38_refseq_geneSymbol.bed.gz
+
+##### VISUALIZATION using gtracks powered by pyGenomeTracks #####
+
+# position of x-axis
+x_axis: 'bottom'
+
+#  width of plot in cm (default: 40)
+width: 20
+
+# how many bases up- & downstream of start/end of a gene more to plot (e.g., to see accessible promoters)
+base_buffer: 2000
+
+# file type of the plot, options are "svg","pdf","png"
+file_type: "svg"
+
+# define custom colors (in HEX) for groups from the annotation file
+track_colors:
+    HSC: "#007BFF"
+    MPP: "#17A2B8"
+    LMPP: "#B19CD9"
+    CMP: "#B8860B"
+    GMP: "#D2691E"
+    MEP: "#FA8072"
+    CLP: "#8A2BE2"
+    Bcell: "#800080"
+    CD4Tcell: "#28A745"
+    NKcell: "#40E0D0"
+    CD8Tcell: "#FD7E14"
+    Mono: "#6C757D"
+    Ery: "#DC3545"

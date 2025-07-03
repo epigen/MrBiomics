@@ -42,7 +42,7 @@ use rule * from CorcesRNA_spilterlize_integrate as CorcesRNA_spilterlize_integra
 ### CorcesRNA - Unsupervised Analysis ####
 module CorcesRNA_unsupervised_analysis:
     snakefile:
-        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.2")
+        github("epigen/unsupervised_analysis", path="workflow/Snakefile", tag="v3.0.3")
     config:
         config_wf["CorcesRNA_unsupervised_analysis"]
 
@@ -105,6 +105,7 @@ CorcesRNA_plots_map = {
     "normCQN_integrated_HVF_PCA.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/PCA/plots/PCA_auto_0.9_2/metadata/cell_type.png",
     "normCQN_integrated_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
     "normCQN_integrated_HVF_UMAP.png": "results/CorcesRNA/unsupervised_analysis/normCQN_integrated_HVF/UMAP/plots/UMAP_correlation_15_0.1_2/metadata/cell_type.png",
+    "dea_stats.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/stats.png",
     "markerGenes.png": "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/plots/heatmap/markerGenes.png",
     "Bcell_ReactomePathways.png": "results/CorcesRNA/enrichment_analysis/Bcell/preranked_GSEApy/ReactomePathways/Bcell_ReactomePathways.png",
     "Bcell_Azimuth_2023.png": "results/CorcesRNA/enrichment_analysis/Bcell/preranked_GSEApy/Azimuth_2023/Bcell_Azimuth_2023.png",
@@ -114,6 +115,8 @@ CorcesRNA_plots_map = {
 }
 
 # Copy input to outputs to include the plots in the repo and wiki
+# This rule can only be used for docs after all results (including untracked ones: volcano and unsuervised analysis plots)
+# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
 rule CorcesRNA_plots:
     input:
         [CorcesRNA_plots_map[plot] for plot in CorcesRNA_plots_map]

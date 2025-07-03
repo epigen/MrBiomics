@@ -1,0 +1,77 @@
+sample_name,read_type,bam_file,pass_qc,donor,cell_type,cell_type_details,library,read_count,base_count
+CMP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920469/SRR2920469.bam,1,D4983,CMP,common myeloid progenitor cell,ATAC,8275087,1257813224
+LMPP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920480/SRR2920480.bam,1,D6792,LMPP,lymphoid-primed multipotent progenitor cell,ATAC,10215728,1552790656
+CMP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920482/SRR2920482.bam,1,D6792,CMP,common myeloid progenitor cell,ATAC,9834492,1494842784
+MEP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920486/SRR2920486.bam,1,D6792,MEP,megakaryocyte erythroid progenitor cell,ATAC,13266401,2016492952
+HSC_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920466/SRR2920466.bam,1,D4983,HSC,hematopoietic stem cell,ATAC,6641663,1009532776
+CD4Tcell_1022,paired,results/CorcesATAC/fetch_ngs/SRR2920493/SRR2920493.bam,1,D1022,CD4Tcell,CD4+ T cell,ATAC,33583059,5104624968
+MEP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920473/SRR2920473.bam,1,D4983,MEP,megakaryocyte erythroid progenitor cell,ATAC,8749675,1329950600
+MEP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920474/SRR2920474.bam,1,D4983,MEP,megakaryocyte erythroid progenitor cell,ATAC,8967537,1363065624
+HSC_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920478/SRR2920478.bam,1,D6792,HSC,hematopoietic stem cell,ATAC,7895647,1200138344
+CD8Tcell_1022,paired,results/CorcesATAC/fetch_ngs/SRR2920494/SRR2920494.bam,1,D1022,CD8Tcell,CD8+ T cell,ATAC,15367198,2335814096
+GMP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920484/SRR2920484.bam,1,D6792,GMP,granulocyte macrophage progenitor cell,ATAC,13622817,2070668184
+CD4Tcell_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920496/SRR2920496.bam,1,D2596,CD4Tcell,CD4+ T cell,ATAC,63898612,9712589024
+Mono_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920487/SRR2920487.bam,1,D6792,Mono,CD14+ monocyte cell,ATAC,17273209,2625527768
+CD8Tcell_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920497/SRR2920497.bam,1,D2596,CD8Tcell,CD8+ T cell,ATAC,61562673,9357526296
+CLP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920498/SRR2920498.bam,1,D2596,CLP,common lymphoid progenitor cell,ATAC,22529966,3424554832
+CLP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920499/SRR2920499.bam,1,D2596,CLP,common lymphoid progenitor cell,ATAC,28102534,4271585168
+MPP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920467/SRR2920467.bam,1,D4983,MPP,multipotent progenitor cell,ATAC,6716894,1020967888
+CMP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920500/SRR2920500.bam,1,D2596,CMP,common myeloid progenitor cell,ATAC,22113088,3361189376
+CMP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920501/SRR2920501.bam,1,D2596,CMP,common myeloid progenitor cell,ATAC,26536305,4033518360
+Ery_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920504/SRR2920504.bam,1,D2596,Ery,CD71+GPA+ erythroblast cell,ATAC,33185500,5044196000
+Ery_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920503/SRR2920503.bam,1,D2596,Ery,CD71+GPA+ erythroblast cell,ATAC,27956377,4249369304
+GMP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920505/SRR2920505.bam,1,D2596,GMP,granulocyte macrophage progenitor cell,ATAC,19179435,2915274120
+LMPP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920468/SRR2920468.bam,1,D4983,LMPP,lymphoid-primed multipotent progenitor cell,ATAC,7780622,1182654544
+HSC_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920507/SRR2920507.bam,1,D2596,HSC,hematopoietic stem cell,ATAC,32554743,4948320936
+HSC_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920506/SRR2920506.bam,1,D2596,HSC,hematopoietic stem cell,ATAC,19021030,2891196560
+MEP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920508/SRR2920508.bam,1,D2596,MEP,megakaryocyte erythroid progenitor cell,ATAC,24383309,3706262968
+CD4Tcell_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920514/SRR2920514.bam,1,D4983,CD4Tcell,CD4+ T cell,ATAC,29798855,4529425960
+MPP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920509/SRR2920509.bam,1,D2596,MPP,multipotent progenitor cell,ATAC,43285712,6579428224
+CMP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920470/SRR2920470.bam,1,D4983,CMP,common myeloid progenitor cell,ATAC,9573753,1455210456
+CD4Tcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920518/SRR2920518.bam,1,D5483,CD4Tcell,CD4+ T cell,ATAC,60287845,9163752440
+MPP_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920510/SRR2920510.bam,1,D2596,MPP,multipotent progenitor cell,ATAC,20498599,3115787048
+CD8Tcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920521/SRR2920521.bam,1,D5483,CD8Tcell,CD8+ T cell,ATAC,59302159,9013928168
+CD8Tcell_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920515/SRR2920515.bam,1,D4983,CD8Tcell,CD8+ T cell,ATAC,52130979,7923908808
+GMP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920471/SRR2920471.bam,1,D4983,GMP,granulocyte macrophage progenitor cell,ATAC,10252505,1558380760
+NKcell_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920516/SRR2920516.bam,1,D4983,NKcell,CD56+ natural killer cell,ATAC,57769214,8780920528
+Ery_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920524/SRR2920524.bam,1,D5483,Ery,CD71+GPA+ erythroblast cell,ATAC,23026105,3499967960
+Ery_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920523/SRR2920523.bam,1,D5483,Ery,CD71+GPA+ erythroblast cell,ATAC,9188238,1396612176
+Ery_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920525/SRR2920525.bam,1,D5483,Ery,CD71+GPA+ erythroblast cell,ATAC,15746018,2393394736
+NKcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920527/SRR2920527.bam,1,D5483,NKcell,CD56+ natural killer cell,ATAC,92460512,14053997824
+GMP_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920472/SRR2920472.bam,1,D4983,GMP,granulocyte macrophage progenitor cell,ATAC,11749982,1785997264
+NKcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920526/SRR2920526.bam,1,D5483,NKcell,CD56+ natural killer cell,ATAC,37807427,5746728904
+HSC_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920531/SRR2920531.bam,1,D7256,HSC,hematopoietic stem cell,ATAC,36104428,5487873056
+Ery_6926,paired,results/CorcesATAC/fetch_ngs/SRR2920530/SRR2920530.bam,1,D6926,Ery,CD71+GPA+ erythroblast cell,ATAC,10440482,1586953264
+LMPP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920535/SRR2920535.bam,1,D7256,LMPP,lymphoid-primed multipotent progenitor cell,ATAC,32513287,4942019624
+GMP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920539/SRR2920539.bam,1,D7256,GMP,granulocyte macrophage progenitor cell,ATAC,30007615,4561157480
+Mono_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920475/SRR2920475.bam,1,D4983,Mono,CD14+ monocyte cell,ATAC,8395656,1276139712
+MPP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920533/SRR2920533.bam,1,D7256,MPP,multipotent progenitor cell,ATAC,41791419,6352295688
+CLP_6926,paired,results/CorcesATAC/fetch_ngs/SRR2920545/SRR2920545.bam,1,D6926,CLP,common lymphoid progenitor cell,ATAC,4928791,749176232
+MPP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920534/SRR2920534.bam,1,D7256,MPP,multipotent progenitor cell,ATAC,76762579,11667912008
+Mono_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920476/SRR2920476.bam,1,D4983,Mono,CD14+ monocyte cell,ATAC,7632703,1160170856
+CMP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920537/SRR2920537.bam,1,D7256,CMP,common myeloid progenitor cell,ATAC,17951031,2728556712
+HSC_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920477/SRR2920477.bam,1,D6792,HSC,hematopoietic stem cell,ATAC,7604964,1155954528
+MEP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920541/SRR2920541.bam,1,D7256,MEP,megakaryocyte erythroid progenitor cell,ATAC,26766200,4068462400
+MPP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920479/SRR2920479.bam,1,D6792,MPP,multipotent progenitor cell,ATAC,7089678,1077631056
+CMP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920481/SRR2920481.bam,1,D6792,CMP,common myeloid progenitor cell,ATAC,12161870,1848604240
+GMP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920483/SRR2920483.bam,1,D6792,GMP,granulocyte macrophage progenitor cell,ATAC,15084431,2292833512
+MEP_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920485/SRR2920485.bam,1,D6792,MEP,megakaryocyte erythroid progenitor cell,ATAC,17273017,2625498584
+Mono_6792,paired,results/CorcesATAC/fetch_ngs/SRR2920488/SRR2920488.bam,1,D6792,Mono,CD14+ monocyte cell,ATAC,16325737,2481512024
+Bcell_1022,paired,results/CorcesATAC/fetch_ngs/SRR2920492/SRR2920492.bam,1,D1022,Bcell,CD19+CD20+ B cell,ATAC,25150438,3822866576
+Ery_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920502/SRR2920502.bam,1,D2596,Ery,CD71+GPA+ erythroblast cell,ATAC,53301506,8101828912
+NKcell_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920511/SRR2920511.bam,1,D2596,NKcell,CD56+ natural killer cell,ATAC,62549367,9507503784
+NKcell_2596,paired,results/CorcesATAC/fetch_ngs/SRR2920512/SRR2920512.bam,1,D2596,NKcell,CD56+ natural killer cell,ATAC,42398834,6444622768
+Bcell_4983,paired,results/CorcesATAC/fetch_ngs/SRR2920513/SRR2920513.bam,1,D4983,Bcell,CD19+CD20+ B cell,ATAC,63237048,9612031296
+Bcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920517/SRR2920517.bam,1,D5483,Bcell,CD19+CD20+ B cell,ATAC,55052865,8368035480
+CD4Tcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920519/SRR2920519.bam,1,D5483,CD4Tcell,CD4+ T cell,ATAC,27563723,4189685896
+CD8Tcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920520/SRR2920520.bam,1,D5483,CD8Tcell,CD8+ T cell,ATAC,58968317,8963184184
+CLP_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920522/SRR2920522.bam,1,D5483,CLP,common lymphoid progenitor cell,ATAC,16486502,2505948304
+CLP_6926,paired,results/CorcesATAC/fetch_ngs/SRR2920528/SRR2920528.bam,1,D6926,CLP,common lymphoid progenitor cell,ATAC,14978904,2276793408
+Ery_6926,paired,results/CorcesATAC/fetch_ngs/SRR2920529/SRR2920529.bam,1,D6926,Ery,CD71+GPA+ erythroblast cell,ATAC,11448095,1740110440
+HSC_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920532/SRR2920532.bam,1,D7256,HSC,hematopoietic stem cell,ATAC,29829259,4534047368
+CMP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920536/SRR2920536.bam,1,D7256,CMP,common myeloid progenitor cell,ATAC,36089729,5485638808
+GMP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920538/SRR2920538.bam,1,D7256,GMP,granulocyte macrophage progenitor cell,ATAC,30091137,4573852824
+MEP_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920540/SRR2920540.bam,1,D7256,MEP,megakaryocyte erythroid progenitor cell,ATAC,28198132,4286116064
+Mono_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920542/SRR2920542.bam,1,D7256,Mono,CD14+ monocyte cell,ATAC,38321838,5824919376
+Mono_7256,paired,results/CorcesATAC/fetch_ngs/SRR2920543/SRR2920543.bam,1,D7256,Mono,CD14+ monocyte cell,ATAC,49133405,7468277560
+Bcell_5483,paired,results/CorcesATAC/fetch_ngs/SRR2920544/SRR2920544.bam,1,D5483,Bcell,CD19+CD20+ B cell,ATAC,13736056,2087880512

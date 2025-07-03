@@ -1,0 +1,60 @@
+
+##### RESOURCES #####
+mem: '32000'
+threads: 1
+
+##### GENERAL #####
+
+# absolute path to annotation file, specified in config/README.md
+annotation: config/CorcesATAC/CorcesATAC_dea_limma_annotation.csv
+
+# (optional) absolute path to a feature annotation file with the first column as the used features (eg ENSEMBLE IDs) and "column" the annotated name (eg gene symbols). If not used leave path empty "".
+feature_annotation:
+    path: results/CorcesATAC/atacseq_pipeline/counts/consensus_annotation.csv
+    column: "homer_Gene_Name"
+
+# absolute path to the result directory of the project/dataset
+result_path: results/CorcesATAC
+
+# project/dataset name, used only in the report
+project_name: CorcesATAC
+
+
+##### DEA #####
+
+# specifiy the reference levels that the comparisons are based on of all variables of interest here (eg treatment: "untreated").
+reference_levels:
+    treatment: ""
+
+##### AGGREGATION #####
+# score_formula is used to calculate a score for each gene and comparison (group) that can be used downstream e.g., for ranked GSEA
+# eval based score calculation -> eval(parse(text=" "))
+# DEA result dataframe is called: dea_results
+# available numerical columns: logFC; AveExpr; t; P.Value; adj.P.Val; B
+# common/popular example: "-log10(dea_results$P.Value)*sign(dea_results$logFC)"
+# if not used leave empty: ""
+score_formula: "-log10(dea_results$P.Value)*sign(dea_results$logFC)"
+
+# filters are applied to the DEA results, which contain all results, and used for downstream outputs (e.g., feature lists, LFC heatmaps).
+# R code of filter: (dea_results$adj.P.Val <= adj_pval) & (abs(dea_results$logFC) >= lfc) & (dea_results$AveExpr >= ave_expr)
+# minimum for absolute log2 fold change (lfc) is 0
+# minumum for the average expression (ave_expr) is -Inf
+filters:
+    adj_pval: 0.05
+    lfc: 1
+    ave_expr: 0
+
+##### VISUALIZATION #####
+
+# parameters for volcano plots powered by EnhancedVolcano (https://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html)
+volcano:
+    pCutoff: 0.05
+    FCcutoff: 1
+
+# path(s) to feature lists as plain text files (.txt) with one gene per line.
+# if feature_annotation is provided then the provided feature names are expected, otherwise the features from the input data frame are used.
+# used to highlight features in volcano plots and generate LFC clustered heatmaps
+# only use camelCase for the feature_list names like in the examples below.
+# if not used: put an empty entry e.g., noGenes: ""
+feature_lists:
+    markerGenes: "resources/hematopoietic_marker_genes.txt"

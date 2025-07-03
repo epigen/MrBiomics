@@ -1,0 +1,105 @@
+# provide at least one parameter per option (no empty fields allowed)
+
+##### RESOURCES #####
+# memory in MB
+mem: '32000'
+threads: 2
+
+##### GENERAL #####
+annotation: config/CorcesATAC/CorcesATAC_unsupervised_analysis_annotation.csv
+result_path: results/CorcesATAC/
+project_name: CorcesATAC
+
+##### PCA #####
+# https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
+# especially relevant for large data
+pca:
+    n_components: 0.9 # variance as float (0-1], number of components as int e.g., 50, or 'mle'
+    svd_solver: 'auto' # options: ‘auto’, ‘full’, ‘covariance_eigh’, ‘arpack’, ‘randomized’
+
+##### UMAP & densMAP #####
+# https://umap-learn.readthedocs.io/en/latest/parameters.html
+# umap knn-graph will be generated for each metric once with the max(n_neighbors)
+# knn-graph parameters: metrics (default: euclidean), n_neighbors (default: 15)
+# embedding parameters: min_dist  (default: 0.1), n_components (default: 2)
+# densmap flag: perform densMAP  (0==no, 1==yes) on top of UMAP with all parameter combinations (https://umap-learn.readthedocs.io/en/latest/densmap_demo.html)
+# connectivity visualization flag (0==no, 1==yes), computational expensive (slow), recommendation 0 for exploration and 1 for validation
+umap:
+    metrics: ['correlation']
+    n_neighbors: [15]
+    min_dist: [0.1]
+    n_components: [2,3]
+    densmap: 1
+    connectivity: 1
+    diagnostics: 1
+
+##### HEATMAP #####
+# information on the ComplexHeatmap parameters: https://jokergoo.github.io/ComplexHeatmap-reference/book/index.html
+# distance metrics: for rows and columns. all metrics that are supported by scipy.spatial.distance.pdist (https://docs.scipy.org/doc/scipy-1.14.0/reference/generated/scipy.spatial.distance.pdist.html)
+# clustering methods: methods for hierarchical clustering that are supported by fastcluster's R implementation (https://danifold.net/fastcluster.html)
+# it is the most resource (memory) intensive method, leave empty [] if not required
+heatmap:
+    metrics: []
+    hclust_methods: ['complete']
+    n_observations: 1 # random sampled proportion float (0-1] or absolute number as integer
+    n_features: 0.5 # highly variable features proportion float (0-1] or absolute number as integer
+    
+##### LEIDEN #####
+# Leiden clustering applied on UMAP KNN graphs specified by the respective parameters (metric, n_neighbors).
+# Leiden algorithm specific parameters (partition_types, resolutions, n_iterations) -> https://leidenalg.readthedocs.io/en/stable/index.html
+# To skip Leiden clustering, leave the "metrics" parameter empty i.e., []
+leiden:
+    metrics: [] # has to be a subset of above's UMAP parameters
+    n_neighbors: [15] # has to be a subset of above's UMAP parameters
+    partition_types: ["RBConfigurationVertexPartition", "ModularityVertexPartition"]
+    resolutions: [0.5,1,1.5,2,4] # only used for relevant partition_types
+    n_iterations: 2 # default: 2; -1 until convergence
+
+##### clustification #####
+# ML-based clustering approach that iteratively merges clusters based on misclassification.
+# Doesn't support externally provided clusterings.
+clustification:
+    method: "" # starting clustering result method, options: "Leiden"
+
+##### clustree #####
+# Cluster analysis and visualization using clustree: https://lazappi.github.io/clustree/index.html
+# Clustree specific parameters (count_filter, prop_filter, layout): https://lazappi.github.io/clustree/reference/clustree.html
+# Will be skipped if no clustering results are available
+clustree:
+    count_filter: 0 # default: 0
+    prop_filter: 0.1 # default: 0.1
+    layout: "tree"  # options: "tree" or "sugiyama"
+    categorical_label_option: "majority" # aggregation function for categorical metadata, options: "pure" or "majority"
+    numerical_aggregation_option: "mean" # aggregation function for numerical metadata, options: mean, median, max, min
+
+##### cluster validation ####
+# Cluster validation using internal cluster indices is computationally very expensive.
+# To reduce complexity and increase performance a proportion of samples can be used for the internal cluster evaluation.
+# Internal cluster validation can be skipped with 0.
+sample_proportion: 1 # float [0-1], >500 samples should be included.
+
+##### categorical metadata column used in the following analyses:
+# - PCA pairs plot (first entry only)
+# - ComplexHeatmaps annotation (first entry only)
+# - clustree custom plot (visualizes categorical metadata interpreted as clusterings)
+# - internal cluster validation (categorical metadata interpreted as clusterings)
+# Can be empty [], then the first column of the metadata dataframe will be taken.
+metadata_of_interest: ["cell_type"]
+    
+##### VISUALIZATION #####
+# flag if coordinates should be fixed in 2D plots by +coord_fixed() (0==no, 1==yes) 
+# https://ggplot2.tidyverse.org/reference/coord_fixed.html
+coord_fixed: 0
+
+# 2D/3D visualization with ggplot2 and plotly
+# for more than 200 datapoints it is recommended to reduce size to 0.1
+scatterplot2d:
+    size: 1
+    alpha: 1
+
+# specify features of interest. these features from the data, will be highlighted in the 2D/3D plots
+# motivated by bioinformatics highlighting expression levels of marker genes (eg: ['PTPRC','STAT1','IRF8'])
+# use keyword ['ALL'] to plot all features. WARNING: Only useful for relatively low dimensional data, a plot is generated for each feature and method.
+# if not used leave empty []
+features_to_plot: []
+

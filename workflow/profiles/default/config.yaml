@@ -1,6 +1,6 @@
 default-resources:
-    slurm_partition: tinyq
-    slurm_extra: "'--qos=tinyq'"
+    slurm_partition: shortq
+    slurm_extra: "'--qos=shortq'"
 # for fetch_ngs
 resources:
     parallel_downloads: 3

@@ -33,7 +33,7 @@ for ds in config["workflows"]:
 ##### load rules (one per dataset) #####
 # include: os.path.join("rules", "quickstart.smk")
 # include: os.path.join("rules", "digits.smk")
-# include: os.path.join("rules", "CorcesRNA.smk")
+include: os.path.join("rules", "CorcesRNA.smk")
 include: os.path.join("rules", "CorcesATAC.smk")
 
 
@@ -54,17 +54,17 @@ rule all:
         rules.CorcesATAC_dea_limma_all.input,
         rules.CorcesATAC_enrichment_analysis_all.input,
         rules.CorcesATAC_reconstruct_lineage.output, # custom rule
-        rules.CorcesATAC_plots.output, # custom rule
+        rules.CorcesATAC_plots.output, # custom rule used only for docs
         #### RNA-seq Analysis Recipe (CorcesRNA) ####
-        # rules.CorcesRNA_fetch_ngs_all.input,
-        # rules.CorcesRNA_rnaseq_pipeline_all.input,
-        # rules.CorcesRNA_genome_tracks_all.input,
-        # rules.CorcesRNA_spilterlize_integrate_all.input,
-        # rules.CorcesRNA_unsupervised_analysis_all.input,
-        # rules.CorcesRNA_dea_limma_all.input,
-        # rules.CorcesRNA_enrichment_analysis_all.input,
-        # rules.CorcesRNA_reconstruct_lineage.output, # custom rule
-        # rules.CorcesRNA_plots.output, # custom rule
+        rules.CorcesRNA_fetch_ngs_all.input,
+        rules.CorcesRNA_rnaseq_pipeline_all.input,
+        rules.CorcesRNA_genome_tracks_all.input,
+        rules.CorcesRNA_spilterlize_integrate_all.input,
+        rules.CorcesRNA_unsupervised_analysis_all.input,
+        rules.CorcesRNA_dea_limma_all.input,
+        rules.CorcesRNA_enrichment_analysis_all.input,
+        rules.CorcesRNA_reconstruct_lineage.output, # custom rule
+        rules.CorcesRNA_plots.output, # custom rule used only for docs
     default_target: True # important for module usage
     threads: 1
     resources:
