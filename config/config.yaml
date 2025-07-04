@@ -28,3 +28,8 @@ workflows:
         unsupervised_analysis: "config/CorcesATAC/CorcesATAC_unsupervised_analysis_config.yaml"
         dea_limma: "config/CorcesATAC/CorcesATAC_dea_limma_config.yaml"
         enrichment_analysis: "config/CorcesATAC/CorcesATAC_enrichment_analysis_config.yaml"
+    CorcesINT:
+        spilterlize_integrate: "config/CorcesINT/CorcesINT_spilterlize_integrate_config.yaml"
+        unsupervised_analysis: "config/CorcesINT/CorcesINT_unsupervised_analysis_config.yaml"
+        # dea_limma: "config/CorcesINT/CorcesINT_dea_limma_config.yaml"
+        # enrichment_analysis: "config/CorcesINT/CorcesINT_enrichment_analysis_config.yaml"

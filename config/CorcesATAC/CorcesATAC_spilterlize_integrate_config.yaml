@@ -28,8 +28,8 @@ split_by: []
 # https://rdrr.io/bioc/edgeR/man/filterByExpr.html
 filter_parameters:
     group: "cell_type" # "NULL"; group has to be a column in annotation
-    min.count: 50 # 10
-    min.total.count: 15 # 15
+    min.count: 100 # 10
+    min.total.count: 50 # 15
     large.n: 10 # 10
     min.prop: 1 # 0.7
 

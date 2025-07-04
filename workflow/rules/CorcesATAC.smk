@@ -1,4 +1,4 @@
-# ATAC-seq Analysis Recipe for the healthy hematopoeitic ATAC-seq samples 
+# ATAC-seq Analysis Recipe applied to healthy hematopoeitic ATAC-seq samples 
 # from Corces et al. 2016 Nature Genetics (https://www.nature.com/articles/ng.3646)
 # Subset of GEO SuperSeries: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75384
 # Subset of GEO SuperSeries for ATAC-seq: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE74912

@@ -1,4 +1,4 @@
-# RNA-seq Analysis Recipe for the healthy hematopoeitic RNA-seq samples 
+# RNA-seq Analysis Recipe applied to healthy hematopoeitic RNA-seq samples 
 # from Corces et al. 2016 Nature Genetics (https://www.nature.com/articles/ng.3646)
 # Subset of GEO SuperSeries: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75384
 # Subset of GEO SuperSeries for **unstranded** RNA: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE74246
