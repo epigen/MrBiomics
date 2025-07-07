@@ -120,3 +120,8 @@ Three components are required to use a module within your Snakemake workflow (i.
 
 # ⭐ Star History of Modules
 [![Star History Chart](https://api.star-history.com/svg?repos=epigen/atacseq_pipeline,epigen/unsupervised_analysis,epigen/enrichment_analysis,epigen/spilterlize_integrate,epigen/dea_limma,epigen/dea_seurat,epigen/scrnaseq_processing_seurat,epigen/mixscape_seurat,epigen/genome_tracks&type=Timeline)](https://star-history.com/#epigen/atacseq_pipeline&epigen/unsupervised_analysis&epigen/enrichment_analysis&epigen/spilterlize_integrate&epigen/dea_limma&epigen/dea_seurat&epigen/scrnaseq_processing_seurat&epigen/mixscape_seurat&epigen/genome_tracks&epigen/fetch_ngs&epigen/rnaseq_pipeline&Timeline)
+
+# 📑 Publications
+The following publications have successfully used MrBiomics modules (red) and/or recipes (blue) for thei analyses:
+- [Casteels et al. (2022) Cell Reports - SMNDC1 links chromatin remodeling and splicing to regulate pancreatic hormone expression.](https://doi.org/10.1016/j.celrep.2022.111288) [![ATAC-seq](https://img.shields.io/badge/ATAC%E2%80%90seq-red)](https://github.com/epigen/atacseq_pipeline/)
+- ...
