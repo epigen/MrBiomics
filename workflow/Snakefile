@@ -57,7 +57,7 @@ rule all:
         rules.CorcesRNA_plots.output, # custom rule used only for docs
         #### ATAC-seq Analysis Recipe (CorcesATAC) ####
         rules.CorcesATAC_fetch_ngs_all.input,
-        rules.CorcesATAC_get_resources.output,
+        rules.CorcesATAC_get_resources.output, # custom rule
         rules.CorcesATAC_atacseq_pipeline_all.input,
         rules.CorcesATAC_genome_tracks_all.input,
         rules.CorcesATAC_spilterlize_integrate_all.input,

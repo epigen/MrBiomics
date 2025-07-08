@@ -38,8 +38,7 @@ rule CorcesATAC_get_resources:
 ### CorcesATAC - ATAC-seq processing ####
 module CorcesATAC_atacseq_pipeline:
     snakefile:
-        "/home/sreichl/projects/atacseq_pipeline/workflow/Snakefile"
-        #github("epigen/atacseq_pipeline", path="workflow/Snakefile", tag="v2.0.2")
+        github("epigen/atacseq_pipeline", path="workflow/Snakefile", tag="v2.1.0")
     config:
         config_wf["CorcesATAC_atacseq_pipeline"]
 
@@ -145,7 +144,7 @@ rule CorcesATAC_reconstruct_lineage:
 #### CorcesATAC - Copy selected plots for documentation and visualization in wiki (custom rule) ####
 # Define the mapping of input to output files
 CorcesATAC_plots_map = {
-    # "sample_annotation.png": "results/CorcesATAC/atacseq_pipeline/report/sample_annotation.png",
+    "sample_annotation.png": "results/CorcesATAC/atacseq_pipeline/report/sample_annotation.png",
     "CD34.svg": "results/CorcesATAC/genome_tracks/tracks/CD34.svg",
     "MS4A1.svg": "results/CorcesATAC/genome_tracks/tracks/MS4A1.svg",
     "filtered.png": "results/CorcesATAC/spilterlize_integrate/all/plots/filtered.png",
@@ -166,7 +165,7 @@ CorcesATAC_plots_map = {
 }
 
 # Copy input to outputs to include the plots in the repo and wiki
-# This rule can only be used for docs after all results (including untracked ones: volcano and unsuervised analysis plots)
+# This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
 # have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
 rule CorcesATAC_plots:
     input:

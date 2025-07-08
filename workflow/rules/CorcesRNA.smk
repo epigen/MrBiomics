@@ -51,7 +51,7 @@ use rule * from CorcesRNA_unsupervised_analysis as CorcesRNA_unsupervised_analys
 #### CorcesRNA - Differential Expression Analysis #### 
 module CorcesRNA_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", branch="main")
+        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.3")
     config:
         config_wf["CorcesRNA_dea_limma"]
 
@@ -115,7 +115,7 @@ CorcesRNA_plots_map = {
 }
 
 # Copy input to outputs to include the plots in the repo and wiki
-# This rule can only be used for docs after all results (including untracked ones: volcano and unsuervised analysis plots)
+# This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
 # have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
 rule CorcesRNA_plots:
     input:
