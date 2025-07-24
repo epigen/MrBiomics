@@ -1,0 +1,94 @@
+
+##### RESOURCES #####
+# memory in MB
+mem: '32000'
+threads: 1
+
+##### GENERAL #####
+data: results/CorcesINT/counts.csv # path to the input count-matrix as CSV file, formatted as feature x sample (rows x columns); unique features and samples are required.
+annotation: config/CorcesINT/CorcesINT_spilterlize_integrate_annotation.csv # path to the input sample annotation as CSV file, formatted as sample x metadata (rows x columns) 
+result_path: results/CorcesINT # path to the output folder
+project_name: CorcesINT # name of the project/dataset
+
+# path to the feature annotation as CSV file, required for RPKM quantification (feature length) and CQN normalization (feature length, covariate), otherwise empty ""
+# formatted as feature x metadata (rows x columns)
+# column names used in the feature annotation file, can be used in the parameters of supported methods below e.g., for RPKM quantification or CQN normalization
+feature_annotation: ""
+
+##### SPLIT #####
+# metadata column(s) by which the data should be split.
+# to skip, leave empty i.e., []
+# top: combinatorial or arbitrarily complex splitting can be achieved by dedicated columns in the annotation file
+split_by: []
+
+##### FILTER #####
+# parameters for the function edgeR:filterByExpr, default are in comments
+# https://rdrr.io/bioc/edgeR/man/filterByExpr.html
+filter_parameters:
+    group: "cell_type_modality" # "NULL"; group has to be a column in annotation
+    min.count: 75 # 10
+    min.total.count: 15 # 15
+    large.n: 10 # 10
+    min.prop: 1 # 0.7
+
+##### NORMALIZE #####
+# method specific parameters, defaults are in the comments
+
+### edgeR
+# edgeR::CalcNormFactors -> https://rdrr.io/bioc/edgeR/man/calcNormFactors.html
+# edgeR::cpm/rpkm -> https://rdrr.io/bioc/edgeR/man/cpm.html
+# to skip leave method empty i.e., []
+edgeR_parameters:
+    method: ["TMM","upperquartile","none"] # "TMM","TMMwsp","RLE","upperquartile","none"
+    refColumn: "NULL" # "NULL"; used by TMM
+    logratioTrim: 0.3 # 0.3; used by TMM
+    sumTrim: 0.05 # 0.05; used by TMM
+    doWeighting: "TRUE" # "TRUE"; used by TMM
+    Acutoff: -10000000000 # -10000000000; used by TMM
+    p: 0.75 # 0.75; used by upperquartile
+    quantification: "CPM" # Compute counts per million ("CPM") or reads per kilobase per million ("RPKM").
+    log: "TRUE" # "TRUE"
+    prior.count: 2 # default: 2
+    gene.length: "length" # required for RPKM otherwise "", column name in feature annotation (specified above)
+
+### CQN (requires feature annotation, configured above)
+# cqn::cqn -> https://bioconductor.org/packages/release/bioc/html/cqn.html
+# to skip leave x empty i.e., ""
+cqn_parameters:
+    x: "" # covariate, column name in feature annotation
+    lengths: "" # column name in feature annotation
+    sizeFactors: "NULL" # "NULL" or column name in annotation
+    tau: 0.5 # 0.5, only change if expert
+    sqn: "TRUE" # "TRUE", only change if expert
+    lengthMethod: "smooth" # "smooth" or "fixed"
+
+### VOOM
+# limma::voom -> https://rdrr.io/bioc/limma/man/voom.html
+# use case: show the user how the data actually looks inside of a subsequent limma-voom differential analysis approach
+# to skip leave normalize.method empty i.e., ""
+voom_parameters:
+    calcNormFactors_method: "none" # "none"; options: any other supported method from edgeR::CalcNormFactors (parameters from above are used)
+    normalize.method: "quantile" # "none"; options: "scale", "quantile", "cyclicloess"
+    span: 0.5 # 0.5
+
+##### INTEGRATE #####
+
+### limma's removeBatchEffect
+# limma::removeBatchEffect -> https://rdrr.io/bioc/limma/man/removeBatchEffect.html
+# use case: remove unwanted (batch) effects from data, while desired effects are preserved, prior to downstream analyses e.g., dimensionality reduction with PCA/UMAP
+# to skip leave desired empty i.e., []
+removeBatchEffect_parameters:
+    norm_methods: ["TMM","VOOM","upperquartile"] # list of normalization outputs to be integrated; have to be configured above; options: "TMM","TMMwsp","RLE","upperquartile","CPM","RPKM","CQN","VOOM"
+    desired: ["cell_type"] # list of the column names of desired variation in annotation
+    unwanted_categorical: ["modality", "donor"] # list of maximal 2 column names of categorical variables of unwanted variation in annotation e.g., batch; leave empty [] if none
+    unwanted_numerical: [] # list of the column names of numerical variables of unwanted variation in annotation; leave empty [] if none
+
+##### Highly Variable Features (HVF) #####
+hvf_parameters:
+    top_percentage: 10 # percentage of top features to select
+    bins_n: 20 # number of bins to use for dispersion normalization
+
+##### VISUALIZE #####
+visualization_parameters:
+    annotate: ["modality", "cell_type"] # up to 2 columns in annotation to be visualized in PCA-, density- and boxplots e.g., batch or treatment; can be empty i.e., []
+    

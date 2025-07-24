@@ -6,9 +6,9 @@ mem: '32000'
 threads: 2
 
 ##### GENERAL #####
-annotation: config/CorcesRNA/CorcesRNA_unsupervised_analysis_annotation.csv
-result_path: results/CorcesRNA/
-project_name: CorcesRNA
+annotation: config/CorcesINT/CorcesINT_unsupervised_analysis_annotation.csv
+result_path: results/CorcesINT/
+project_name: CorcesINT
 
 ##### PCA #####
 # https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
@@ -85,7 +85,7 @@ sample_proportion: 1 # float [0-1], >500 samples should be included.
 # - internal cluster validation (categorical metadata interpreted as clusterings)
 # Can be empty [], then the first column of the metadata dataframe will be taken.
 metadata_of_interest: ["cell_type"]
-    
+
 ##### VISUALIZATION #####
 # flag if coordinates should be fixed in 2D plots by +coord_fixed() (0==no, 1==yes) 
 # https://ggplot2.tidyverse.org/reference/coord_fixed.html

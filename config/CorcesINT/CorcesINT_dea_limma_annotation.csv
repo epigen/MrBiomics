@@ -1,0 +1,2 @@
+﻿name,data,metadata,formula,block_var,comparisons,calcNormFactors_method,voom,eBayes,limma_trend,OvA
+normupperquartile_integrated,results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated.csv,results/CorcesINT/spilterlize_integrate/all/annotation.csv,~ 0 + cell_type + cell_type:modality,0,modality,0,0,1,1,

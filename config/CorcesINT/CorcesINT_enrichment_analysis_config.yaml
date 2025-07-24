@@ -1,0 +1,155 @@
+
+##### RESOURCES #####
+mem: '16000'
+threads: 1
+
+##### GENERAL #####
+annotation: config/CorcesINT/CorcesINT_enrichment_analysis_annotation.csv
+result_path: results/CorcesINT/
+project_name: CorcesINT
+
+# genome
+# human 'hg19' or 'hg38' 
+# mouse 'mm9' or 'mm10'
+genome: 'hg38'
+
+##### DATABASES #####
+## local databases as GMT (*.gmt) or JSON (*.json) files with gene symbols!
+# will be used by rGREAT for genomic regions and GSEApy (both ORA and preranked) for genes
+# GMT databases can be donwloaded from 
+#     MSigDB (http://www.gsea-msigdb.org/gsea/msigdb)
+#     Enrichr (https://maayanlab.cloud/Enrichr/#libraries)
+# JSON example content: { "MyDB_Term1": ["geneA","geneB","geneC"],"MyDB_Term2": ["geneX","geneY","geneZ"]}
+local_databases:
+    ReactomePathways: "resources/ReactomePathways.gmt"
+    GO_Biological_Process_2025: "resources/GO_Biological_Process_2025.gmt"
+
+## LOLA compatible region set databases
+# loaded using loadRegionDB() (https://code.databio.org/LOLA/reference/loadRegionDB.html)
+# download from the docs or create your own: https://databio.org/regiondb
+# pre-cached .RData files are supported by simpleCache
+# provide the exact path to the folder containing the collections e.g., "resources/LOLACore/hg38"
+lola_databases:
+    LOLACore: ""
+
+##### TOOLS #####
+
+### GSEApy - ORA Enrichr (Fisher/hypergeometric test) and preranked GSEA based analysis
+
+### LOLA - region overlap based analysis
+
+### GREAT - region-gene association based analysis
+# https://jokergoo.github.io/rGREAT/reference/great.html
+great_parameters:
+    min_gene_set_size: 0 #default: 5
+    mode: "basalPlusExt" # options: 'basalPlusExt', 'twoClosest', 'oneClosest'
+    basal_upstream: 5000 # used in 'basalPlusExt' mode
+    basal_downstream: 1000 # used in 'basalPlusExt' mode
+    extension: 1000000
+
+### pycisTarget - region based Transcription Factor Binding Site (TFBS) motif enrichment analysis
+# https://pycistarget.readthedocs.io/en/latest/index.html
+# resources: https://resources.aertslab.org/cistarget/
+# instructions for custom cisTarget databases using your own regions (e.g., conensus regions or TF ChIP-seq data): https://github.com/aertslab/create_cisTarget_databases
+# instructions for hg19 database here: https://github.com/aertslab/pycistarget/issues/37
+pycistarget_parameters:
+    databases:
+        hg38_screen_v10clust: ""
+    path_to_motif_annotations: "path/to/motif2tf_file.tbl"
+    temp_dir: "tmp" # should have space available
+    fraction_overlap_w_cistarget_database: 0.4 # default 0.4
+    auc_threshold: 0.005 # default 0.005
+    nes_threshold: 3 # default 3
+    rank_threshold: 0.05 # default 0.05
+    annotation_version: "v10nr_clust"
+    annotations_to_use: ["Direct_annot", "Motif_similarity_annot", "Orthology_annot", "Motif_similarity_and_Orthology_annot"] # the first entry of the list is used downstream for annotation
+    motif_similarity_fdr: 0.001 # default 0.001
+    orthologous_identity_threshold: 0 # default 0
+
+### RcisTarget - gene based Transcription Factor Binding Site (TFBS) motif enrichment analysis
+# https://www.bioconductor.org/packages/release/bioc/html/RcisTarget.html
+# resources: https://resources.aertslab.org/cistarget/
+rcistarget_parameters:
+    databases:
+        hg38_500bp_up_100bp_down_v10clust: "resources/CorcesINT/enrichment_analysis/hg38_500bp_up_100bp_down_full_tx_v10_clust.genes_vs_motifs.rankings.feather"
+    motifAnnot: "resources/CorcesINT/enrichment_analysis/motifs-v10nr_clust-nr.hgnc-m0.001-o0.0.tbl"
+    motifAnnot_highConfCat: ["directAnnotation", "inferredBy_Orthology"]
+    motifAnnot_lowConfCat: ["inferredBy_MotifSimilarity", "inferredBy_MotifSimilarity_n_Orthology"]
+    nesThreshold: 3
+    aucMaxRank_factor: 0.05 # used for aucMaxRank = aucMaxRank_factor * ncol(motifRankings)
+    geneErnMethod: "aprox" # alternatively, exact but more computationally intense: "icistarget"
+    geneErnMaxRank: 5000
+
+### Enrichment plot
+
+# tool specific column names for aggregation, plotting & summaries
+column_names:
+    ORA_GSEApy:
+        top_n: 25
+        p_value: 'P_value'
+        adj_pvalue: 'Adjusted_P_value'
+        effect_size: 'Odds_Ratio'
+        overlap: 'Overlap'
+        term: 'Term'
+    preranked_GSEApy:
+        top_n: 25
+        p_value: 'NOM_p_val'
+        adj_pvalue: 'FDR_q_val'
+        effect_size: 'NES'
+        overlap: 'Tag'
+        term: 'Term'
+    GREAT:
+        top_n: 25
+        p_value: "p_value_hyper" # or binomial test result: p_value
+        adj_pvalue: "p_adjust_hyper" # or binomial test result: p_adjust
+        effect_size: "fold_enrichment_hyper" # or binomial test result: fold_enrichment
+        overlap: "observed_region_hits" # or binomial test result: observed_gene_hits
+        term: "description"
+    LOLA:
+        top_n: 25
+        p_value: "pValue"
+        adj_pvalue: "qValue"
+        effect_size: "oddsRatio"
+        overlap: "support"
+        term: "description"
+    pycisTarget:
+        top_n: 25
+        p_value: "AUC"
+        adj_pvalue: "NES"
+        effect_size: "NES" # NES combines statistical significance and effect size
+        overlap: "Motif_hits"
+        term: "description" # a combination of the motif name and the first entry of aboves "annotations_to_use" list
+    RcisTarget:
+        top_n: 25
+        p_value: "AUC"
+        adj_pvalue: "NES"
+        effect_size: "NES" # NES combines statistical significance and effect size
+        overlap: "nEnrGenes"
+        term: "description" # a combination of the motif name and the motifAnnot_highConfCat entries
+
+##### AGGREGATE & SUMMARIZE #####
+
+# adjusted p-value threshold per tool to denote statistical significance
+adjp_th:
+    ORA_GSEApy: 0.05
+    preranked_GSEApy: 0.05
+    GREAT: 0.01
+    LOLA: 0.01
+    pycisTarget: 5 # keep results greater(!) than provided threshold
+    RcisTarget: 5 # keep results greater(!) than provided threshold
+
+# number of top terms per feature set within each group for all overview plots (adjusted p-value, effect-size and bubble-heatmap)
+top_terms_n: 1
+
+# cap for adjusted p-value plotting: -log10(adjusted p-value) > adjp_cap -> adjp_cap
+adjp_cap: 4
+
+# cap for log2 odds ratio plotting: abs(log2(odds ratio)) > or_cap -> sign(log2(odds ratio)) * or_cap
+or_cap: 5
+
+# cap for  normalized enrichemnt scores (NES) abs(nes) > nes_cap -> sign(nes) * nes_cap
+# applied only to preranked_GSEApy
+nes_cap: 5
+
+# hierarchical cluster flag for summary plots (0=no; 1=yes)
+cluster_summary: 1

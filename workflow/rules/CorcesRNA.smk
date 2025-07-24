@@ -51,7 +51,7 @@ use rule * from CorcesRNA_unsupervised_analysis as CorcesRNA_unsupervised_analys
 #### CorcesRNA - Differential Expression Analysis #### 
 module CorcesRNA_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.3")
+        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.2.0")
     config:
         config_wf["CorcesRNA_dea_limma"]
 

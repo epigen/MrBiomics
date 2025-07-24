@@ -28,8 +28,8 @@ umap:
     metrics: ['correlation']
     n_neighbors: [15]
     min_dist: [0.1]
-    n_components: [2,3]
-    densmap: 1
+    n_components: [2]
+    densmap: 0
     connectivity: 1
     diagnostics: 1
 
@@ -102,4 +102,3 @@ scatterplot2d:
 # use keyword ['ALL'] to plot all features. WARNING: Only useful for relatively low dimensional data, a plot is generated for each feature and method.
 # if not used leave empty []
 features_to_plot: []
-

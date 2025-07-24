@@ -74,7 +74,7 @@ use rule * from CorcesATAC_unsupervised_analysis as CorcesATAC_unsupervised_anal
 #### CorcesATAC - Differential Accessibility Analysis #### 
 module CorcesATAC_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.1.3")
+        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.2.0")
     config:
         config_wf["CorcesATAC_dea_limma"]
 

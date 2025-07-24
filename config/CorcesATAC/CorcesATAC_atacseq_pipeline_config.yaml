@@ -53,8 +53,8 @@ tss_size: 100
 # assumed TSS proximal distance upstream/downstream (up/dn)
 # additionally, used for promoter region quantification and to map consensus regions to closest TSS
 # default of GenomicRanges::promoters(x, upstream=2000, downstream=200)
-proximal_size_up: 1000
-proximal_size_dn: 500
+proximal_size_up: 2000 #1000
+proximal_size_dn: 200 #500
 
 # distal distance 
 distal_size: 10000
