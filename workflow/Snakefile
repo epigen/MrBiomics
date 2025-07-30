@@ -70,6 +70,7 @@ rule all:
         rules.CorcesINT_spilterlize_integrate_all.input,
         rules.CorcesINT_unsupervised_analysis_all.input,
         rules.CorcesINT_dea_limma_all.input,
+        rules.CorcesINT_plot_correlation.output, # custom rule for divergent gene visualization
         rules.CorcesINT_enrichment_analysis_all.input,
         rules.CorcesINT_plots.output, # custom rule; use only for docs; commented
     default_target: True # important for module usage
