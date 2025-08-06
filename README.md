@@ -119,9 +119,11 @@ Three components are required to use a module within your Snakemake workflow (i.
     - [Singularity](https://docs.sylabs.io/guides/3.5/user-guide/index.html#) 
 
 # ⭐ Star History of Modules
-[![Star History Chart](https://api.star-history.com/svg?repos=epigen/atacseq_pipeline,epigen/unsupervised_analysis,epigen/enrichment_analysis,epigen/spilterlize_integrate,epigen/dea_limma,epigen/dea_seurat,epigen/scrnaseq_processing_seurat,epigen/mixscape_seurat,epigen/genome_tracks&type=Timeline)](https://star-history.com/#epigen/atacseq_pipeline&epigen/unsupervised_analysis&epigen/enrichment_analysis&epigen/spilterlize_integrate&epigen/dea_limma&epigen/dea_seurat&epigen/scrnaseq_processing_seurat&epigen/mixscape_seurat&epigen/genome_tracks&epigen/fetch_ngs&epigen/rnaseq_pipeline&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=epigen/atacseq_pipeline,epigen/unsupervised_analysis,epigen/enrichment_analysis,epigen/spilterlize_integrate,epigen/dea_limma,epigen/dea_seurat,epigen/scrnaseq_processing_seurat,epigen/mixscape_seurat,epigen/genome_tracks&type=Timeline)](https://star-history.com/#epigen/atacseq_pipeline&epigen/unsupervised_analysis&epigen/enrichment_analysis&epigen/spilterlize_integrate&epigen/dea_limma&epigen/dea_seurat&epigen/scrnaseq_processing_seurat&epigen/mixscape_seurat&epigen/genome_tracks&epigen/fetch_ngs&epigen/rnaseq_pipeline&Timeline)\
+Only 9/11 modules shown. Click on the image to see them all.
 
 # 📑 Publications
-The following publications have successfully used MrBiomics modules (red) and/or recipes (blue) for thei analyses:
-- [Casteels et al. (2022) Cell Reports - SMNDC1 links chromatin remodeling and splicing to regulate pancreatic hormone expression.](https://doi.org/10.1016/j.celrep.2022.111288) [![ATAC-seq](https://img.shields.io/badge/ATAC%E2%80%90seq-red)](https://github.com/epigen/atacseq_pipeline/)
+The following publications have successfully used MrBiomics Modules (red) and/or Recipes (blue):
+- [Casteels et al. (2022) Cell Reports - SMNDC1 links chromatin remodeling and splicing to regulate pancreatic hormone expression](https://doi.org/10.1016/j.celrep.2022.111288) [![ATAC-seq](https://img.shields.io/badge/ATAC%E2%80%90seq-red)](https://github.com/epigen/atacseq_pipeline/)
+- [Traxler, Reichl et al. (2025) Cell Systems - Integrated time-series analysis and high-content CRISPR screening delineate the dynamics of macrophage immune regulation](https://doi.org/10.1016/j.cels.2025.101346) [![ATAC-seq](https://img.shields.io/badge/ATAC%E2%80%90seq-red)](https://github.com/epigen/atacseq_pipeline/) [![Unsupervised Analysis](https://img.shields.io/badge/Unsupervised%20Analysis-red)](https://github.com/epigen/unsupervised_analysis/) [![Enrichment Analysis](https://img.shields.io/badge/Enrichment%20Analysis-red)](https://github.com/epigen/enrichment_analysis/) [![Genome Tracks](https://img.shields.io/badge/Genome%20Tracks-red)](https://github.com/epigen/genome_tracks/)
 - ...
