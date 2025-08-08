@@ -1,6 +1,6 @@
 # Snakemake file for creating the figure for the manuscript
-#### CorcesRNA and CorcesATAC - Figures (custom rule) ####
-rule figure1:
+#### CorcesRNA - Figure panels (custom rule) ####
+rule CorcesRNA_figures:
     input:
         enrichment_results = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv"),
         crossprediction_adj_mtx = os.path.join("results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"),
