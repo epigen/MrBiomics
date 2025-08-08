@@ -25,15 +25,18 @@ source("workflow/scripts/figure_theme.R")
 # cut_off <- snakemake@params[["cut_off"]]
 
 # input
-rna_seq_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
-atac_seq_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
-enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv" 
+CorcesRNA_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
+CorcesATAC_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
+CorcesRNA_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv" 
+CorcesATAC_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv"
 crossprediction_adj_mtx_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"
 # output
-fig1A_rna_seq_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/fig1A_rna_seq_umap.pdf"
-fig1D_atac_seq_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/fig1D_atac_seq_umap.pdf"
+fig1A_CorcesRNA_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/fig1A_CorcesRNA_umap.pdf"
+fig1D_CorcesATAC_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/fig1D_CorcesATAC_umap.pdf"
+fig1C_CorcesRNA_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/fig1C_CorcesRNA_enrichment.pdf"
+fig1E_CorcesATAC_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/fig1E_CorcesATAC_enrichment.pdf"
 crossprediction_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/crossprediction_plot.pdf"
-enrichment_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/enrichment_analysis.pdf"
+figure1_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/figures/figure1.pdf"
 # params
 # enrichment analysis
 fdr_threshold <- 0.05
@@ -42,9 +45,6 @@ cut_off <- 0.2 # when pruning at 0.2 both HVF and integrated produce the same gr
 
 
 ######### UMAPs (from unsupervised analysis) ############
-
-
-
 # Function to create UMAP scatterplot
 create_umap_plot <- function(data_path, fig_path) {
     # Load UMAP data
@@ -63,7 +63,7 @@ create_umap_plot <- function(data_path, fig_path) {
     # Create scatterplot
     umap_plot <- ggplot(umap_data, aes(x = UMAP_1, y = UMAP_2, color = cell_type_colored)) +
         geom_point(size = 3, alpha = 0.8) +
-        scale_color_manual(values = celltype_colors, name = "Cell Type") +
+        scale_color_manual(values = celltype_colors, name = "Cell type") +
         labs(x = "UMAP 1", y = "UMAP 2") +
         theme_minimal() +
         MrBiomics_theme() +
@@ -83,88 +83,130 @@ create_umap_plot <- function(data_path, fig_path) {
     return(umap_plot)
 }
 
-# Create RNA-seq UMAP plot
-rna_umap_plot <- create_umap_plot(rna_seq_umap_coords_path, fig1A_rna_seq_umap_path)
-atac_umap_plot <- create_umap_plot(atac_seq_umap_coords_path, fig1D_atac_seq_umap_path)
+# Create UMAP plots
+fig1A_rna_umap_plot <- create_umap_plot(CorcesRNA_umap_coords_path, fig1A_CorcesRNA_umap_path)
+fig1D_atac_umap_plot <- create_umap_plot(CorcesATAC_umap_coords_path, fig1D_CorcesATAC_umap_path)
 
+######### Enrichment analysis heatmap function ############
+# Function to create enrichment heatmap
+create_enrichment_heatmap <- function(enrichment_results_path, fig_path, data_type, fdr_threshold = 0.05) {
+    # Load enrichment analysis result
+    df <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
 
-# ######### ... ############
+    # Adapt for ATAC or RNA data
+    if (data_type == "ATAC") {
+        # rename columns to match RNA data for reformatting, but remember how they should be named in the plot       
+        df <- df %>%
+            rename(Term = description, FDR_q_val = p_adjust) %>%
+            mutate(name = sub("_up$", "", name),
+                   NES = ifelse(is.infinite(log2(fold_enrichment)), NaN, log2(fold_enrichment)))
+            
+        fill_lab <- "log2(fold enrichment)"
+        size_lab <- "-log10(adjusted p-value)"
+    } else if (data_type == "RNA") {
+        fill_lab <- "NES"
+        size_lab <- "-log10(FDR q-value)"
+    } else {
+        stop("Invalid data_type specified. Must be 'RNA' or 'ATAC'.")
+    }
 
-# ######### Enrichment analysis ############
+    df <- df %>%
+      mutate(name = recode(name, !!!data_to_colors_mapping))
 
-# # load enrichment analysis result
-# enrichment_results <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
-# dim(enrichment_results)
-# # head(enrichment_results)
+    df_sig <- df %>%
+      filter(NES > 0, FDR_q_val < fdr_threshold)  # keep only positive, significant terms
 
-# df <- enrichment_results
+    top_terms <- df_sig %>%
+      group_by(name) %>%
+      slice_max(order_by = NES, n = 1, with_ties = FALSE) %>%  # one row per group 
+      pull(Term)
 
-# df_sig <- df %>%
-#   filter(NES > 0, FDR_q_val < fdr_threshold)  # keep only positive, significant terms
+    df_top <- df %>%
+      filter(Term %in% top_terms) 
 
-# top_terms <- df_sig %>%
-#   group_by(name) %>%
-#   slice_max(order_by = NES, n = 1, with_ties = FALSE) %>%  # one row per group 
-#   pull(Term)
+    # wide matrix: rows = Term, cols = name, values = NES
+    mat_df <- df_top %>%
+      select(name, Term, NES) %>%
+      pivot_wider(names_from = name, values_from = NES, values_fill = 0)
 
-# df_top <- df %>%
-#   filter(Term %in% top_terms) 
+    mat <- mat_df %>% column_to_rownames("Term") %>% as.matrix()
 
-# # wide matrix: rows = Term, cols = name, values = NES
-# mat_df <- df_top %>%
-#   select(name, Term, NES) %>%
-#   pivot_wider(names_from = name, values_from = NES, values_fill = 0)
+    # hierarchical clustering
+    row_dendro <- as.dendrogram(hclust(dist(mat), method = "ward.D2"))
+    row_order <- order.dendrogram(row_dendro)  # get row order 
 
-# mat <- mat_df %>% column_to_rownames("Term") %>% as.matrix()
+    # prepare heatmap
+    heatmap_df <- mat_df %>%
+      pivot_longer(-Term, names_to = "name", values_to = "NES") %>%
+      left_join(df %>% select(name, Term, FDR_q_val), by = c("name", "Term")) %>%
+      mutate(
+        Term = factor(Term, levels = rownames(mat)[row_order]),
+        name = factor(name, levels = names(celltype_colors)),
+        sig = (FDR_q_val < fdr_threshold) & (!is.na(FDR_q_val)) & (!is.infinite(FDR_q_val)),
+        neg_log10_FDR_q_val = ifelse(is.infinite(-log10(FDR_q_val)), 
+                                     max(
+                                      -log10(FDR_q_val[!is.infinite(-log10(FDR_q_val)) & !is.na(FDR_q_val)]), na.rm = TRUE
+                                      )*1.1, 
+                                     -log10(FDR_q_val))
+      )
+    
+    # make plot
+    enrichment_plot <- ggplot(heatmap_df, aes(x = name, y = Term, size=neg_log10_FDR_q_val, fill = NES)) +
+      geom_point(shape=21, stroke=0.25) +
+      # add star for significance
+      geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=3, color = "white") +
+      scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(heatmap_df$NES)), name = fill_lab) +
+      scale_size_continuous(name = size_lab) +
+      # ensure square tiles
+      coord_fixed() +
+      MrBiomics_theme() + 
+      theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        axis.title = element_blank()
+      )
 
-# # hierarchical clustering
-# row_dendro <- as.dendrogram(hclust(dist(mat), method = "ward.D2"))
-# col_dendro <- as.dendrogram(hclust(dist(t(mat)), method = "ward.D2"))
+    # Save plot
+    width <- 10
+    height <- 5
+    ggsave_all_formats(path = fig_path,
+                       plot = enrichment_plot,
+                       width = width,
+                       height = height)
+    
+    return(enrichment_plot)
+}
 
-# row_order <- order.dendrogram(row_dendro)  # get row order 
-# col_order <- order.dendrogram(col_dendro)  # get col order 
+# Create enrichment heatmaps
+fig1C_rna_enrichment_plot <- create_enrichment_heatmap(CorcesRNA_enrichment_results_path, fig1C_CorcesRNA_enrichment_path, "RNA", fdr_threshold)
+fig1E_atac_enrichment_plot <- create_enrichment_heatmap(CorcesATAC_enrichment_results_path, fig1E_CorcesATAC_enrichment_path, "ATAC", fdr_threshold)
+######### Figure 1 patchwork ############
 
-# # prepare heatmap
-# heatmap_df <- mat_df %>%
-#   pivot_longer(-Term, names_to = "name", values_to = "NES") %>%
-#   left_join(df %>% select(name, Term, FDR_q_val), by = c("name", "Term")) %>%
-#   mutate(
-#     Term = factor(Term, levels = rownames(mat)[row_order]),
-#     name = factor(name, levels = colnames(mat)[col_order]),
-#     sig = FDR_q_val < fdr_threshold
-#   )
+# Add panel labels to individual plots
+fig1A_rna_umap_plot <- fig1A_rna_umap_plot + 
+    ggtitle("A") + 
+    theme(plot.title = element_text(size = 20, face = "bold", hjust = 0))
 
-# # make plot
-# enrichment_plot <- ggplot(heatmap_df, aes(x = name, y = Term, fill = NES)) +
-#   geom_tile() +
-#   # add star for significance
-#   geom_text(aes(label = ifelse(sig, "*", "")), vjust = 0.5) +
-#   # red-white-blue gradient centered at 0
-#   scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
-#   # ensure square tiles
-#   coord_fixed() +
-#   # wrap long y-axis labels after 25 chars
-#   scale_y_discrete(labels = function(x) str_wrap(x, width = 25)) +
-#   # rotate x-axis labels
-#   theme_minimal() +
-#   theme(
-#     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-#     axis.title = element_blank()
-#   ) + MrBiomics_theme()
+fig1C_rna_enrichment_plot <- fig1C_rna_enrichment_plot + 
+    ggtitle("C") + 
+    theme(plot.title = element_text(size = 20, face = "bold", hjust = 0))
 
-# # show plot
-# width <- 4
-# height <- 4
-# options(repr.plot.width=width, repr.plot.height=height)
+fig1D_atac_umap_plot <- fig1D_atac_umap_plot + 
+    ggtitle("D") + 
+    theme(plot.title = element_text(size = 20, face = "bold", hjust = 0))
 
-# # enrichment_plot
+fig1E_atac_enrichment_plot <- fig1E_atac_enrichment_plot + 
+    ggtitle("E") + 
+    theme(plot.title = element_text(size = 20, face = "bold", hjust = 0))
 
-# # save plot
-# ggsave_all_formats(path=enrichment_plot_path,
-#                    plot=enrichment_plot,
-#                    width=width,
-#                    height=height
-# )
+# Combine plots using patchwork (2x2 layout: UMAPs on left, heatmaps on right)
+figure1_combined <- (fig1A_rna_umap_plot + fig1C_rna_enrichment_plot) / 
+                    (fig1D_atac_umap_plot + fig1E_atac_enrichment_plot)
+
+# Save combined figure
+ggsave_all_formats(path = figure1_path,
+                   plot = figure1_combined,
+                   width = 16,
+                   height = 10)
 
 
 # ######### Lineage reconstruction using crossprediction ############
