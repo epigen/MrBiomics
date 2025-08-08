@@ -1,30 +1,31 @@
+name: ggplot
 channels:
   - conda-forge
   - bioconda
   - nodefaults
 dependencies:
-  - r-ggplot2
-  - r-tidyr
-  - r-tibble
-  - r-patchwork
-  - r-scales
-  - r-dplyr
-  - r-reshape2
-  - r-pheatmap
-  - r-ggrepel
-  - r-stringr
-  - r-gridGraphics
-  - r-ggplotify
-  - r-directlabels
-  - r-data.table
-  - r-svglite
-  - r-sna
-  - r-RColorBrewer
-  - r-Hmisc
-  - r-cairo
-  - cairo
-  - pango
-  - libpng
-  - libjpeg-turbo
-  - libtiff
-  - gtk2
+  - r-ggplot2=3.5
+  - r-tidyr=1.3
+  - r-tibble=3.3
+  - r-patchwork=1.3
+  - r-scales=1.4
+  - r-dplyr=1.1
+  - r-reshape2=1.4
+  - r-pheatmap=1.0
+  - r-ggrepel=0.9
+  - r-stringr=1.5
+  - r-gridgraphics=0.5
+  - r-ggplotify=0.1
+  - r-directlabels=2025.6
+  - r-data.table=1.17
+  - r-svglite=2.1
+  - r-sna=2.8
+  - r-rcolorbrewer=1.1
+  - r-hmisc=5.2
+  - r-cairo=1.6
+  - cairo=1.18
+  - pango=1.56
+  - libpng=1.6
+  - libjpeg-turbo=3.1
+  - libtiff=4.7
+  - gtk2=2.24

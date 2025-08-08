@@ -1,9 +1,6 @@
 # Snakemake file for creating the figure for the manuscript
-
-# TODO: think of sensible place to put plots? maybe MrBiomics/docs/figure1 or MrBiomics/results/figures?
-
-#### CorcesRNA - Figures (custom rule) ####
-rule CorcesRNA_figures:
+#### CorcesRNA and CorcesATAC - Figures (custom rule) ####
+rule figure1:
     input:
         enrichment_results = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv"),
         crossprediction_adj_mtx = os.path.join("results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"),
@@ -12,7 +9,10 @@ rule CorcesRNA_figures:
         crossprediction_plot = os.path.join("docs/CorcesRNA/crossprediction_plot.pdf"),
     params:
         figure_theme_path = workflow.source_path("../scripts/figure_theme.R"),
-        adj_p = 0.05, # unused
+        # enrichment analysis
+        fdr_threshold = 0.05,
+        # lineage reconstructions
+        cut_off = 0.2 # when pruning at 0.2 both HVF and integrated produce the same graph
     resources:
         mem_mb=config.get("mem", "16000"),
     threads: config.get("threads", 1)

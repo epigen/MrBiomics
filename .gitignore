@@ -159,3 +159,6 @@ metadata/
 # macOS specific files
 *DS_Store*
 ._*
+
+# vscode
+settings.json

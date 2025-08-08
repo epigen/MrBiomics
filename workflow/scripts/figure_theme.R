@@ -1,10 +1,3 @@
-
-
-########## TODOs
-# - this is semi-cleaned and adapted. keep what is useful and remove the rest. this is just a starting point
-# - optimize for downstream Adobe Illustrator/Inkscape usage ideal (e.g., always produce PDF for figures and PNG for slides)
-# - ideally this can become a plotting template for future papers
-
 ### LIBRARIES
 # select libraries
 required_libs <- c(
@@ -25,7 +18,7 @@ required_libs <- c(
     "svglite",
     "sna",
     "RColorBrewer",
-     "Hmisc"
+    "Hmisc"
 )
 
 set.seed(42)
@@ -39,7 +32,7 @@ MrBiomics_theme <- function(){
     
     # settings
     font <- "Arial"
-    size <- 6
+    size <- 12
     
     theme_bw(
         base_size=size,
@@ -50,7 +43,7 @@ MrBiomics_theme <- function(){
       #grid elements
 #       panel.grid.major = element_blank(),    #strip major gridlines
 #       panel.grid.minor = element_blank(),    #strip minor gridlines
-#       axis.ticks = element_blank(),          #strip axis ticks
+      axis.ticks = element_blank(),          #strip axis ticks
       
 #       strips axis lines ?
       
@@ -99,7 +92,7 @@ MrBiomics_theme <- function(){
 ### FUNCTIONS
 
 # extended ggsave
-ggsave_new <- function(path, plot, width=5, height=5, dpi=300){
+ggsave_all_formats <- function(path, plot, width=5, height=5, dpi=300){
 
     # close any lingering devices before opening a new one
     while (!is.null(dev.list())) dev.off()
@@ -107,6 +100,11 @@ ggsave_new <- function(path, plot, width=5, height=5, dpi=300){
     # get paths
     dir_path <- file.path(dirname(path))
     filename <- sub("\\.[^.]+$", "", basename(path))
+    
+    # ensure directory exists
+    if (!dir.exists(dir_path)) {
+        dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
+    }
     
     # SVG, PNG & PDF
     for (format in c('svg','png','pdf')){
@@ -122,6 +120,7 @@ ggsave_new <- function(path, plot, width=5, height=5, dpi=300){
           limitsize = FALSE,
         )
     }
+    print(paste0("Saved ", filename, " in ", dir_path))
 }
                       
 remove_term_suffix <- function(db, terms){
@@ -141,10 +140,48 @@ remove_term_suffix <- function(db, terms){
 
                       
 ### DEFINITIONS (e.g., shapes, colors,...)
-                      
+ironman_colors <- c(
+    "red"="#AA0505",
+    "darkred"="#6A0C0B",
+    "gold"="#B97D10",
+    "yellow"="#FBCA03",
+    "lightblue"="#67C7EB"
+)
+
 ## CorcesRNA & CorcesATAC
 # cell type colors
-celltype_colors <- c('HSC'='#707070')
+celltype_colors <- c(
+    'HSC'='#566E21',   # HSC
+    'MPP'='#96C03A',  # MPP
+    'LMPP'='#7FC493',  # LMPP
+    'CMP'='#FBCA03',  # CMP
+    'GMP'='#B97D10',  # GMP
+    'MEP'='#E95E30',  # MEP
+    'Mono'='#AA0505',  # Mono
+    'Ery'='#6A0C0B',  # Ery
+    'CLP'='#67C7EB',  # CLP
+    'CD4'='#3B8DAC',  # CD4
+    'CD8'='#0E536C',  # CD8
+    'B'='#977CBA',  # B
+    'NK'='#C73188'  # NK
+)
 
-# cell type shapes
-celltype_shapes <- c('HSC' = 16)
+# blue green violet: https://coolors.co/0e536c-3b8dac-67c7eb-7fc493-96c03a-566e21-977cba-c73188
+# red yellow orange: https://coolors.co/e95e30-aa0505-6a0c0b-b97d10-fbca03
+
+# Map from data names to celltype_colors names
+data_to_colors_mapping <- c(
+    "Bcell" = "B",
+    "CD4Tcell" = "CD4", 
+    "CD8Tcell" = "CD8",
+    "CLP" = "CLP",
+    "CMP" = "CMP",
+    "Ery" = "Ery",
+    "GMP" = "GMP",
+    "HSC" = "HSC",
+    "LMPP" = "LMPP",
+    "MEP" = "MEP",
+    "MPP" = "MPP",
+    "Mono" = "Mono",
+    "NKcell" = "NK"
+)
