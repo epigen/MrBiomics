@@ -74,7 +74,8 @@ rna_enrichment_plot <- plot_enrichment_heatmap(
     fig_path = rna_enrichment_path,
     fill_lab = "NES",
     size_lab = "-log10(FDR q-value)",
-    title = "RNA"
+    title = "RNA",
+    ylabel = "prerank GSEA enriched term\n(top 2 per cell type)"
 )
 
 

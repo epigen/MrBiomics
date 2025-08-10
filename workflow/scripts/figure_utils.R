@@ -154,9 +154,6 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
 
     mat <- mat_df %>% column_to_rownames("Term") %>% as.matrix()
 
-    # row_dendro <- as.dendrogram(hclust(dist(mat), method = "ward.D2"))
-    # row_order <- order.dendrogram(row_dendro)
-
     # Shorten term names for plot readability
     original_term_levels <- levels(df_top$Term)
     short_term_levels <- original_term_levels
@@ -231,15 +228,17 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
     return(heatmap_df)
 }
 
-plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL) {
-    # make plot
+plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL, ylabel = NULL) {
+    # mask those values where the log statistic is tiny with NaN, to drop them in the heatmap
+    heatmap_df$neg_log10_statistic <- ifelse(heatmap_df$neg_log10_statistic < 1, NaN, heatmap_df$neg_log10_statistic)
+
     enrichment_plot <- ggplot(heatmap_df, aes(x = name, y = Term, size=neg_log10_statistic, fill = score)) +
       geom_point(shape=21, stroke=0.25) +
       # add star for significance
       geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=3, color = "white") +
       scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(heatmap_df$score)), name = fill_lab) +
       scale_size_continuous(name = size_lab) +
-      labs(title = title, x = "Cell type", y = "Azimuth enrichment term") +
+      labs(title = title, x = "Cell type", y = ylabel) +
       # ensure square tiles
       coord_fixed() +
       MrBiomics_theme() + 

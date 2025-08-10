@@ -56,7 +56,7 @@ rna_dea_heatmap_plot <- plot_dea_heatmap(
     fig_path = atac_dea_heatmap_path,
     top_n_genes = TOP_N_GENES,
     fdr_threshold = fdr_threshold,
-    title = "ATAC one-versus-all DARs"
+    title = "ATAC one-versus-all DAGs"
 )
 
 
@@ -69,5 +69,6 @@ atac_enrichment_plot <- plot_enrichment_heatmap(
     fig_path = atac_enrichment_path,
     fill_lab = "log2(fold enrichment)",
     size_lab = "-log10(adjusted p-value)",
-    title = "ATAC"
+    title = "ATAC",
+    ylabel = "GREAT overrepresented term\n(top 2 per cell type)"
 )
