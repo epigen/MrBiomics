@@ -22,7 +22,10 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
         MrBiomics_theme() +
         theme(
             legend.position = "right",
-            panel.grid.minor = element_blank()
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank()
         )
     
     # Save plot
@@ -84,11 +87,66 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
     # row_dendro <- as.dendrogram(hclust(dist(mat), method = "ward.D2"))
     # row_order <- order.dendrogram(row_dendro)
 
+    # Shorten term names for plot readability
+    original_term_levels <- levels(df_top$Term)
+    short_term_levels <- original_term_levels
+
+    # Abbreviate tissue and remove level information
+    short_term_levels <- gsub("Bone Marrow", "BM", short_term_levels)
+    short_term_levels <- gsub("-L[1-9]-", "-", short_term_levels)
+
+    # Define and apply cell type abbreviations
+    cell_type_replacements <- c(
+        "Hematopoeitic Stem Cell" = "HSC",
+        "Lymphoid Primed Multipotent Progenitor" = "LMPP",
+        "Hematopoietic Stem And Progenitor Cell" = "HSPC",
+        "Basophil Eosinophil Mast Progenitor" = "BEMP",
+        "Early Erythroid" = "Pro Ery",
+        "Common Lymphoid Progenitor" = "CLP",
+        "Granulocyte Monocyte Progenitor" = "GMP",
+        "Erythroid Cell" = "Ery",
+        "CD14 Monocyte" = "Mono",
+        "Intermediate B Cell, Kappa Light Chain" = "Int B κ+",
+        "CD8 Memory" = "CD8 mem",
+        "Mucosal Associated Invariant T" = "MAIT",
+        "Intermediate B Cell" = "Int B",
+        "CD56-dim Natural Killer" = "CD56dim NK",
+        "Natural Killer" = "NK",
+        "Monocyte" = "Mono",
+        "CD4 T" = "CD4",
+        "Naive B" = "Naive B",
+        "B" = "B",
+        "Progenitor B" = "Pro B",
+        "Naive B Cell, Kappa Light Chain" = "Naive B κ+",
+        "Precursor Plasmacytoid Dendritic Cell" = "pDC",
+        "Conventional Dendritic Cell 1" = "cDC1",
+        "Transitional B" = "Transitional B",
+        "Platelet" = "Platelet",
+        "gamma-delta T 2" = "Vδ2 T cell",
+        "CD16 Monocyte" = "CD16 Mono",
+        "Innate Lymphoid Cell" = "ILC",
+        "Hematopoeitic Stem And Progenitor Cell" = "HSPC",
+        "Erythroid Megakaryocyte Progenitor" = "MEP"
+    )
+    # Sort by length to avoid partial matches on shorter strings
+    cell_type_replacements <- cell_type_replacements[order(nchar(names(cell_type_replacements)), decreasing = TRUE)]
+    for (i in seq_along(cell_type_replacements)) {
+        short_term_levels <- gsub(names(cell_type_replacements)[i], cell_type_replacements[i], short_term_levels)
+    }
+
+    # Print the mapping of original to shortened names
+    term_map_df <- data.frame(Original = original_term_levels, Shortened = short_term_levels)
+    message("Shortening term names for heatmap:")
+    print(term_map_df)
+    
+    # Create a named vector for applying the new names
+    term_map <- setNames(short_term_levels, original_term_levels)
+
     heatmap_df <- mat_df %>%
       pivot_longer(-Term, names_to = "name", values_to = "score") %>%
       left_join(df_formatted %>% select(name, Term, statistic), by = c("name", "Term")) %>%
       mutate(
-        Term = factor(Term, levels = rev(levels(df_top$Term))),
+        Term = factor(term_map[Term], levels = rev(unique(short_term_levels))),
         name = factor(name, levels = names(CELL_TYPE_COLORS)),
         sig = (statistic < fdr_threshold) & (!is.na(statistic)) & (!is.infinite(statistic)),
         neg_log10_statistic = ifelse(is.infinite(-log10(statistic)),
@@ -110,7 +168,7 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=3, color = "white") +
       scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(heatmap_df$score)), name = fill_lab) +
       scale_size_continuous(name = size_lab) +
-      labs(title = title) +
+      labs(title = title, x = "Cell type", y = "Azimuth enrichment term") +
       # ensure square tiles
       coord_fixed() +
       MrBiomics_theme() + 
