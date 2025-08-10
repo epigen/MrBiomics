@@ -93,7 +93,7 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
 
     # Abbreviate tissue and remove level information
     short_term_levels <- gsub("Bone Marrow", "BM", short_term_levels)
-    short_term_levels <- gsub("-L[1-9]-", "-", short_term_levels)
+    # short_term_levels <- gsub("-L[1-9]-", "-", short_term_levels)
 
     # Define and apply cell type abbreviations
     cell_type_replacements <- c(
@@ -128,6 +128,7 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
         "Hematopoeitic Stem And Progenitor Cell" = "HSPC",
         "Erythroid Megakaryocyte Progenitor" = "MEP"
     )
+    
     # Sort by length to avoid partial matches on shorter strings
     cell_type_replacements <- cell_type_replacements[order(nchar(names(cell_type_replacements)), decreasing = TRUE)]
     for (i in seq_along(cell_type_replacements)) {
@@ -178,7 +179,7 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       )
 
     # Save plot
-    width <- 10
+    width <- 7
     height <- 5
     ggsave_all_formats(path = fig_path,
                        plot = enrichment_plot,
