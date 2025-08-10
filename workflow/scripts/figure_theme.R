@@ -56,7 +56,7 @@ MrBiomics_theme <- function(){
                    family = font,            #set font family
                    size = size,                #set font size
                    face = 'bold',            #bold typeface
-                   hjust = 0.5,                #center align
+                   hjust = 0,                #center align
                    vjust = 2),               #raise slightly
       
       plot.subtitle = element_text(          #subtitle

@@ -37,7 +37,7 @@ fdr_threshold <- 0.05
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
-rna_umap_plot <- umap_plot(CorcesRNA_umap_coords_path, rna_umap_path)
+rna_umap_plot <- umap_plot(CorcesRNA_umap_coords_path, rna_umap_path, title = "RNA")
 
 ######### Enrichment analysis heatmap function ############
 # Function to create enrichment heatmap
@@ -59,7 +59,8 @@ rna_enrichment_plot <- plot_enrichment_heatmap(
     heatmap_df = rna_heatmap_df,
     fig_path = rna_enrichment_path,
     fill_lab = "NES",
-    size_lab = "-log10(FDR q-value)"
+    size_lab = "-log10(FDR q-value)",
+    title = "RNA"
 )
 
 

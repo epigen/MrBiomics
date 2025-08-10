@@ -29,7 +29,7 @@ fdr_threshold <- 0.05
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
-atac_umap_plot <- umap_plot(CorcesATAC_umap_coords_path, atac_umap_path)
+atac_umap_plot <- umap_plot(CorcesATAC_umap_coords_path, atac_umap_path, title = "ATAC")
 
 ######### Enrichment analysis heatmap function ############
 # Function to create enrichment heatmap
@@ -54,5 +54,6 @@ atac_enrichment_plot <- plot_enrichment_heatmap(
     heatmap_df = atac_heatmap_df, 
     fig_path = atac_enrichment_path,
     fill_lab = "log2(fold enrichment)",
-    size_lab = "-log10(adjusted p-value)"
+    size_lab = "-log10(adjusted p-value)",
+    title = "ATAC"
 )

@@ -1,5 +1,5 @@
 #### UMAP plotting ####
-umap_plot <- function(data_path, fig_path) {
+umap_plot <- function(data_path, fig_path, title = NULL) {
     # Load UMAP data
     umap_data <- data.frame(fread(file.path(data_path), header=TRUE))
     
@@ -17,7 +17,7 @@ umap_plot <- function(data_path, fig_path) {
     umap_plot <- ggplot(umap_data, aes(x = UMAP_1, y = UMAP_2, color = cell_type_colored)) +
         geom_point(size = 3, alpha = 0.8) +
         scale_color_manual(values = CELL_TYPE_COLORS, name = "Cell type") +
-        labs(x = "UMAP 1", y = "UMAP 2") +
+        labs(x = "UMAP 1", y = "UMAP 2", title = title) +
         theme_minimal() +
         MrBiomics_theme() +
         theme(
@@ -102,7 +102,7 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
     return(heatmap_df)
 }
 
-plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab) {
+plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL) {
     # make plot
     enrichment_plot <- ggplot(heatmap_df, aes(x = name, y = Term, size=neg_log10_statistic, fill = score)) +
       geom_point(shape=21, stroke=0.25) +
@@ -110,12 +110,13 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab) {
       geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=3, color = "white") +
       scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(heatmap_df$score)), name = fill_lab) +
       scale_size_continuous(name = size_lab) +
+      labs(title = title) +
       # ensure square tiles
       coord_fixed() +
       MrBiomics_theme() + 
       theme(
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-        axis.title = element_blank()
+        axis.title = element_blank(),
       )
 
     # Save plot
