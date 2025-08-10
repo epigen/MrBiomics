@@ -40,49 +40,45 @@ MrBiomics_theme <- function(){
     ) %+replace% 
     
     theme(
-      #grid elements
-#       panel.grid.major = element_blank(),    #strip major gridlines
-#       panel.grid.minor = element_blank(),    #strip minor gridlines
-      axis.ticks = element_blank(),          #strip axis ticks
-      
-#       strips axis lines ?
-      
-      #text elements
+        ###  grid elements
+        axis.ticks = element_blank(),          #remove axis ticks
+        
+        ### text elements
         text = element_text(              
-                   family = font,           
-                   size = size),
+                    family = font,           
+                    size = size),
+            
+        plot.title = element_text(             #title
+                    family = font,            #set font family
+                    size = size,                #set font size
+                    face = 'bold',            #bold typeface
+                    hjust = 0,                #center align
+                    vjust = 2),               #raise slightly
         
-      plot.title = element_text(             #title
-                   family = font,            #set font family
-                   size = size,                #set font size
-                   face = 'bold',            #bold typeface
-                   hjust = 0,                #center align
-                   vjust = 2),               #raise slightly
-      
-      plot.subtitle = element_text(          #subtitle
-                   family = font,            #font family
-                   size = size),               #font size
-      
-      plot.caption = element_text(           #caption
-                   family = font,            #font family
-                   size = size,                 #font size
-                   hjust = 0.5),               #center align
-      
-      axis.title = element_text(             #axis titles
-                   family = font,            #font family
-                   size = size),               #font size
-      
-      axis.text = element_text(              #axis text
-                   family = font,            #axis famuly
-                   size = size),                #font size
+        plot.subtitle = element_text(          #subtitle
+                    family = font,            #font family
+                    size = size),               #font size
         
+        plot.caption = element_text(           #caption
+                    family = font,            #font family
+                    size = size,                 #font size
+                    hjust = 0.5),               #center align
+        
+        axis.title = element_text(             #axis titles
+                    family = font,            #font family
+                    size = size),               #font size
+        
+        axis.text = element_text(              #axis text
+                    family = font,            #axis famuly
+                    size = size),                #font size
+            
         legend.text = element_text(              #axis text
-                   family = font,            #axis famuly
-                   size = size), 
+                    family = font,            #axis famuly
+                    size = size), 
         
         legend.title = element_text(              #axis text
-                   family = font,            #axis famuly
-                   size = size),
+                    family = font,            #axis famuly
+                    size = size),
       
 #       axis.text.x = element_text(            #margin for axis text
 #                     margin=margin(5, b = 10))
@@ -120,7 +116,7 @@ ggsave_all_formats <- function(path, plot, width=5, height=5, dpi=300){
           limitsize = FALSE,
         )
     }
-    print(paste0("Saved ", filename, " in ", dir_path))
+    print(paste0("Saved ", path))
 }
                       
 remove_term_suffix <- function(db, terms){

@@ -39,6 +39,76 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
     return(umap_plot)
 }
 
+
+#### DEA HEATMAP ####
+get_top_dea_genes <- function(dea_results_path, top_n_genes, fdr_threshold) {
+    # read data
+    dea_df <- data.frame(fread(file.path(dea_results_path), header=TRUE))
+    dea_df$minus_log10_adj_p_val <- -log10(dea_df$adj.P.Val)
+
+    # get top N up-regulated genes per group
+    top_up <- dea_df %>%
+        group_by(group) %>%
+        # slice_max(order_by = logFC, n = top_n_genes, with_ties = FALSE) %>%
+        filter(logFC > 0) %>%
+        slice_max(order_by = minus_log10_adj_p_val, n = top_n_genes, with_ties = FALSE) %>%
+        mutate(group = factor(group, levels = names(CELL_TYPE_COLORS))) %>%
+        arrange(group, -logFC)
+    # # get top N down-regulated genes per group
+    # top_down <- dea_df %>%
+    #     group_by(group) %>%
+    #     slice_min(order_by = logFC, n = top_n_genes, with_ties = FALSE)
+
+    # combine and get unique genes
+    top_genes <- unique(c(top_up$feature_name))  # , top_down$feature_name
+
+    # filter the original df for these genes
+    dea_top_genes_df <- dea_df %>%
+        filter(feature_name %in% top_genes) %>%
+        mutate(feature_name = factor(feature_name, levels = rev(top_genes)))
+
+    # rename groups to nicer names
+    dea_top_genes_df <- dea_top_genes_df %>%
+        mutate(group = DATA_TO_CELL_TYPE_COLORS_MAPPING[group])
+
+    return(dea_top_genes_df)
+}
+
+plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_genes, fdr_threshold, title = NULL) {
+
+    heatmap_df <- get_top_dea_genes(dea_results_path, top_n_genes, fdr_threshold)
+  
+    plot_data_final <- heatmap_df %>%
+        mutate(
+            group = factor(group, levels = names(CELL_TYPE_COLORS))
+        )
+    
+    # Create heatmap plot
+    dea_heatmap <- ggplot(plot_data_final, aes(x = group, y = feature_name, fill = logFC)) +
+        geom_tile(color = "white", lwd = 0, linetype = 1) +
+        scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(plot_data_final$logFC))) +
+        labs(title = title, x = "Cell type", y = "Gene") +
+        MrBiomics_theme() +
+        theme(
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+            axis.text.y = element_text(size = 6),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            panel.border = element_blank()
+        )
+
+    # Save plot
+    width <- 7
+    height <- 5 # Adjusted for potentially many genes
+    ggsave_all_formats(path = fig_path,
+                       plot = dea_heatmap,
+                       width = width,
+                       height = height)
+    
+    return(dea_heatmap)
+}
+
+
 #### ENRICHMENT HEATMAP ####
 filter_top_terms <- function(df, fdr_threshold) {
     df_sig <- df %>%
@@ -174,8 +244,7 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       coord_fixed() +
       MrBiomics_theme() + 
       theme(
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-        axis.title = element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
       )
 
     # Save plot

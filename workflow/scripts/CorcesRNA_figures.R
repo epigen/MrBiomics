@@ -27,19 +27,33 @@ source("workflow/scripts/figure_utils.R")
 
 # input
 CorcesRNA_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
+CorcesRNA_dea_OvA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/results.csv"
 CorcesRNA_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv" 
 # output
 rna_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/umap.pdf"
+rna_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/dea_heatmap.pdf"
 rna_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/enrichment.pdf"
 # params
 # enrichment analysis
 fdr_threshold <- 0.05
+TOP_N_GENES <- 10
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
 rna_umap_plot <- umap_plot(CorcesRNA_umap_coords_path, rna_umap_path, title = "RNA")
 
-######### Enrichment analysis heatmap function ############
+
+
+######### DEA HEATMAP ############
+rna_dea_heatmap_plot <- plot_dea_heatmap(
+    dea_results_path = CorcesRNA_dea_OvA_path,
+    fig_path = rna_dea_heatmap_path,
+    top_n_genes = TOP_N_GENES,
+    fdr_threshold = fdr_threshold,
+    title = "RNA one-versus-all DEA"
+)
+
+######### ENRICHMENT HEATMAP ############
 # Function to create enrichment heatmap
 create_rna_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.05) {
     # Load enrichment analysis result

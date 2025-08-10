@@ -20,9 +20,11 @@ source("workflow/scripts/figure_utils.R")
 
 # input
 CorcesATAC_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
+CorcesATAC_dea_OvA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/results.csv"
 CorcesATAC_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv"
 # output
 atac_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/umap.pdf"
+atac_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/dea_heatmap.pdf"
 atac_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/enrichment.pdf"
 # params
 fdr_threshold <- 0.05
@@ -47,6 +49,18 @@ create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0
     return(df_formatted)
 }
 
+
+######### DEA HEATMAP ############
+rna_dea_heatmap_plot <- plot_dea_heatmap(
+    dea_results_path = CorcesATAC_dea_OvA_path,
+    fig_path = atac_dea_heatmap_path,
+    top_n_genes = TOP_N_GENES,
+    fdr_threshold = fdr_threshold,
+    title = "ATAC one-versus-all DARs"
+)
+
+
+######### ENRICHMENT HEATMAP ############
 # Create enrichment heatmaps
 atac_df_formatted <- create_atac_enrichment_df(CorcesATAC_enrichment_results_path, fdr_threshold)
 atac_heatmap_df <- prepare_for_heatmap(df_formatted = atac_df_formatted, fdr_threshold = fdr_threshold)
