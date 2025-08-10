@@ -6,17 +6,17 @@ umap_plot <- function(data_path, fig_path) {
     # Parse sample names to extract cell type
     umap_data$cell_type <- sapply(strsplit(umap_data$sample_name, "_"), function(x) x[1])
     
-    # Translate cell type names to match celltype_colors
-    umap_data$cell_type_colored <- data_to_colors_mapping[umap_data$cell_type]
+    # Translate cell type names to match CELL_TYPE_COLORS
+    umap_data$cell_type_colored <- DATA_TO_CELL_TYPE_COLORS_MAPPING[umap_data$cell_type]
     
-    # Order cell types according to celltype_colors
+    # Order cell types according to CELL_TYPE_COLORS
     umap_data$cell_type_colored <- factor(umap_data$cell_type_colored, 
-                                         levels = names(celltype_colors))
+                                         levels = names(CELL_TYPE_COLORS))
     
     # Create scatterplot
     umap_plot <- ggplot(umap_data, aes(x = UMAP_1, y = UMAP_2, color = cell_type_colored)) +
         geom_point(size = 3, alpha = 0.8) +
-        scale_color_manual(values = celltype_colors, name = "Cell type") +
+        scale_color_manual(values = CELL_TYPE_COLORS, name = "Cell type") +
         labs(x = "UMAP 1", y = "UMAP 2") +
         theme_minimal() +
         MrBiomics_theme() +
@@ -39,39 +39,62 @@ umap_plot <- function(data_path, fig_path) {
 #### ENRICHMENT HEATMAP ####
 filter_top_terms <- function(df, fdr_threshold) {
     df_sig <- df %>%
-      filter(score > 0, statistic < fdr_threshold)
+      filter(score > 0, statistic < fdr_threshold) 
 
-    top_terms <- df_sig %>%
+    tissues_to_keep <- c("PBMC", "Bone Marrow")
+    df_sig <- df_sig %>%
+      filter(grepl(paste(tissues_to_keep, collapse = "|"), Term))
+
+    # Identify top term for each cell type
+    top_hits <- df_sig %>%
       group_by(name) %>%
-      slice_max(order_by = score, n = 1, with_ties = FALSE) %>%
-      pull(Term)
+      slice_max(order_by = score, n = 2, with_ties = FALSE) %>%
+      ungroup()
 
+    # Get the list of top terms
+    top_term_strings <- top_hits %>%
+      pull(Term) %>%
+      unique()
+
+    # Create a mapping from term to the cell type for which it's a top hit
+    term_to_top_name_map <- top_hits %>%
+      select(Term, top_for_name = name)
+
+    # Filter original dataframe for top terms and add the 'top_for_name' info
     df_top <- df %>%
-      filter(Term %in% top_terms)
+      filter(Term %in% top_term_strings)
 
+    # make the terms a factor that is ordered by the order of the matching cell types in CELL_TYPE_COLORS
+    term_to_top_name_map$top_for_name <- factor(term_to_top_name_map$top_for_name, levels = names(CELL_TYPE_COLORS))
+    term_to_top_name_map <- term_to_top_name_map %>% arrange(top_for_name)
+    df_top$Term <- factor(df_top$Term, levels = unique(term_to_top_name_map$Term))
+    
     return(df_top)
 }
 
-reshape_for_heatmap <- function(df_top, df_formatted, fdr_threshold) {
+prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
+    df_top <- filter_top_terms(df_formatted, fdr_threshold)
+
     mat_df <- df_top %>%
       select(name, Term, score) %>%
       pivot_wider(names_from = name, values_from = score, values_fill = 0)
 
     mat <- mat_df %>% column_to_rownames("Term") %>% as.matrix()
 
-    row_dendro <- as.dendrogram(hclust(dist(mat), method = "ward.D2"))
-    row_order <- order.dendrogram(row_dendro)
+    # row_dendro <- as.dendrogram(hclust(dist(mat), method = "ward.D2"))
+    # row_order <- order.dendrogram(row_dendro)
 
     heatmap_df <- mat_df %>%
       pivot_longer(-Term, names_to = "name", values_to = "score") %>%
       left_join(df_formatted %>% select(name, Term, statistic), by = c("name", "Term")) %>%
       mutate(
-        Term = factor(Term, levels = rownames(mat)[row_order]),
-        name = factor(name, levels = names(celltype_colors)),
+        Term = factor(Term, levels = rev(levels(df_top$Term))),
+        name = factor(name, levels = names(CELL_TYPE_COLORS)),
         sig = (statistic < fdr_threshold) & (!is.na(statistic)) & (!is.infinite(statistic)),
         neg_log10_statistic = ifelse(is.infinite(-log10(statistic)),
                                      max(
-                                      -log10(statistic[!is.infinite(-log10(statistic)) & !is.na(statistic)]), na.rm = TRUE
+                                      -log10(statistic[!is.infinite(-log10(statistic)) & !is.na(statistic)]),
+                                      na.rm = TRUE
                                       )*1.1,
                                      -log10(statistic))
       )

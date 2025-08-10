@@ -42,15 +42,14 @@ create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0
         rename(Term = description, statistic = p_adjust, score = fold_enrichment) %>%
         mutate(name = sub("_up$", "", name),
                 score = ifelse(is.infinite(log2(score)), NaN, log2(score))) %>%
-        mutate(name = recode(name, !!!data_to_colors_mapping))
+        mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
     
     return(df_formatted)
 }
 
 # Create enrichment heatmaps
 atac_df_formatted <- create_atac_enrichment_df(CorcesATAC_enrichment_results_path, fdr_threshold)
-atac_df_top <- filter_top_terms(atac_df_formatted, fdr_threshold)
-atac_heatmap_df <- reshape_for_heatmap(atac_df_top, atac_df_formatted, fdr_threshold)
+atac_heatmap_df <- prepare_for_heatmap(df_formatted = atac_df_formatted, fdr_threshold = fdr_threshold)
 atac_enrichment_plot <- plot_enrichment_heatmap(
     heatmap_df = atac_heatmap_df, 
     fig_path = atac_enrichment_path,

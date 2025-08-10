@@ -47,15 +47,14 @@ create_rna_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.
 
     df_formatted <- df %>%
         rename(statistic = FDR_q_val, score = NES) %>%
-        mutate(name = recode(name, !!!data_to_colors_mapping))
+        mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
     
     return(df_formatted)
 }
 
 # Create enrichment heatmaps
 rna_df_formatted <- create_rna_enrichment_df(CorcesRNA_enrichment_results_path, fdr_threshold)
-rna_df_top <- filter_top_terms(rna_df_formatted, fdr_threshold)
-rna_heatmap_df <- reshape_for_heatmap(rna_df_top, rna_df_formatted, fdr_threshold)
+rna_heatmap_df <- prepare_for_heatmap(df_formatted = rna_df_formatted, fdr_threshold = fdr_threshold)
 rna_enrichment_plot <- plot_enrichment_heatmap(
     heatmap_df = rna_heatmap_df,
     fig_path = rna_enrichment_path,

@@ -140,7 +140,7 @@ remove_term_suffix <- function(db, terms){
 
                       
 ### DEFINITIONS (e.g., shapes, colors,...)
-ironman_colors <- c(
+IRONMAN_COLORS <- c(
     "red"="#AA0505",
     "darkred"="#6A0C0B",
     "gold"="#B97D10",
@@ -150,7 +150,7 @@ ironman_colors <- c(
 
 ## CorcesRNA & CorcesATAC
 # cell type colors
-celltype_colors <- c(
+CELL_TYPE_COLORS <- c(
     'HSC'='#566E21',   # HSC
     'MPP'='#96C03A',  # MPP
     'LMPP'='#7FC493',  # LMPP
@@ -169,8 +169,8 @@ celltype_colors <- c(
 # blue green violet: https://coolors.co/0e536c-3b8dac-67c7eb-7fc493-96c03a-566e21-977cba-c73188
 # red yellow orange: https://coolors.co/e95e30-aa0505-6a0c0b-b97d10-fbca03
 
-# Map from data names to celltype_colors names
-data_to_colors_mapping <- c(
+# Map from data names to CELL_TYPE_COLORS names
+DATA_TO_CELL_TYPE_COLORS_MAPPING <- c(
     "Bcell" = "B",
     "CD4Tcell" = "CD4", 
     "CD8Tcell" = "CD8",
