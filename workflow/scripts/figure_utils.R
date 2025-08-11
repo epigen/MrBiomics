@@ -41,28 +41,33 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
 
 
 #### DEA HEATMAP ####
-get_top_differential_features <- function(dea_results_path, top_n_features, fdr_threshold, max_per_gene=FALSE) {
+get_top_differential_features <- function(dea_results_path, top_n_features, fdr_threshold, direction, max_per_gene=FALSE) {
     # read data
     dea_df <- data.frame(fread(file.path(dea_results_path), header=TRUE))
     dea_df$minus_log10_adj_p_val <- -log10(dea_df$adj.P.Val)
 
-    # get top N up-regulated features per group
-    top_up <- dea_df %>%
-        group_by(group) %>%
-        filter(adj.P.Val < fdr_threshold) %>%
-        slice_max(order_by = logFC, n = top_n_features, with_ties=TRUE) %>%
-        # filter(logFC > 0) %>%
-        # slice_max(order_by = minus_log10_adj_p_val, n = top_n_features, with_ties = TRUE) %>%
-        mutate(group = factor(group, levels = names(CELL_TYPE_COLORS))) %>%
-        arrange(group, -logFC)  # - logFC to start with the highest values per group in the heatmap
-    # # get top N down-regulated features per group
-    # top_down <- dea_df %>%
-    #     group_by(group) %>%
-    #     slice_min(order_by = logFC, n = top_n_features, with_ties = FALSE)
+    if (direction == "up") {
+        # get top N up-regulated features per group
+        top_df <- dea_df %>%
+            group_by(group) %>%
+            filter(adj.P.Val < fdr_threshold) %>%
+            slice_max(order_by = logFC, n = top_n_features, with_ties=TRUE) %>%
+            mutate(group = factor(group, levels = names(CELL_TYPE_COLORS))) %>%
+            arrange(group, -logFC)
+    } else if (direction == "down") {
+        # get top N down-regulated features per group
+        top_df <- dea_df %>%
+            group_by(group) %>%
+            filter(adj.P.Val < fdr_threshold) %>%
+            slice_min(order_by = logFC, n = top_n_features, with_ties=TRUE) %>%
+            mutate(group = factor(group, levels = names(CELL_TYPE_COLORS))) %>%
+            arrange(group, logFC)
+    } else {
+        stop("direction must be either 'up' or 'down'")
+    }
 
-    # combine and get unique features
-    top_feature_names <- unique(c(top_up$feature_name))
-    top_features <- unique(c(top_up$feature))
+    top_feature_names <- unique(c(top_df$feature_name))
+    top_features <- unique(c(top_df$feature))
     
     if (max_per_gene) {
         # since in ATAC multiple peaks can be assigned to each gene, take the top peak per gene
@@ -87,7 +92,7 @@ get_top_differential_features <- function(dea_results_path, top_n_features, fdr_
     return(dea_top_features_df)
 }
 
-plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_threshold, title = NULL, q_mask=0,
+plot_differential_features_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_threshold, title = NULL, q_mask=0,
                              feature, max_per_gene=FALSE) {
     if (feature == 'Gene') {
         feature_col <- 'feature_name'
@@ -95,41 +100,71 @@ plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_thr
         feature_col <- 'feature'
     }
     
-    heatmap_df <- get_top_differential_features(dea_results_path, top_n_features, fdr_threshold, max_per_gene)
+    # Get data for both up and down regulated features
+    heatmap_df_up <- get_top_differential_features(dea_results_path, top_n_features, fdr_threshold, direction="up", max_per_gene=max_per_gene)
+    heatmap_df_down <- get_top_differential_features(dea_results_path, top_n_features, fdr_threshold, direction="down", max_per_gene=max_per_gene)
 
-    plot_data_final <- heatmap_df %>%
-        mutate(
-            group = factor(group, levels = names(CELL_TYPE_COLORS))
-        )
+    # Combine for consistent limits
+    combined_logFC <- c(heatmap_df_up$logFC, heatmap_df_down$logFC)
+    max_abs_logFC <- max(abs(combined_logFC), na.rm = TRUE)
+    plot_limits <- c(-1, 1) * max_abs_logFC
+
+    # Function to create a single heatmap
+    create_heatmap <- function(df, y_label) {
+        plot_data <- df %>%
+            mutate(
+                group = factor(group, levels = names(CELL_TYPE_COLORS))
+            )
+        
+        # Quantile masking
+        if(q_mask > 0) {
+            upper_limit <- quantile(plot_data$logFC, probs = 1 - q_mask, na.rm=TRUE)
+            lower_limit <- quantile(plot_data$logFC, probs = q_mask, na.rm=TRUE)
+            plot_data$logFC <- ifelse(plot_data$logFC < lower_limit, lower_limit, plot_data$logFC)
+            plot_data$logFC <- ifelse(plot_data$logFC > upper_limit, upper_limit, plot_data$logFC)
+        }
+
+        p <- ggplot(plot_data, aes_string(x = "group", y = feature_col, fill = "logFC")) +
+            geom_tile(color = "white", lwd = 0, linetype = 1) +
+            scale_fill_distiller(palette = "RdBu", limits = plot_limits) +
+            labs(x = NULL, y = y_label) +
+            MrBiomics_theme() +
+            theme(
+                axis.text.y = element_blank(),
+                axis.ticks.y = element_blank(),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.border = element_blank()
+            )
+        return(p)
+    }
+
+    dea_heatmap_up <- create_heatmap(heatmap_df_up, y_label = feature)
+    dea_heatmap_down <- create_heatmap(heatmap_df_down, y_label = feature)
     
-    upper_limit <- quantile(plot_data_final$logFC, probs = 1-q_mask)
-    lower_limit <- quantile(plot_data_final$logFC, probs = q_mask)
-    plot_data_final$logFC <- ifelse(plot_data_final$logFC < lower_limit, lower_limit, plot_data_final$logFC)
-    plot_data_final$logFC <- ifelse(plot_data_final$logFC > upper_limit, upper_limit, plot_data_final$logFC)
+    # Remove x-axis labels from the top plot
+    dea_heatmap_up <- dea_heatmap_up + theme(axis.text.x = element_blank())
+    dea_heatmap_down <- dea_heatmap_down + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    
+    combined_plot <- dea_heatmap_up / dea_heatmap_down
+    
+    combined_plot <- combined_plot + plot_layout(guides = 'collect') & theme(legend.position = 'right')
 
-    # Create heatmap plot
-    dea_heatmap <- ggplot(plot_data_final, aes_string(x = "group", y = feature_col, fill = "logFC")) +
-        geom_tile(color = "white", lwd = 0, linetype = 1) +
-        scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(plot_data_final$logFC))) +
-        labs(title = title, x = "Cell type", y = feature) +
-        MrBiomics_theme() +
-        theme(
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
-            axis.text.y = element_text(size = 6),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank()
-        )
+    # Add shared title and axis labels
+    combined_plot <- combined_plot + plot_annotation(
+        title = title,
+        theme = theme(plot.title = element_text(hjust = 0.15))
+    )
 
     # Save plot
-    width <- 7
-    height <- 5 # Adjusted for potentially many features
+    width <- 4
+    height <- 5 # Adjusted for two plots stacked.
     ggsave_all_formats(path = fig_path,
-                       plot = dea_heatmap,
+                       plot = combined_plot,
                        width = width,
                        height = height)
     
-    return(dea_heatmap)
+    return(combined_plot)
 }
 
 

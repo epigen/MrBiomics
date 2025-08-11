@@ -28,7 +28,7 @@ atac_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC
 atac_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/enrichment.pdf"
 # params
 fdr_threshold <- 0.05
-TOP_N_FEATURES <- 5
+TOP_N_FEATURES <- 10
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
@@ -52,7 +52,7 @@ create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0
 
 
 ######### DEA HEATMAP ############
-atac_dea_heatmap_plot <- plot_dea_heatmap(
+atac_dea_heatmap_plot <- plot_differential_features_heatmap(
     dea_results_path = CorcesATAC_dea_OvA_path,
     fig_path = atac_dea_heatmap_path,
     top_n_features = TOP_N_FEATURES,
@@ -60,7 +60,7 @@ atac_dea_heatmap_plot <- plot_dea_heatmap(
     title = "ATAC one-versus-all DARs",
     feature = 'Region',
     # max_per_gene = TRUE,  # not needed for region
-    q_mask = 0.02
+    q_mask = 0
 )
 
 
