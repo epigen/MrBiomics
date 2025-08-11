@@ -74,5 +74,5 @@ atac_enrichment_plot <- plot_enrichment_heatmap(
     fill_lab = "log2(fold enrichment)",
     size_lab = "-log10(adjusted p-value)",
     title = "ATAC",
-    ylabel = "GREAT overrepresented term\n(top 2 per cell type)"
+    ylabel = "Enrichment term (GREAT, Azimuth 2023)"
 )
