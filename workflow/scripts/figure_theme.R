@@ -156,9 +156,9 @@ CELL_TYPE_COLORS <- c(
     'Mono'='#AA0505',  # Mono
     'Ery'='#6A0C0B',  # Ery
     'CLP'='#67C7EB',  # CLP
+    'B'='#977CBA',  # B
     'CD4'='#3B8DAC',  # CD4
     'CD8'='#0E536C',  # CD8
-    'B'='#977CBA',  # B
     'NK'='#C73188'  # NK
 )
 

@@ -24,10 +24,11 @@ CorcesATAC_dea_OvA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/Corces
 CorcesATAC_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv"
 # output
 atac_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/umap.pdf"
-atac_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/dea_heatmap.pdf"
+atac_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/differential_heatmap.pdf"
 atac_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/enrichment.pdf"
 # params
 fdr_threshold <- 0.05
+TOP_N_FEATURES <- 5
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
@@ -51,12 +52,13 @@ create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0
 
 
 ######### DEA HEATMAP ############
-rna_dea_heatmap_plot <- plot_dea_heatmap(
+atac_dea_heatmap_plot <- plot_dea_heatmap(
     dea_results_path = CorcesATAC_dea_OvA_path,
     fig_path = atac_dea_heatmap_path,
-    top_n_genes = TOP_N_GENES,
+    top_n_features = TOP_N_FEATURES,
     fdr_threshold = fdr_threshold,
-    title = "ATAC one-versus-all DAGs"
+    title = "ATAC one-versus-all DAGs (max peak per gene)",
+    q_mask = 0.02
 )
 
 

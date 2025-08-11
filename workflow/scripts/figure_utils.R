@@ -41,48 +41,56 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
 
 
 #### DEA HEATMAP ####
-get_top_dea_genes <- function(dea_results_path, top_n_genes, fdr_threshold) {
+get_top_differential_features <- function(dea_results_path, top_n_features, fdr_threshold) {
     # read data
     dea_df <- data.frame(fread(file.path(dea_results_path), header=TRUE))
     dea_df$minus_log10_adj_p_val <- -log10(dea_df$adj.P.Val)
 
-    # get top N up-regulated genes per group
+    # get top N up-regulated features per group
     top_up <- dea_df %>%
         group_by(group) %>%
-        # slice_max(order_by = logFC, n = top_n_genes, with_ties = FALSE) %>%
-        filter(logFC > 0) %>%
-        slice_max(order_by = minus_log10_adj_p_val, n = top_n_genes, with_ties = FALSE) %>%
+        filter(adj.P.Val < fdr_threshold) %>%
+        slice_max(order_by = logFC, n = top_n_features, with_ties=TRUE) %>%
+        # filter(logFC > 0) %>%
+        # slice_max(order_by = minus_log10_adj_p_val, n = top_n_features, with_ties = TRUE) %>%
         mutate(group = factor(group, levels = names(CELL_TYPE_COLORS))) %>%
-        arrange(group, -logFC)
-    # # get top N down-regulated genes per group
+        arrange(group, -logFC)  # - logFC to start with the highest values per group in the heatmap
+    # # get top N down-regulated features per group
     # top_down <- dea_df %>%
     #     group_by(group) %>%
-    #     slice_min(order_by = logFC, n = top_n_genes, with_ties = FALSE)
+    #     slice_min(order_by = logFC, n = top_n_features, with_ties = FALSE)
 
-    # combine and get unique genes
-    top_genes <- unique(c(top_up$feature_name))  # , top_down$feature_name
+    # combine and get unique features
+    top_features <- unique(c(top_up$feature_name))  # , top_down$feature_name
 
-    # filter the original df for these genes
-    dea_top_genes_df <- dea_df %>%
-        filter(feature_name %in% top_genes) %>%
-        mutate(feature_name = factor(feature_name, levels = rev(top_genes)))
+    # filter the original df for these features
+    # since in ATAC multiple peaks can be assigned to each gene, take the top peak per gene
+    dea_top_features_df <- dea_df %>%
+        filter(feature_name %in% top_features) %>%
+        group_by(group, feature_name) %>%
+        slice_max(order_by = logFC, n = 1) %>%
+        mutate(feature_name = factor(feature_name, levels = rev(top_features)))
 
     # rename groups to nicer names
-    dea_top_genes_df <- dea_top_genes_df %>%
+    dea_top_features_df <- dea_top_features_df %>%
         mutate(group = DATA_TO_CELL_TYPE_COLORS_MAPPING[group])
 
-    return(dea_top_genes_df)
+    return(dea_top_features_df)
 }
 
-plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_genes, fdr_threshold, title = NULL) {
+plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_threshold, title = NULL, q_mask=0) {
+    heatmap_df <- get_top_differential_features(dea_results_path, top_n_features, fdr_threshold)
 
-    heatmap_df <- get_top_dea_genes(dea_results_path, top_n_genes, fdr_threshold)
-  
     plot_data_final <- heatmap_df %>%
         mutate(
             group = factor(group, levels = names(CELL_TYPE_COLORS))
         )
     
+    upper_limit <- quantile(plot_data_final$logFC, probs = 1-q_mask)
+    lower_limit <- quantile(plot_data_final$logFC, probs = q_mask)
+    plot_data_final$logFC <- ifelse(plot_data_final$logFC < lower_limit, lower_limit, plot_data_final$logFC)
+    plot_data_final$logFC <- ifelse(plot_data_final$logFC > upper_limit, upper_limit, plot_data_final$logFC)
+
     # Create heatmap plot
     dea_heatmap <- ggplot(plot_data_final, aes(x = group, y = feature_name, fill = logFC)) +
         geom_tile(color = "white", lwd = 0, linetype = 1) +
@@ -99,7 +107,7 @@ plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_genes, fdr_thresh
 
     # Save plot
     width <- 7
-    height <- 5 # Adjusted for potentially many genes
+    height <- 5 # Adjusted for potentially many features
     ggsave_all_formats(path = fig_path,
                        plot = dea_heatmap,
                        width = width,
