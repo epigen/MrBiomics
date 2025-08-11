@@ -51,6 +51,7 @@ rna_dea_heatmap_plot <- plot_dea_heatmap(
     top_n_features = TOP_N_FEATURES,
     fdr_threshold = fdr_threshold,
     title = "RNA one-versus-all DEA",
+    feature = 'Gene',
     q_mask = 0.02
 )
 

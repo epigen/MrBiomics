@@ -41,7 +41,7 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
 
 
 #### DEA HEATMAP ####
-get_top_differential_features <- function(dea_results_path, top_n_features, fdr_threshold) {
+get_top_differential_features <- function(dea_results_path, top_n_features, fdr_threshold, max_per_gene=FALSE) {
     # read data
     dea_df <- data.frame(fread(file.path(dea_results_path), header=TRUE))
     dea_df$minus_log10_adj_p_val <- -log10(dea_df$adj.P.Val)
@@ -61,15 +61,24 @@ get_top_differential_features <- function(dea_results_path, top_n_features, fdr_
     #     slice_min(order_by = logFC, n = top_n_features, with_ties = FALSE)
 
     # combine and get unique features
-    top_features <- unique(c(top_up$feature_name))  # , top_down$feature_name
-
-    # filter the original df for these features
-    # since in ATAC multiple peaks can be assigned to each gene, take the top peak per gene
-    dea_top_features_df <- dea_df %>%
-        filter(feature_name %in% top_features) %>%
-        group_by(group, feature_name) %>%
-        slice_max(order_by = logFC, n = 1) %>%
-        mutate(feature_name = factor(feature_name, levels = rev(top_features)))
+    top_feature_names <- unique(c(top_up$feature_name))
+    top_features <- unique(c(top_up$feature))
+    
+    if (max_per_gene) {
+        # since in ATAC multiple peaks can be assigned to each gene, take the top peak per gene
+        dea_top_features_df <- dea_df %>%
+            filter(feature_name %in% top_feature_names) %>%
+            group_by(group, feature_name) %>%
+            slice_max(order_by = logFC, n = 1)
+    } else {
+            # filter the original df for these features
+        dea_top_features_df <- dea_df %>%
+            filter(feature %in% top_features)
+    }
+    
+    dea_top_features_df <- dea_top_features_df %>%
+        mutate(feature_name = factor(feature_name, levels = rev(top_feature_names)),
+               feature = factor(feature, levels = rev(top_features)))
 
     # rename groups to nicer names
     dea_top_features_df <- dea_top_features_df %>%
@@ -78,8 +87,15 @@ get_top_differential_features <- function(dea_results_path, top_n_features, fdr_
     return(dea_top_features_df)
 }
 
-plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_threshold, title = NULL, q_mask=0) {
-    heatmap_df <- get_top_differential_features(dea_results_path, top_n_features, fdr_threshold)
+plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_threshold, title = NULL, q_mask=0,
+                             feature, max_per_gene=FALSE) {
+    if (feature == 'Gene') {
+        feature_col <- 'feature_name'
+    } else if (feature == 'Region') {
+        feature_col <- 'feature'
+    }
+    
+    heatmap_df <- get_top_differential_features(dea_results_path, top_n_features, fdr_threshold, max_per_gene)
 
     plot_data_final <- heatmap_df %>%
         mutate(
@@ -92,10 +108,10 @@ plot_dea_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_thr
     plot_data_final$logFC <- ifelse(plot_data_final$logFC > upper_limit, upper_limit, plot_data_final$logFC)
 
     # Create heatmap plot
-    dea_heatmap <- ggplot(plot_data_final, aes(x = group, y = feature_name, fill = logFC)) +
+    dea_heatmap <- ggplot(plot_data_final, aes_string(x = "group", y = feature_col, fill = "logFC")) +
         geom_tile(color = "white", lwd = 0, linetype = 1) +
         scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(plot_data_final$logFC))) +
-        labs(title = title, x = "Cell type", y = "Gene") +
+        labs(title = title, x = "Cell type", y = feature) +
         MrBiomics_theme() +
         theme(
             axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),

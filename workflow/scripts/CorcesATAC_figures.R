@@ -57,7 +57,9 @@ atac_dea_heatmap_plot <- plot_dea_heatmap(
     fig_path = atac_dea_heatmap_path,
     top_n_features = TOP_N_FEATURES,
     fdr_threshold = fdr_threshold,
-    title = "ATAC one-versus-all DAGs (max peak per gene)",
+    title = "ATAC one-versus-all DARs",
+    feature = 'Region',
+    # max_per_gene = TRUE,  # not needed for region
     q_mask = 0.02
 )
 
