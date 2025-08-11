@@ -50,7 +50,7 @@ rna_dea_heatmap_plot <- plot_differential_features_heatmap(
     fig_path = rna_dea_heatmap_path,
     top_n_features = TOP_N_FEATURES,
     fdr_threshold = fdr_threshold,
-    title = "RNA one-versus-all DEA",
+    title = "RNA one-versus-all DEGs",
     feature = 'Gene',
     q_mask = 0
 )

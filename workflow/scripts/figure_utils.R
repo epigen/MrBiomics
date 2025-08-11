@@ -144,7 +144,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, top_n
     
     # Remove x-axis labels from the top plot
     dea_heatmap_up <- dea_heatmap_up + theme(axis.text.x = element_blank())
-    dea_heatmap_down <- dea_heatmap_down + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    dea_heatmap_down <- dea_heatmap_down + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Cell type")
     
     combined_plot <- dea_heatmap_up / dea_heatmap_down
     

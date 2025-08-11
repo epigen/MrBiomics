@@ -59,7 +59,6 @@ atac_dea_heatmap_plot <- plot_differential_features_heatmap(
     fdr_threshold = fdr_threshold,
     title = "ATAC one-versus-all DARs",
     feature = 'Region',
-    # max_per_gene = TRUE,  # not needed for region
     q_mask = 0
 )
 
