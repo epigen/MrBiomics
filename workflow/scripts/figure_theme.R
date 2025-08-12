@@ -2,7 +2,7 @@
 # select libraries
 required_libs <- c(
     "ggplot2",
-    "ggalign",
+    "ggdendro",
     "dendsort",
     "tidyr",
     "tibble",
@@ -158,9 +158,9 @@ CELL_TYPE_COLORS <- c(
     'GMP'='#FBCA03',
     'Mono'='#B97D10',
     'CLP'='#67C7EB',
-    'B'='#977CBA',
     'CD4'='#3B8DAC',
     'CD8'='#0E536C',
+    'B'='#977CBA',
     'NK'='#C73188',
     'MEP'='#E95E30',
     'Ery'='#AA0505'

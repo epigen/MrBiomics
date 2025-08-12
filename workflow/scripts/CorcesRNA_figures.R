@@ -36,7 +36,7 @@ rna_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/en
 # params
 # enrichment analysis
 fdr_threshold <- 0.05
-log2FC_threshold <- 2
+log2FC_threshold <- 5  # FIXME maybe reduce threshold, for quick testing this high now
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
@@ -51,7 +51,7 @@ rna_dea_heatmap_plot <- plot_differential_features_heatmap(
     log2FC_threshold = log2FC_threshold,
     title = "RNA",
     feature = 'Genes',
-    ct_clst_dist = "pearson",
+    ct_clst_dist = "euclidean",
     ct_clst_method = "ward.D2",
     feature_clst_dist = "euclidean",
     feature_clst_method = "ward.D2",

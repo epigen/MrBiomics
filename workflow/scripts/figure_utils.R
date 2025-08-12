@@ -82,14 +82,42 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         pivot_wider(names_from = group, values_from = logFC, values_fill = 0) %>%
         column_to_rownames(feature_col) %>%
         as.matrix()
-    order_dendro <- order.dendrogram(dendsort(as.dendrogram(
+    row_order <- order.dendrogram(dendsort(as.dendrogram(
             hclust(
                 dist(mat, method = feature_clst_dist),
                 method = feature_clst_method)
             )))
-    mat <- mat[order_dendro, ]
+    col_dendro <- dendsort(as.dendrogram(
+            hclust(
+                dist(t(mat), method = ct_clst_dist),
+                method = ct_clst_method)
+            ))
+    col_order <- order.dendrogram(col_dendro)
+
+    feature_vector <- heatmap_df[[feature_col]]
+    heatmap_df[[feature_col]] <- factor(feature_vector, levels = row.names(mat)[row_order])
+    heatmap_df$group <- factor(heatmap_df$group, levels = colnames(mat)[col_order])
     
-    # Quantile masking
+    # Annotation bars for cell type and lineage
+    annotation_df <- data.frame(group = colnames(mat)[col_order])
+    annotation_df$group <- factor(annotation_df$group, levels = colnames(mat)[col_order])
+    annotation_df$lineage <- CELL_TYPE_TO_LINEAGE_MAPPING[as.character(annotation_df$group)]
+    
+    cell_type_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = group)) +
+        geom_tile() +
+        scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = guide_legend(nrow = 4)) +
+        labs(y = "Cell type") +
+        theme_void() +
+        theme(axis.title.y = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 1, margin = margin(r = 5)))
+
+    lineage_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = lineage)) +
+        geom_tile() +
+        scale_fill_manual(values = LINEAGE_COLORS, name = "Lineage", guide = guide_legend(nrow = 2)) +
+        labs(y = "Lineage") +
+        theme_void() +
+        theme(axis.title.y = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 1, margin = margin(r = 5)))
+
+    # Quantile masking to remove outliers from color scale of heatmap
     if(q_mask > 0) {
         upper_limit <- quantile(heatmap_df$logFC, probs = 1 - q_mask, na.rm=TRUE)
         lower_limit <- quantile(heatmap_df$logFC, probs = q_mask, na.rm=TRUE)
@@ -99,33 +127,29 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm=TRUE)
 
-    dendsort_wrapper <- function(hc, ...) {
-        dendsort::dendsort(as.dendrogram(hc))
-    }
+    dendro_data <- dendro_data(col_dendro, type = "rectangle")
+    dendro_plot <- ggdendrogram(dendro_data, labels=FALSE) + theme_void()
 
-    heatmap_plot <- ggheatmap(mat) + 
+    heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col, fill = "logFC")) + 
+        geom_tile(linewidth = 0) + 
         scale_fill_distiller(palette = "RdBu", limits = plot_limits) +
         # labs(x = NULL, y = y_label, title = title) +
         MrBiomics_theme() + 
         theme(
-            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), 
+            axis.text.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.ticks.x = element_blank(),
             axis.text.y = element_blank(),
-        ) + 
-        anno_top(size=0.1) + 
-        align_dendro(reorder_dendrogram=dendsort_wrapper, 
-                     method = ct_clst_method, 
-                     distance = ct_clst_dist) + 
-        theme(
-            axis.text.y = element_blank(),
-            axis.ticks.y = element_blank(), 
-            axis.title.y = element_blank()
         )
 
+    gp <- dendro_plot / heatmap_plot / cell_type_plot / lineage_plot + 
+        plot_layout(heights = c(1, 10, 0.5, 0.5), guides = "collect") & 
+        theme(legend.position = "bottom", legend.box="vertical")
 
     width <- 4
-    height <- 4 # Adjusted for two plots stacked.
+    height <- 7 # Adjusted for two plots stacked.
     ggsave_all_formats(path = fig_path,
-                       plot = heatmap_plot,
+                       plot = gp,
                        width = width,
                        height = height)
     
