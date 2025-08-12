@@ -94,10 +94,12 @@ get_top_differential_features <- function(dea_results_path, top_n_features, fdr_
 
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, top_n_features, fdr_threshold, title = NULL, q_mask=0,
                              feature, max_per_gene=FALSE) {
-    if (feature == 'Gene') {
+    if (feature == 'Genes') {
         feature_col <- 'feature_name'
-    } else if (feature == 'Region') {
+        y_label <- 'Differentially expressed genes'
+    } else if (feature == 'Regions') {
         feature_col <- 'feature'
+        y_label <- 'Differentially accessible regions'
     }
     
     # Get data for both up and down regulated features
@@ -139,12 +141,12 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, top_n
         return(p)
     }
 
-    dea_heatmap_up <- create_heatmap(heatmap_df_up, y_label = feature)
-    dea_heatmap_down <- create_heatmap(heatmap_df_down, y_label = feature)
+    dea_heatmap_up <- create_heatmap(heatmap_df_up, y_label = y_label)
+    dea_heatmap_down <- create_heatmap(heatmap_df_down, y_label = NULL)
     
-    # Remove x-axis labels from the top plot
-    dea_heatmap_up <- dea_heatmap_up + theme(axis.text.x = element_blank())
-    dea_heatmap_down <- dea_heatmap_down + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Cell type")
+    # Remove x-axis labels from the top plot and remove spacing between plots
+    dea_heatmap_up <- dea_heatmap_up + theme(axis.text.x = element_blank(), plot.margin = margin(b = 0))
+    dea_heatmap_down <- dea_heatmap_down + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), plot.margin = margin(t = 0)) + xlab("Cell type")
     
     combined_plot <- dea_heatmap_up / dea_heatmap_down
     

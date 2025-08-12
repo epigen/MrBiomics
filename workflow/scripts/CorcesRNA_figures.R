@@ -36,7 +36,7 @@ rna_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/en
 # params
 # enrichment analysis
 fdr_threshold <- 0.05
-TOP_N_FEATURES <- 10
+TOP_N_FEATURES <- 100
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
@@ -50,8 +50,8 @@ rna_dea_heatmap_plot <- plot_differential_features_heatmap(
     fig_path = rna_dea_heatmap_path,
     top_n_features = TOP_N_FEATURES,
     fdr_threshold = fdr_threshold,
-    title = "RNA one-versus-all DEGs",
-    feature = 'Gene',
+    title = "RNA",
+    feature = 'Genes',
     q_mask = 0
 )
 
@@ -77,7 +77,7 @@ rna_enrichment_plot <- plot_enrichment_heatmap(
     fill_lab = "NES",
     size_lab = "-log10(FDR q-value)",
     title = "RNA",
-    ylabel = "Enrichment term (preranked GSEA, Azimuth 2023)"
+    ylabel = "Enrichment term\n(preranked GSEA, Azimuth 2023)"
 )
 
 # ######### Lineage reconstruction using crossprediction ############
