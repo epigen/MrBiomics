@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This method was first introduced by [Farlik, Halbritter, et al.](https://doi.org/10.1016/j.stem.2016.10.019) to computationally reconstruct the human hematopoietic lineage from **DNA methylation** profiles. It was later adapted by [Traxler, Reichl, et al.](https://doi.org/10.1016/j.cels.2025.101346) to infer functional relationships between gene knockouts from **scCRISPR-seq** perturbation signatures, successfully validated by identifying members of known protein complexes.
+
 ####libraries
 import os
 import pathlib
