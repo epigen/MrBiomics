@@ -2,13 +2,14 @@
 # select libraries
 required_libs <- c(
     "ggplot2",
+    "ggalign",
+    "dendsort",
     "tidyr",
     "tibble",
     "patchwork",
     "scales",
     "dplyr",
     "reshape2",
-    "pheatmap",
     "ggrepel",
     "stringr",
     "gridGraphics",

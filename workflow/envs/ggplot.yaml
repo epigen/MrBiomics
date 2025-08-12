@@ -5,14 +5,16 @@ channels:
   - nodefaults
 dependencies:
   - r-ggplot2=3.5
+  - r-ggalign=1.0
+  - bioconductor-complexheatmap=2.22
+  - r-ggrepel=0.9
+  - r-dendsort
   - r-tidyr=1.3
   - r-tibble=3.3
   - r-patchwork=1.3
   - r-scales=1.4
   - r-dplyr=1.1
   - r-reshape2=1.4
-  - r-pheatmap=1.0
-  - r-ggrepel=0.9
   - r-stringr=1.5
   - r-gridgraphics=0.5
   - r-ggplotify=0.1
