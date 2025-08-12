@@ -63,7 +63,8 @@ get_top_differential_features <- function(dea_results_path, fdr_threshold, log2F
 }
 
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
-                                               feature, ct_clst_method, ct_clst_dist, q_mask=0) {
+                                               feature, ct_clst_method, ct_clst_dist, feature_clst_method,
+                                               feature_clst_dist, q_mask=0) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
         y_label <- 'Differentially expressed genes'
@@ -81,7 +82,11 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         pivot_wider(names_from = group, values_from = logFC, values_fill = 0) %>%
         column_to_rownames(feature_col) %>%
         as.matrix()
-    order_dendro <- order.dendrogram(dendsort(as.dendrogram(hclust(dist(mat)))))
+    order_dendro <- order.dendrogram(dendsort(as.dendrogram(
+            hclust(
+                dist(mat, method = feature_clst_dist),
+                method = feature_clst_method)
+            )))
     mat <- mat[order_dendro, ]
     
     # Quantile masking
@@ -118,7 +123,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
 
     width <- 4
-    height <- 5 # Adjusted for two plots stacked.
+    height <- 4 # Adjusted for two plots stacked.
     ggsave_all_formats(path = fig_path,
                        plot = heatmap_plot,
                        width = width,

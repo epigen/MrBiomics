@@ -146,25 +146,25 @@ IRONMAN_COLORS <- c(
 )
 
 ## CorcesRNA & CorcesATAC
+# blue green violet: https://coolors.co/0e536c-3b8dac-51aacc-67c7eb-977cba-c73188-7fc493-96c03a-86ac35-566e21
+# red yellow orange: https://coolors.co/e95e30-ca321b-aa0505-b97d10-daa40a-fbca03-e1de3d-96c03a
+
 # cell type colors
 CELL_TYPE_COLORS <- c(
-    'HSC'='#566E21',   # HSC
-    'MPP'='#96C03A',  # MPP
-    'LMPP'='#7FC493',  # LMPP
-    'CMP'='#FBCA03',  # CMP
-    'GMP'='#B97D10',  # GMP
-    'MEP'='#E95E30',  # MEP
-    'Mono'='#AA0505',  # Mono
-    'Ery'='#6A0C0B',  # Ery
-    'CLP'='#67C7EB',  # CLP
-    'B'='#977CBA',  # B
-    'CD4'='#3B8DAC',  # CD4
-    'CD8'='#0E536C',  # CD8
-    'NK'='#C73188'  # NK
+    'HSC'='#566E21',
+    'MPP'='#96C03A',
+    'LMPP'='#7FC493',
+    'CMP'='#E1DE3D',
+    'GMP'='#FBCA03',
+    'Mono'='#B97D10',
+    'CLP'='#67C7EB',
+    'B'='#977CBA',
+    'CD4'='#3B8DAC',
+    'CD8'='#0E536C',
+    'NK'='#C73188',
+    'MEP'='#E95E30',
+    'Ery'='#AA0505'
 )
-
-# blue green violet: https://coolors.co/0e536c-3b8dac-67c7eb-7fc493-96c03a-566e21-977cba-c73188
-# red yellow orange: https://coolors.co/e95e30-aa0505-6a0c0b-b97d10-fbca03
 
 # Map from data names to CELL_TYPE_COLORS names
 DATA_TO_CELL_TYPE_COLORS_MAPPING <- c(
@@ -182,3 +182,28 @@ DATA_TO_CELL_TYPE_COLORS_MAPPING <- c(
     "Mono" = "Mono",
     "NKcell" = "NK"
 )
+
+CELL_TYPE_TO_LINEAGE_MAPPING <- c(
+    "HSC" = "Progenitor",
+    "MPP" = "Progenitor",
+    "LMPP" = "Progenitor",
+    "CMP" = "Progenitor",
+    "GMP" = "Myeloid",
+    "Mono" = "Myeloid",
+    "MEP" = "Erythroid",
+    "Ery" = "Erythroid",
+    "CLP" = "Lymphoid",
+    "CD4" = "Lymphoid",
+    "CD8" = "Lymphoid",
+    "NK" = "Lymphoid",
+    "B" = "Lymphoid"
+)
+
+LINEAGE_COLORS <- c(
+    "Progenitor" = "#86AC35",
+    "Myeloid" = "#DAA40A",
+    "Erythroid" = "#CA321B",
+    "Lymphoid" = "#51AACC"
+)
+
+CELL_TYPE_AND_LINEAGE_COLORS <- c(CELL_TYPE_COLORS, LINEAGE_COLORS)

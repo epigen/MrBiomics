@@ -52,7 +52,9 @@ rna_dea_heatmap_plot <- plot_differential_features_heatmap(
     title = "RNA",
     feature = 'Genes',
     ct_clst_dist = "pearson",
-    ct_clst_method = "average",
+    ct_clst_method = "ward.D2",
+    feature_clst_dist = "euclidean",
+    feature_clst_method = "ward.D2",
     q_mask = 0
 )
 
