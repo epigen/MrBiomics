@@ -144,7 +144,7 @@ compute_nonoverlapping_label_positions <- function(all_feature_levels, selected_
 
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
-                                               feature_clst_dist, q_mask=0, label_box_size = 50) {
+                                               feature_clst_dist, q_mask=0, label_box_size = 50, max_marker_labels = 25) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
         y_label <- 'Differentially expressed genes'
@@ -156,11 +156,21 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     # Get data for both up and down regulated features
     heatmap_df <- get_top_differential_features(dea_results_path, fdr_threshold, log2FC_threshold)
 
+    # For Regions, avoid adding display suffixes; instead, use a simple unique key for pivoting
+    # based on the (feature, feature_name) pair so that duplicate regions remain duplicated rows.
+    if (feature == 'Regions') {
+        heatmap_df <- heatmap_df %>%
+            mutate(feature_id = paste0(feature, "||", feature_name))
+        feature_col_to_plot <- 'feature_id'
+    } else {
+        feature_col_to_plot <- feature_col
+    }
+
     # use hclust and dendsort to order the rows
     mat <- heatmap_df %>%
-        select(group, all_of(feature_col), logFC) %>%
+        select(group, all_of(feature_col_to_plot), logFC) %>%
         pivot_wider(names_from = group, values_from = logFC, values_fill = 0) %>%
-        column_to_rownames(feature_col) %>%
+        column_to_rownames(feature_col_to_plot) %>%
         as.matrix()
     row_order <- order.dendrogram(dendsort(as.dendrogram(
             hclust(
@@ -174,8 +184,8 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
             ))
     col_order <- order.dendrogram(col_dendro)
 
-    feature_vector <- heatmap_df[[feature_col]]
-    heatmap_df[[feature_col]] <- factor(feature_vector, levels = row.names(mat)[row_order])
+    feature_vector <- heatmap_df[[feature_col_to_plot]]
+    heatmap_df[[feature_col_to_plot]] <- factor(feature_vector, levels = row.names(mat)[row_order])
     heatmap_df$group <- factor(heatmap_df$group, levels = colnames(mat)[col_order])
     
     # Annotation bars for cell type and lineage
@@ -216,7 +226,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         theme_void() +
         theme(plot.margin = margin(t = 0, r = 0, b = -14, l = 0, unit = "pt"))
 
-    heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col, fill = "logFC")) +
+    heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
         geom_tile(linewidth = 0) +
         scale_fill_distiller(palette = "RdBu", limits = plot_limits) +
         scale_x_discrete(expand = c(0, 0)) +
@@ -233,14 +243,62 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         )
 
     # Prepare data for marker labels
-    marker_labels_df <- heatmap_df %>%
-        filter(as.character(.data[[feature_col]]) %in% HAEMATOPOIESIS_MARKERS) %>%
-        distinct(.data[[feature_col]], .keep_all = TRUE)
+    if (feature == 'Regions') {
+        # Select region rows whose mapped gene is a known marker; keep duplicates
+        marker_labels_df <- heatmap_df %>%
+            filter(feature_name %in% HAEMATOPOIESIS_MARKERS)
+        label_text_map <- setNames(marker_labels_df$feature_name, marker_labels_df[[feature_col_to_plot]])
+    } else {
+        marker_labels_df <- heatmap_df %>%
+            filter(as.character(.data[[feature_col_to_plot]]) %in% HAEMATOPOIESIS_MARKERS) %>%
+            distinct(.data[[feature_col_to_plot]], .keep_all = TRUE)
+        # For genes, label text is the gene itself
+        label_text_map <- setNames(as.character(marker_labels_df[[feature_col_to_plot]]), as.character(marker_labels_df[[feature_col_to_plot]]))
+    }
 
     # Create a separate plot for the marker labels using handcrafted layout
     if (nrow(marker_labels_df) > 0) {
-        all_levels <- levels(heatmap_df[[feature_col]])
-        selected_features <- as.character(marker_labels_df[[feature_col]])
+        all_levels <- levels(heatmap_df[[feature_col_to_plot]])
+        selected_features <- as.character(marker_labels_df[[feature_col_to_plot]])
+
+        # Limit the number of marker labels to at most max_marker_labels.
+        # If more exist, choose a subset that is spaced evenly along the full heatmap height
+        # by selecting the nearest available marker to evenly spaced target rows.
+        if (length(selected_features) > max_marker_labels) {
+            feature_indices <- match(selected_features, all_levels)
+            # Remove any NA indices defensively
+            valid <- !is.na(feature_indices)
+            selected_features <- selected_features[valid]
+            feature_indices <- feature_indices[valid]
+
+            # Targets are evenly spaced along all rows, not just among existing markers
+            n_rows <- length(all_levels)
+            target_rows <- unique(round(seq(1, n_rows, length.out = max_marker_labels)))
+
+            # Greedy nearest-neighbor selection without replacement
+            keep <- logical(length(selected_features))
+            taken <- rep(FALSE, length(selected_features))
+            for (t in target_rows) {
+                # compute distances to target for all available markers not yet taken
+                available <- which(!taken)
+                if (length(available) == 0) break
+                dists <- abs(feature_indices[available] - t)
+                pick_local <- available[which.min(dists)]
+                keep[pick_local] <- TRUE
+                taken[pick_local] <- TRUE
+            }
+            # Fallback in case unique targets < max (e.g., very few markers spread),
+            # fill remaining slots by picking closest remaining markers in order top-to-bottom
+            if (sum(keep) < min(max_marker_labels, length(selected_features))) {
+                remaining <- which(!taken)
+                # order remaining by feature index top-to-bottom
+                ord_rem <- order(feature_indices[remaining])
+                fill_n <- min(min(max_marker_labels, length(selected_features)) - sum(keep), length(remaining))
+                keep[remaining[ord_rem][seq_len(fill_n)]] <- TRUE
+            }
+            selected_features <- selected_features[keep]
+        }
+
         pos_df <- compute_nonoverlapping_label_positions(
             all_feature_levels = all_levels,
             selected_features = selected_features,
@@ -251,13 +309,15 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         # Precompute plotting-space y coordinates (bottom = 1, top = n_rows)
         pos_df$label_y_plot <- n_rows + 1 - pos_df$label_y
         pos_df$orig_y_plot  <- n_rows + 1 - pos_df$orig_y
+        # Attach label text (gene symbols for regions, feature itself for genes)
+        pos_df$label <- as.character(label_text_map[pos_df$feature])
 
         marker_label_plot <- ggplot(pos_df) +
             # Connect calculated label positions to original row positions
             geom_segment(aes(x = 0.85, xend = 1.0, y = label_y_plot, yend = orig_y_plot),
                          size = 0.25, color = "grey40") +
             # Draw labels
-            geom_text(aes(x = 0.8, y = label_y_plot, label = feature),
+            geom_text(aes(x = 0.8, y = label_y_plot, label = label),
                       size = 2, hjust = 1) +
             # Fixed limits matching number of rows; flush to edges
             scale_y_continuous(limits = c(0.5, n_rows + 0.5), expand = c(0, 0)) +

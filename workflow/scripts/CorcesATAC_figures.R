@@ -28,7 +28,7 @@ atac_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC
 atac_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/enrichment.pdf"
 # params
 fdr_threshold <- 0.05
-log2FC_threshold <- 2
+log2FC_threshold <- 3
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
 atac_umap_plot <- umap_plot(CorcesATAC_umap_coords_path, atac_umap_path, title = "ATAC")
@@ -58,9 +58,12 @@ atac_dea_heatmap_plot <- plot_differential_features_heatmap(
     log2FC_threshold = log2FC_threshold,
     title = "ATAC",
     feature = 'Regions',
-    ct_clst_dist = "pearson",
+    ct_clst_dist = "euclidean",
     ct_clst_method = "ward.D2",
-    q_mask = 0
+    feature_clst_dist = "maximum",
+    feature_clst_method = "ward.D2",
+    q_mask = 0,
+    label_box_size = 500
 )
 
 
