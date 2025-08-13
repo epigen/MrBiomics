@@ -207,3 +207,28 @@ LINEAGE_COLORS <- c(
 )
 
 CELL_TYPE_AND_LINEAGE_COLORS <- c(CELL_TYPE_COLORS, LINEAGE_COLORS)
+
+HAEMATOPOIESIS_MARKERS <- c(
+    "CD34",
+    "CD38",
+    "THY1",
+    "KIT",
+    "FLT3",
+    "IL3RA",
+    "PTPRC",
+    "CSF1R",
+    "IL7R",
+    "MME",
+    "CD19",
+    "MS4A1",
+    "CD3E",
+    "CD4",
+    "CD8A",
+    "CD8B",
+    "NCAM1",
+    "FCGR3A",
+    "CD14",
+    "HLA-DRA",
+    "GYPA",
+    "TFRC"
+)

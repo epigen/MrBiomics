@@ -62,9 +62,89 @@ get_top_differential_features <- function(dea_results_path, fdr_threshold, log2F
     return(dea_top_features_df)
 }
 
+# Handcrafted non-overlapping label placement
+# all_feature_levels: character vector of all row levels in heatmap order (same as factor levels in heatmap_df[[feature_col]])
+# selected_features: character vector of features to label
+# box_size: minimal vertical separation between labels (in row-index units)
+compute_nonoverlapping_label_positions <- function(all_feature_levels, selected_features, box_size = 1) {
+    # Number of rows in heatmap
+    n_rows <- length(all_feature_levels)
+    if (length(selected_features) == 0) {
+        return(data.frame(feature = character(0), orig_y = numeric(0), label_y = numeric(0)))
+    }
+
+    # Convert to top-down index (top row = 1)
+    levels_top_to_bottom <- rev(all_feature_levels)
+    orig_idx <- match(selected_features, levels_top_to_bottom)
+
+    # Remove any NA (features not found in heatmap levels)
+    valid <- !is.na(orig_idx)
+    selected_features <- selected_features[valid]
+    orig_idx <- orig_idx[valid]
+
+    if (length(orig_idx) <= 1) {
+        return(data.frame(feature = selected_features, orig_y = orig_idx, label_y = orig_idx))
+    }
+
+    # Sort by original position (top to bottom)
+    ord <- order(orig_idx)
+    orig_sorted <- orig_idx[ord]
+    feat_sorted <- selected_features[ord]
+
+    # Initialize label positions with originals
+    pos <- as.numeric(orig_sorted)
+
+    # Anchor extremes if they sit exactly at boundaries
+    # Forward pass (top -> bottom): enforce minimal spacing
+    for (i in seq(2, length(pos))) {
+        pos[i] <- max(pos[i], pos[i - 1] + box_size)
+    }
+    # Clamp to bottom boundary
+    pos <- pmin(pos, n_rows)
+
+    # Backward pass (bottom -> top): pull up if needed while keeping spacing
+    if (length(pos) >= 2) {
+        for (i in seq(length(pos) - 1, 1)) {
+            pos[i] <- min(pos[i], pos[i + 1] - box_size)
+        }
+    }
+
+    # Enforce boundaries
+    pos <- pmax(1, pmin(n_rows, pos))
+
+    # If original is at exact top or bottom, keep it fixed
+    # Adjust neighbors accordingly if necessary
+    if (orig_sorted[1] == 1) {
+        pos[1] <- 1
+        if (length(pos) >= 2) {
+            for (i in seq(2, length(pos))) {
+                pos[i] <- max(pos[i], pos[i - 1] + box_size)
+            }
+            pos <- pmin(pos, n_rows)
+        }
+    }
+    if (orig_sorted[length(orig_sorted)] == n_rows) {
+        pos[length(pos)] <- n_rows
+        if (length(pos) >= 2) {
+            for (i in seq(length(pos) - 1, 1)) {
+                pos[i] <- min(pos[i], pos[i + 1] - box_size)
+            }
+            pos <- pmax(1, pos)
+        }
+    }
+
+    # Return in original selected_features order
+    result_sorted <- data.frame(feature = feat_sorted, orig_y = orig_sorted, label_y = pos, stringsAsFactors = FALSE)
+    # Reorder back to the original selected_features order
+    reord <- match(selected_features, result_sorted$feature)
+    result <- result_sorted[reord, , drop = FALSE]
+
+    return(result)
+}
+
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
-                                               feature_clst_dist, q_mask=0) {
+                                               feature_clst_dist, q_mask=0, label_box_size = 50) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
         y_label <- 'Differentially expressed genes'
@@ -106,16 +186,18 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     cell_type_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = group)) +
         geom_tile() +
         scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = guide_legend(nrow = 4)) +
-        labs(y = "Cell type") +
+        scale_x_discrete(expand = c(0, 0)) +
+        scale_y_continuous(expand = c(0, 0)) +
         theme_void() +
-        theme(axis.title.y = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 1, margin = margin(r = 5)))
+        theme(axis.title.y = element_blank(), plot.margin = margin(t = -12, r = 0, b = -8, l = 0, unit = "pt"))
 
     lineage_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = lineage)) +
         geom_tile() +
         scale_fill_manual(values = LINEAGE_COLORS, name = "Lineage", guide = guide_legend(nrow = 2)) +
-        labs(y = "Lineage") +
+        scale_x_discrete(expand = c(0, 0)) +
+        scale_y_continuous(expand = c(0, 0)) +
         theme_void() +
-        theme(axis.title.y = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 1, margin = margin(r = 5)))
+        theme(axis.title.y = element_blank(), plot.margin = margin(t = -10, r = 0, b = 0, l = 0, unit = "pt"))
 
     # Quantile masking to remove outliers from color scale of heatmap
     if(q_mask > 0) {
@@ -128,26 +210,82 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm=TRUE)
 
     dendro_data <- dendro_data(col_dendro, type = "rectangle")
-    dendro_plot <- ggdendrogram(dendro_data, labels=FALSE) + theme_void()
+    dendro_plot <- ggdendrogram(dendro_data, labels=FALSE) + 
+        scale_x_continuous(expand = c(0, 0)) +
+        scale_y_continuous(expand = c(0, 0)) +
+        theme_void() +
+        theme(plot.margin = margin(t = 0, r = 0, b = -14, l = 0, unit = "pt"))
 
-    heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col, fill = "logFC")) + 
-        geom_tile(linewidth = 0) + 
+    heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col, fill = "logFC")) +
+        geom_tile(linewidth = 0) +
         scale_fill_distiller(palette = "RdBu", limits = plot_limits) +
+        scale_x_discrete(expand = c(0, 0)) +
+        scale_y_discrete(expand = c(0, 0)) +
         # labs(x = NULL, y = y_label, title = title) +
-        MrBiomics_theme() + 
+        MrBiomics_theme() +
         theme(
             axis.text.x = element_blank(),
             axis.title.x = element_blank(),
             axis.ticks.x = element_blank(),
             axis.text.y = element_blank(),
+            axis.title.y = element_blank(),
+            plot.margin = margin(t = -14, r = 0, b = -8, l = 0, unit = "pt")
         )
 
-    gp <- dendro_plot / heatmap_plot / cell_type_plot / lineage_plot + 
-        plot_layout(heights = c(1, 10, 0.5, 0.5), guides = "collect") & 
-        theme(legend.position = "bottom", legend.box="vertical")
+    # Prepare data for marker labels
+    marker_labels_df <- heatmap_df %>%
+        filter(as.character(.data[[feature_col]]) %in% HAEMATOPOIESIS_MARKERS) %>%
+        distinct(.data[[feature_col]], .keep_all = TRUE)
 
-    width <- 4
-    height <- 7 # Adjusted for two plots stacked.
+    # Create a separate plot for the marker labels using handcrafted layout
+    if (nrow(marker_labels_df) > 0) {
+        all_levels <- levels(heatmap_df[[feature_col]])
+        selected_features <- as.character(marker_labels_df[[feature_col]])
+        pos_df <- compute_nonoverlapping_label_positions(
+            all_feature_levels = all_levels,
+            selected_features = selected_features,
+            box_size = label_box_size
+        )
+
+        n_rows <- length(all_levels)
+        # Precompute plotting-space y coordinates (bottom = 1, top = n_rows)
+        pos_df$label_y_plot <- n_rows + 1 - pos_df$label_y
+        pos_df$orig_y_plot  <- n_rows + 1 - pos_df$orig_y
+
+        marker_label_plot <- ggplot(pos_df) +
+            # Connect calculated label positions to original row positions
+            geom_segment(aes(x = 0.85, xend = 1.0, y = label_y_plot, yend = orig_y_plot),
+                         size = 0.25, color = "grey40") +
+            # Draw labels
+            geom_text(aes(x = 0.8, y = label_y_plot, label = feature),
+                      size = 2, hjust = 1) +
+            # Fixed limits matching number of rows; flush to edges
+            scale_y_continuous(limits = c(0.5, n_rows + 0.5), expand = c(0, 0)) +
+            scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+            theme_void() +
+            coord_cartesian(clip = "off") +
+            theme(plot.margin = margin(0, 0, 0, 0))
+    } else {
+        marker_label_plot <- plot_spacer()
+    }
+    
+    # Assemble the final plot using patchwork's wrap_plots for robust layout
+    plot_list <- list(
+        plot_spacer(),       dendro_plot,
+        marker_label_plot,   heatmap_plot,
+        plot_spacer(),       cell_type_plot,
+        plot_spacer(),       lineage_plot
+    )
+
+    gp <- wrap_plots(plot_list, ncol = 2,
+                     widths = c(1, 4),
+                     heights = c(0.6, 10, 0.35, 0.35)) +
+        plot_layout(guides = "collect") +
+        plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
+        theme(legend.position = "bottom", legend.box="vertical", plot.margin = margin(0, 0, 0, 0))
+
+    width <- 5 # Increased width to accommodate labels
+    height <- 7
     ggsave_all_formats(path = fig_path,
                        plot = gp,
                        width = width,
