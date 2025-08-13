@@ -55,7 +55,7 @@ rna_dea_heatmap_plot <- plot_differential_features_heatmap(
     ct_clst_method = "ward.D2",
     feature_clst_dist = "maximum",  # maximum to focus on the most differentially expressed groups when sorting genes
     feature_clst_method = "ward.D2",
-    q_mask = 0
+    q_mask = 0,
 )
 
 ######### ENRICHMENT HEATMAP ############
