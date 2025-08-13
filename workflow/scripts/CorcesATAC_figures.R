@@ -33,22 +33,6 @@ log2FC_threshold <- 3
 # Create UMAP plots
 atac_umap_plot <- umap_plot(CorcesATAC_umap_coords_path, atac_umap_path, title = "ATAC")
 
-######### Enrichment analysis heatmap function ############
-# Function to create enrichment heatmap
-create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.05) {
-    # Load enrichment analysis result
-    df <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
-    
-    # Adapt for ATAC data
-    df_formatted <- df %>%
-        rename(Term = description, statistic = p_adjust, score = fold_enrichment) %>%
-        mutate(name = sub("_up$", "", name),
-                score = ifelse(is.infinite(log2(score)), NaN, log2(score))) %>%
-        mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
-    
-    return(df_formatted)
-}
-
 
 ######### DEA HEATMAP ############
 atac_dea_heatmap_plot <- plot_differential_features_heatmap(
@@ -63,12 +47,25 @@ atac_dea_heatmap_plot <- plot_differential_features_heatmap(
     feature_clst_dist = "maximum",
     feature_clst_method = "ward.D2",
     q_mask = 0,
-    label_box_size = 500
+    label_box_size = 500, 
 )
 
 
 ######### ENRICHMENT HEATMAP ############
-# Create enrichment heatmaps
+create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.05) {
+    # Load enrichment analysis result
+    df <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
+    
+    # Adapt for ATAC data
+    df_formatted <- df %>%
+        rename(Term = description, statistic = p_adjust, score = fold_enrichment) %>%
+        mutate(name = sub("_up$", "", name),
+                score = ifelse(is.infinite(log2(score)), NaN, log2(score))) %>%
+        mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
+    
+    return(df_formatted)
+}
+
 atac_df_formatted <- create_atac_enrichment_df(CorcesATAC_enrichment_results_path, fdr_threshold)
 atac_heatmap_df <- prepare_for_heatmap(df_formatted = atac_df_formatted, fdr_threshold = fdr_threshold)
 atac_enrichment_plot <- plot_enrichment_heatmap(

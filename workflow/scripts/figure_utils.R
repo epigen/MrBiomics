@@ -144,7 +144,8 @@ compute_nonoverlapping_label_positions <- function(all_feature_levels, selected_
 
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
-                                               feature_clst_dist, q_mask=0, label_box_size = 50, max_marker_labels = 25) {
+                                               feature_clst_dist, q_mask=0, label_box_size = 50, max_marker_labels = 25, 
+                                               test_marker_annot = FALSE) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
         y_label <- 'Differentially expressed genes'
@@ -155,6 +156,25 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     
     # Get data for both up and down regulated features
     heatmap_df <- get_top_differential_features(dea_results_path, fdr_threshold, log2FC_threshold)
+
+    if (test_marker_annot) {
+        stopifnot(feature == 'Regions')
+        # add some made up regions that have very high or low logFC for all cell types
+        cell_types <- unique(heatmap_df$group)
+        new_regions <- data.frame(
+            feature = rep(paste0("test_region", 1:2), each = length(cell_types)),  # regions different names
+            feature_name = rep("test_region", length(cell_types)),  # all map to the same gene to test duplicates
+            logFC = c(rep(20, length(cell_types)), rep(-20, length(cell_types))),
+            group = cell_types
+        )
+        # Add NA values for any missing columns when binding the dataframes
+        new_regions[setdiff(names(heatmap_df), names(new_regions))] <- NA
+        heatmap_df <- rbind(heatmap_df, new_regions)
+
+        # add to HAEMATOPOIESIS_MARKERS
+        HAEMATOPOIESIS_MARKERS <- c(HAEMATOPOIESIS_MARKERS, "test_region")
+
+    }
 
     # For Regions, avoid adding display suffixes; instead, use a simple unique key for pivoting
     # based on the (feature, feature_name) pair so that duplicate regions remain duplicated rows.
@@ -349,7 +369,8 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     ggsave_all_formats(path = fig_path,
                        plot = gp,
                        width = width,
-                       height = height)
+                       height = height, 
+                       dpi = 1000)
     
     return(heatmap_plot)
 }

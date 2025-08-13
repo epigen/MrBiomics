@@ -36,7 +36,7 @@ rna_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/en
 # params
 # enrichment analysis
 fdr_threshold <- 0.05
-log2FC_threshold <- 5  # FIXME maybe reduce threshold, for quick testing this high now
+log2FC_threshold <- 5 
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
