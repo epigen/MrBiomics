@@ -27,13 +27,16 @@ set.seed(42)
 # load libraries
 loaded_libs <- lapply(required_libs, function(x) suppressWarnings(suppressMessages(library(x, character.only = TRUE))))
 options(stringsAsFactors=F)
-                      
+
+FONT <- "Arial"
+FONT_SIZE <- 12
+
 # MrBiomics plotting theme (TODO)
 MrBiomics_theme <- function(){
     
     # settings
-    font <- "Arial"
-    size <- 12
+    font <- FONT
+    size <- FONT_SIZE
     
     theme_bw(
         base_size=size,
@@ -84,6 +87,17 @@ MrBiomics_theme <- function(){
 #       axis.text.x = element_text(            #margin for axis text
 #                     margin=margin(5, b = 10))
     )
+}
+
+# same theme as MrBiomics_theme but everything removed except for the title
+MrBiomics_void <- function(){
+    font <- FONT
+    size <- FONT_SIZE
+    
+    theme_void() +
+        theme(
+            plot.title = element_text(hjust = 0, size = size, family = font, face = "bold", vjust = 2)
+        )
 }
 
 ### FUNCTIONS

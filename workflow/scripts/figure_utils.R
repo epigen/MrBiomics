@@ -302,7 +302,8 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     dendro_plot <- ggdendrogram(dendro_data, labels=FALSE) + 
         scale_x_continuous(limits = c(0.5, n_cols + 0.5), expand = c(0, 0)) +
         scale_y_continuous(expand = c(0, 0)) +
-        theme_void() +
+        labs(title = title) +
+        MrBiomics_void() +
         theme(plot.margin = margin(t = 0, r = 0, b = -14, l = 0, unit = "pt"))
 
     heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
