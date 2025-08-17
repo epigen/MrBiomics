@@ -153,7 +153,7 @@ compute_nonoverlapping_label_positions <- function(heatmap_rows, selected_featur
 
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
-                                               feature_clst_dist, q_mask=0, label_box_size_factor = 1,
+                                               feature_clst_dist, q_mask=0, label_box_size_factor = 1, n_clusters = 25,
                                                max_marker_labels = 25, test_marker_annot = FALSE) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
@@ -195,27 +195,59 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         feature_col_to_plot <- feature_col
     }
 
-    # use hclust and dendsort to order the rows
+    # use hclust and dendsort to order rows and columns
     mat <- heatmap_df %>%
         select(group, all_of(feature_col_to_plot), logFC) %>%
         pivot_wider(names_from = group, values_from = logFC, values_fill = 0) %>%
         column_to_rownames(feature_col_to_plot) %>%
         as.matrix()
-    row_order <- order.dendrogram(dendsort(as.dendrogram(
-            hclust(
-                dist(mat, method = feature_clst_dist),
-                method = feature_clst_method)
-            )))
-    col_dendro <- dendsort(as.dendrogram(
-            hclust(
-                dist(t(mat), method = ct_clst_dist),
-                method = ct_clst_method)
-            ))
+
+    # Row clustering (features)
+    row_hclust <- hclust(dist(mat, method = feature_clst_dist), method = feature_clst_method)
+    row_dendro <- dendsort(as.dendrogram(row_hclust))
+    row_order <- order.dendrogram(row_dendro)
+
+    # Column clustering (cell types)
+    col_hclust <- hclust(dist(t(mat), method = ct_clst_dist), method = ct_clst_method)
+    col_dendro <- dendsort(as.dendrogram(col_hclust))
     col_order <- order.dendrogram(col_dendro)
 
+    # Derive diagonal-friendly row order by clustering rows, assigning each cluster to
+    # the column with the highest mean logFC, then grouping clusters by column order
+    rownames_in_hclust_order <- rownames(mat)[row_order]
+    k_effective <- max(1, min(n_clusters, nrow(mat)))
+    cluster_assignments <- cutree(row_hclust, k = k_effective)
+    cluster_ids <- sort(unique(cluster_assignments))
+    column_names_in_order <- colnames(mat)[col_order]
+
+    cluster_summary <- lapply(cluster_ids, function(cl_id) {
+        rows_in_cluster <- names(cluster_assignments)[cluster_assignments == cl_id]
+        col_means <- colMeans(mat[rows_in_cluster, , drop = FALSE])
+        best_col <- names(which.max(col_means))
+        first_pos <- min(match(rows_in_cluster, rownames_in_hclust_order), na.rm = TRUE)
+        list(
+            cluster_id = cl_id,
+            rows = rows_in_cluster,
+            best_column = best_col,
+            best_column_rank = match(best_col, column_names_in_order),
+            first_pos = first_pos
+        )
+    })
+
+    cluster_order_idx <- order(
+        vapply(cluster_summary, function(x) x$best_column_rank, numeric(1)),
+        vapply(cluster_summary, function(x) x$first_pos, numeric(1))
+    )
+    cluster_summary <- cluster_summary[cluster_order_idx]
+
+    final_row_order <- unlist(lapply(cluster_summary, function(cs) {
+        rows <- cs$rows
+        rows[order(match(rows, rownames_in_hclust_order))]
+    }), use.names = FALSE)
+
     feature_vector <- heatmap_df[[feature_col_to_plot]]
-    heatmap_df[[feature_col_to_plot]] <- factor(feature_vector, levels = row.names(mat)[row_order])
-    heatmap_df$group <- factor(heatmap_df$group, levels = colnames(mat)[col_order])
+    heatmap_df[[feature_col_to_plot]] <- factor(feature_vector, levels = rev(final_row_order))
+    heatmap_df$group <- factor(heatmap_df$group, levels = column_names_in_order)
     
     # Annotation bars for cell type and lineage
     annotation_df <- data.frame(group = colnames(mat)[col_order])
