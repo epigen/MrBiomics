@@ -63,18 +63,18 @@ get_top_differential_features <- function(dea_results_path, fdr_threshold, log2F
 }
 
 # Handcrafted non-overlapping label placement
-# all_feature_levels: character vector of all row levels in heatmap order (same as factor levels in heatmap_df[[feature_col]])
+# heatmap_rows: character vector of all row levels in heatmap order (same as factor levels in heatmap_df[[feature_col]])
 # selected_features: character vector of features to label
 # box_size: minimal vertical separation between labels (in row-index units)
-compute_nonoverlapping_label_positions <- function(all_feature_levels, selected_features, box_size = 1) {
+compute_nonoverlapping_label_positions <- function(heatmap_rows, selected_features, box_size = 1) {
 	# Number of rows in heatmap
-	n_rows <- length(all_feature_levels)
+	n_rows <- length(heatmap_rows)
 	if (length(selected_features) == 0) {
 		return(data.frame(feature = character(0), orig_y = numeric(0), label_y = numeric(0)))
 	}
 
 	# Convert to top-down index (top row = 1)
-	levels_top_to_bottom <- rev(all_feature_levels)
+	levels_top_to_bottom <- rev(heatmap_rows)
 	orig_idx <- match(selected_features, levels_top_to_bottom)
 
 	# Remove any NA (features not found in heatmap levels)
@@ -154,13 +154,13 @@ compute_nonoverlapping_label_positions <- function(all_feature_levels, selected_
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
                                                feature_clst_dist, q_mask=0, label_box_size_factor = 1,
-                                               max_marker_labels = 20, test_marker_annot = FALSE) {
+                                               max_marker_labels = 25, test_marker_annot = FALSE) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
         y_label <- 'Differentially expressed genes'
     } else if (feature == 'Regions') {
         feature_col <- 'feature'
-        y_label <- 'Differentially accessible regions'
+        y_label <- 'Differentially accessible regions\n(mapped to genes)'
     }
     
     # Get data for both up and down regulated features
@@ -265,7 +265,6 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm=TRUE)
 
-    # Align dendrogram width with heatmap column centers
     n_cols <- length(col_order)
     dendro_data <- dendro_data(col_dendro, type = "rectangle")
     dendro_plot <- ggdendrogram(dendro_data, labels=FALSE) + 
@@ -306,56 +305,47 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     # Create a separate plot for the marker labels using handcrafted layout
     if (nrow(marker_labels_df) > 0) {
-        all_levels <- levels(heatmap_df[[feature_col_to_plot]])
+        all_features <- levels(heatmap_df[[feature_col_to_plot]])
         selected_features <- as.character(marker_labels_df[[feature_col_to_plot]])
 
-        # Limit the number of marker labels to at most max_marker_labels.
-        # If more exist, choose a subset that is spaced evenly along the full heatmap height
-        # by selecting the nearest available marker to evenly spaced target rows.
+        # If there are more candidate markers than allowed, choose top significant markers per cell type
         if (length(selected_features) > max_marker_labels) {
-            feature_indices <- match(selected_features, all_levels)
-            # Remove any NA indices defensively
-            valid <- !is.na(feature_indices)
-            selected_features <- selected_features[valid]
-            feature_indices <- feature_indices[valid]
+            # backup original candidates in case filtering removes all
+            marker_labels_df_backup <- marker_labels_df
+            label_text_map_backup <- label_text_map
 
-            # Targets are evenly spaced along all rows, not just among existing markers
-            n_rows <- length(all_levels)
-            target_rows <- unique(round(seq(1, n_rows, length.out = max_marker_labels)))
+            num_cell_types <- length(levels(heatmap_df$group))
+            n_markers_per_ct <- floor(max_marker_labels / max(1, num_cell_types))
+            if (n_markers_per_ct < 1) n_markers_per_ct <- 1
 
-            # Greedy nearest-neighbor selection without replacement
-            keep <- logical(length(selected_features))
-            taken <- rep(FALSE, length(selected_features))
-            for (t in target_rows) {
-                # compute distances to target for all available markers not yet taken
-                available <- which(!taken)
-                if (length(available) == 0) break
-                dists <- abs(feature_indices[available] - t)
-                pick_local <- available[which.min(dists)]
-                keep[pick_local] <- TRUE
-                taken[pick_local] <- TRUE
+            selected_features_new <- c()
+            marker_labels_no_dupl <- marker_labels_df
+            for (ct in levels(heatmap_df$group)) {
+                ct_df <- marker_labels_no_dupl %>%
+                    filter(group == ct)
+                if (nrow(ct_df) > n_markers_per_ct) {
+                    ct_df <- ct_df %>%
+                        slice_min(order_by = abs(logFC), n = n_markers_per_ct)
+                }
+                selected_features_new <- c(selected_features_new, as.character(ct_df[[feature_col_to_plot]]))
+                # drop already used markers to avoid duplicates between cell types
+                marker_labels_no_dupl <- marker_labels_no_dupl %>%
+                    filter(!.data[[feature_col_to_plot]] %in% ct_df[[feature_col_to_plot]])
             }
-            # Fallback in case unique targets < max
-            # fill remaining slots by picking closest remaining markers in order top-to-bottom
-            if (sum(keep) < min(max_marker_labels, length(selected_features))) {
-                remaining <- which(!taken)
-                # order remaining by feature index top-to-bottom
-                ord_rem <- order(feature_indices[remaining])
-                fill_n <- min(min(max_marker_labels, length(selected_features)) - sum(keep), length(remaining))
-                keep[remaining[ord_rem][seq_len(fill_n)]] <- TRUE
-            }
-            selected_features <- selected_features[keep]
+            selected_features <- selected_features_new
         }
 
-        label_box_size <- length(selected_features)*4 * label_box_size_factor
+
+        # adapt based on number of features in the heatmap and how many markers there can be at max
+        label_box_size <- nrow(mat) / max_marker_labels * label_box_size_factor
         
         pos_df <- compute_nonoverlapping_label_positions(
-            all_feature_levels = all_levels,
+            heatmap_rows = all_features,
             selected_features = selected_features,
             box_size = label_box_size
         )
 
-        n_rows <- length(all_levels)
+        n_rows <- length(all_features)
         # Precompute plotting-space y coordinates (bottom = 1, top = n_rows)
         pos_df$label_y_plot <- n_rows + 1 - pos_df$label_y
         pos_df$orig_y_plot  <- n_rows + 1 - pos_df$orig_y
