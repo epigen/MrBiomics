@@ -247,3 +247,13 @@ HAEMATOPOIESIS_MARKERS <- c(
     "GYPA",
     "TFRC"
 )
+
+children_list <- list(
+    HSC = c("MPP"),
+    MPP = c("LMPP", "CMP"),
+    LMPP = c("CLP", "GMP"),
+    CMP = c("GMP", "MEP"),
+    GMP = c("Mono"),
+    MEP = c("Ery"),
+    CLP = c("CD4", "CD8", "NK", "B")
+)
