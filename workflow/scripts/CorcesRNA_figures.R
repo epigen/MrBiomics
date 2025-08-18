@@ -203,6 +203,29 @@ if (hierarchy_coordinates){
 adjacencyList <- reshape2::melt(adjacencyMatrix)  # Convert to list of ties only
 adjacencyList <- adjacencyList[adjacencyList$value >= lineage_tree_cut_off, ] # prune weak edges
 
+# only keep ground truth edges that are not in the data driven adjacency matrix
+for (i in 1:nrow(adjacencyList)){
+    ground_truth_adj_mat[adjacencyList[i,'Var1'], adjacencyList[i,'Var2']] <- 0
+    ground_truth_adj_mat[adjacencyList[i,'Var2'], adjacencyList[i,'Var1']] <- 0
+}
+# unstack the matrix to long format and only keep the edges that are in the adjacency matrix
+# since edges are symmetric, drop the ones that are not in alphabetical order to avoid duplicates
+ground_truth_adj_mat_long <- ground_truth_adj_mat %>% 
+    reshape2::melt() %>%
+    filter(value == 1) %>%
+    mutate(Var1 = as.character(Var1), Var2 = as.character(Var2)) %>%
+    filter(Var1 < Var2) %>%
+    select(-value)
+
+# add the coordinates for plotting
+layoutCoordinates_incl_names <- data.frame(layoutCoordinates)
+layoutCoordinates_incl_names['node_name'] <- nodes
+ground_truth_adj_mat_long <- ground_truth_adj_mat_long %>%
+    left_join(layoutCoordinates_incl_names, by = c("Var1" = "node_name"), copy = TRUE) %>%
+    rename(x_start = x, y_start = y) %>%
+    left_join(layoutCoordinates_incl_names, by = c("Var2" = "node_name"), copy = TRUE) %>%
+    rename(x_end = x, y_end = y)
+
 
 # Function to generate paths between each connected node
 edgeMaker <- function(whichRow, len = 100){
@@ -217,7 +240,8 @@ edgeMaker <- function(whichRow, len = 100){
 
     # add a vector 'Probability' that linearly interpolates between the weights of the current edge and its counterpart
     x <- c(1,len)
-    y <- c(adjacencyMatrix[adjacencyList[whichRow,'Var1'],adjacencyList[whichRow,'Var2']],adjacencyMatrix[adjacencyList[whichRow,'Var2'],adjacencyList[whichRow,'Var1']])
+    y <- c(adjacencyMatrix[adjacencyList[whichRow,'Var1'],adjacencyList[whichRow,'Var2']],
+           adjacencyMatrix[adjacencyList[whichRow,'Var2'],adjacencyList[whichRow,'Var1']])
     edge$Probability <- approx(x,y,xout=1:len)$y
 
   return(edge)
@@ -229,13 +253,17 @@ allEdges <- do.call(rbind, allEdges)  # a fine-grained path ^, with bend ^
 head(allEdges)
 
 zp1 <- ggplot(allEdges) 
+zp1 <- zp1 + geom_segment(data = ground_truth_adj_mat_long, aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
+                          color = "grey", size = 2, linetype = "21")  # linetype: draw 2, skip 1
+
 zp1 <- zp1 + geom_path(aes(x = x, y = y, group = Group,  # Edges with gradient
                            colour = Sequence, size = Probability))  # and taper
 
 zp1 <- zp1 + geom_point(data = data.frame(layoutCoordinates),  # Add nodes
                         aes(x = x, y = y), shape=node_shape, size = point_size, color = node_colors)
 
-zp1 <- zp1 + geom_text(data = data.frame(layoutCoordinates), aes(x = x, y = y, label=nodes), color='white', hjust=0.5, vjust=0.5, size = fontsize, fontface = "bold")
+zp1 <- zp1 + geom_text(data = data.frame(layoutCoordinates), aes(x = x, y = y, label=nodes), color='white', hjust=0.5,
+                       vjust=0.5, size = fontsize, fontface = "bold")
 
 zp1 <- zp1 + scale_colour_gradient(low = gray(0), high = gray(0), guide = "none")
 
