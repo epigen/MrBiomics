@@ -41,6 +41,7 @@ rna_crossprediction_coordinates_path <- "/nobackup/lab_bock/projects/MrBiomics/p
 fdr_threshold <- 0.05
 log2FC_threshold <- 3
 lineage_tree_cut_off <- 0.05
+hierarchy_coordinates <- TRUE
 
 # ######### UMAPs (from unsupervised analysis) ############
 # # Create UMAP plots
@@ -118,7 +119,11 @@ node_colors <- CELL_TYPE_COLORS[nodes]
 node_shape <- 19
 border_color <- "#000000"
 stroke_size <- 1.5
-point_size <- 5
+stroke_max <- 5
+point_size <- 12
+fontsize <- 3
+spacing_between_layers <- 5
+layer_jitter <- 1
 
 # data
 adjacencyMatrix <- as.matrix(adj_mtx)
@@ -138,9 +143,57 @@ new_theme_empty$axis.title <- element_blank()
 new_theme_empty$plot.margin <- structure(c(0, 0, 0, 0), unit = "lines",
                                          valid.unit = 3L, class = "unit")
 
-if (exists("coordinates")){
-    layoutCoordinates <- coordinates
-} else{
+nodes_in_current_layer <- c('HSC')  # root node at top of the hierarchy
+y <- 0
+x <- 0
+coordinates <- list('HSC' = c(x, y))
+ground_truth_adj_mat <- matrix(0, nrow = length(nodes), ncol = length(nodes))
+rownames(ground_truth_adj_mat) <- nodes
+colnames(ground_truth_adj_mat) <- nodes
+if (hierarchy_coordinates){
+    while (length(nodes_in_current_layer) > 0){
+        y <- y - spacing_between_layers
+        children_in_next_layer <- c()
+        for (current_node in nodes_in_current_layer){
+            if (current_node %in% names(children_list)){
+                children <- children_list[[current_node]]
+                
+                # symmetric adjacency matrix
+                ground_truth_adj_mat[current_node, children] <- 1
+                ground_truth_adj_mat[children, current_node] <- 1
+
+                # remember children for next layer
+                children_in_next_layer <- c(children_in_next_layer, children)
+            }
+        }
+        
+        # for duplicates, keep the first occurrence
+        children_in_next_layer <- unique(children_in_next_layer)
+        
+        if (length(children_in_next_layer) > 0){
+            # positions equally spaced
+            x_positions <- 1:length(children_in_next_layer) - 1
+            # center the positions
+            x_positions <- x_positions - ((length(children_in_next_layer)-1) / 2)
+            # scale the positions to be wider if there are more children in the layer
+            x_positions <- x_positions * (spacing_between_layers/(length(children_in_next_layer)))
+            # add jitter so that edges between nodes of the same layers don't overlap
+            for (i in 1:length(children_in_next_layer)){
+                y <- y + layer_jitter
+                layer_jitter <- layer_jitter * -1
+                coordinates[[children_in_next_layer[i]]] <- c(x_positions[i], y)
+            }
+        }
+        # move to next layer
+        nodes_in_current_layer <- children_in_next_layer
+    }
+    # make same data shape as one would get from gplot
+    layoutCoordinates <- do.call(rbind, coordinates)
+    layoutCoordinates <- layoutCoordinates[nodes, ]
+    rownames(layoutCoordinates) <- NULL
+    colnames(layoutCoordinates) <- c("x", "y")
+
+} else {
     pdf(file = if (.Platform$OS.type == "windows") "NUL" else "/dev/null")  # route to null device (ie trash)
     layoutCoordinates <- gplot(adjacencyMatrix, mode="fruchtermanreingold")    # Get graph layout coordinates
     dev.off()
@@ -152,22 +205,12 @@ adjacencyList <- adjacencyList[adjacencyList$value >= lineage_tree_cut_off, ] # 
 
 
 # Function to generate paths between each connected node
-edgeMaker <- function(whichRow, len = 100, curved = TRUE){
+edgeMaker <- function(whichRow, len = 100){
     fromC <- layoutCoordinates[adjacencyList[whichRow, 1], ]  # Origin
     toC <- layoutCoordinates[adjacencyList[whichRow, 2], ]  # Terminus
 
-    # Add curve:
-    graphCenter <- colMeans(layoutCoordinates)  # Center of the overall graph
-    bezierMid <- c(fromC[1], toC[2])  # A midpoint, for bended edges
-    distance1 <- sum((graphCenter - bezierMid)^2)
-    if(distance1 < sum((graphCenter - c(toC[1], fromC[2]))^2)){
-    bezierMid <- c(toC[1], fromC[2])
-    }  # To select the best Bezier midpoint
-    bezierMid <- (fromC + toC + bezierMid) / 3  # Moderate the Bezier midpoint
-    if(curved == FALSE){bezierMid <- (fromC + toC) / 2}  # Remove the curve
-
-    edge <- data.frame(bezier(c(fromC[1], bezierMid[1], toC[1]),  # Generate
-                            c(fromC[2], bezierMid[2], toC[2]),  # X & y
+    edge <- data.frame(bezier(c(fromC[1], toC[1]),  # Generate
+                            c(fromC[2], toC[2]),  # X & y
                             evaluation = len))  # Bezier path coordinates
     edge$Sequence <- 1:len  # For size and colour weighting in plot
     edge$Group <- paste(adjacencyList[whichRow, 1:2], collapse = ">")
@@ -180,27 +223,23 @@ edgeMaker <- function(whichRow, len = 100, curved = TRUE){
   return(edge)
 }
 
-# Generate a (curved) edge path for each pair of connected nodes
-allEdges <- lapply(1:nrow(adjacencyList), edgeMaker, len = 500, curved = curved)
+# Generate a edge path for each pair of connected nodes
+allEdges <- lapply(1:nrow(adjacencyList), edgeMaker, len = 500)
 allEdges <- do.call(rbind, allEdges)  # a fine-grained path ^, with bend ^
+head(allEdges)
 
 zp1 <- ggplot(allEdges) 
 zp1 <- zp1 + geom_path(aes(x = x, y = y, group = Group,  # Edges with gradient
                            colour = Sequence, size = Probability))  # and taper
 
 zp1 <- zp1 + geom_point(data = data.frame(layoutCoordinates),  # Add nodes
-#                         aes(x = x, y = y),  pch = 21, size = point_size, fill = node_colors, colour = border_color, stroke = stroke_size) # fill & borders are informative
-                        aes(x = x, y = y), shape=node_shape, size = point_size, color = node_colors)#+scale_shape_manual(name = "condition", labels = names(cond_shapes),values = cond_shapes) # fill and shape are informative
+                        aes(x = x, y = y), shape=node_shape, size = point_size, color = node_colors)
 
-# zp1 <- zp1 + geom_text(data = data.frame(layoutCoordinates), aes(x = x, y = y, label=nodes),#rownames(adjacencyMatrix)),
-#                        hjust=0.5, vjust=-1)
+zp1 <- zp1 + geom_text(data = data.frame(layoutCoordinates), aes(x = x, y = y, label=nodes), color='white', hjust=0.5, vjust=0.5, size = fontsize, fontface = "bold")
 
-zp1 <- zp1 + geom_label(data = data.frame(layoutCoordinates), aes(x = x, y = y, label=nodes), fill=node_colors,#rownames(adjacencyMatrix)),
-                        hjust=0.5, vjust=-0.5)
+zp1 <- zp1 + scale_colour_gradient(low = gray(0), high = gray(0), guide = "none")
 
-zp1 <- zp1 + scale_colour_gradient(low = gray(0), high = gray(0), guide = "none") # Customize gradient
-
-zp1 <- zp1 + scale_size(range = c(1/10, point_size-1))#, guide = "none")  # Customize taper
+zp1 <- zp1 + scale_size(range = c(1/10, stroke_max))#, guide = "none")  # Customize taper
 
 crosspred_p <- zp1 + 
         new_theme_empty + 
