@@ -28,6 +28,7 @@ set.seed(42)
 loaded_libs <- lapply(required_libs, function(x) suppressWarnings(suppressMessages(library(x, character.only = TRUE))))
 options(stringsAsFactors=F)
 
+PLOT_HEIGHT <- 5
 FONT <- "Arial"
 FONT_SIZE <- 12
 

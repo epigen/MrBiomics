@@ -46,7 +46,7 @@ atac_dea_heatmap_plot <- plot_differential_features_heatmap(
     ct_clst_method = "ward.D2",
     feature_clst_dist = "maximum",
     feature_clst_method = "ward.D2",
-    q_mask = 0,
+    q_mask = 0.025,
     label_box_size_factor = 1
 )
 

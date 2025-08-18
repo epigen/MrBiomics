@@ -30,11 +30,10 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
     
     # Save plot
     width <- 6
-    height <- 5
     ggsave_all_formats(path = fig_path,
                        plot = umap_plot,
                        width = width,
-                       height = height)
+                       height = PLOT_HEIGHT)
     
     return(umap_plot)
 }
@@ -256,7 +255,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     
     cell_type_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = group)) +
         geom_tile(color = 'white', linewidth = 0.5) +
-        scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = guide_legend(nrow = 4)) +
+        scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = "none") +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_continuous(expand = c(0, 0)) +
         theme_void() +
@@ -265,7 +264,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     lineage_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = lineage)) +
         geom_tile(color = 'white', linewidth = 0.5) +
-        scale_fill_manual(values = LINEAGE_COLORS, name = "Lineage", guide = guide_legend(nrow = 2)) +
+        scale_fill_manual(values = LINEAGE_COLORS, name = "Lineage", guide = guide_legend(ncol = 1)) +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_continuous(expand = c(0, 0)) +
         theme_void() +
@@ -308,7 +307,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
         geom_tile(linewidth = 0) +
-        scale_fill_distiller(palette = "RdBu", limits = plot_limits) +
+        scale_fill_distiller(palette = "RdBu", limits = plot_limits, guide = guide_colorbar(direction = "vertical")) +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
         labs(x = 'Cell type') +
@@ -424,18 +423,17 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         marker_label_plot,      heatmap_plot
     )
     gp <- wrap_plots(plot_list, ncol = 2,
-                     widths = c(1, 4),
+                     widths = c(1, 3),
                      heights = c(0.6, 0.35, 0.35, 10)) +
         plot_layout(guides = "collect") +
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
-        theme(legend.position = "bottom", legend.box="vertical", plot.margin = margin(0, 0, 0, 0))
+        theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0))
 
-    width <- 5 # Increased width to accommodate labels
-    height <- 7
+    width <- 5
     ggsave_all_formats(path = fig_path,
                        plot = gp,
                        width = width,
-                       height = height, 
+                       height = PLOT_HEIGHT, 
                        dpi = 1000)
     
     return(heatmap_plot)
@@ -581,11 +579,10 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
 
     # Save plot
     width <- 7
-    height <- 5
     ggsave_all_formats(path = fig_path,
                        plot = enrichment_plot,
                        width = width,
-                       height = height)
+                       height = PLOT_HEIGHT)
     
     return(enrichment_plot)
 }
