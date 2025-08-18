@@ -101,7 +101,6 @@ dim(adj_mtx)
 rownames(adj_mtx) <- recode(rownames(adj_mtx), !!!DATA_TO_CELL_TYPE_COLORS_MAPPING)
 colnames(adj_mtx) <- recode(colnames(adj_mtx), !!!DATA_TO_CELL_TYPE_COLORS_MAPPING)
 
-# FIXME make predefined layout of the graph as in Corces F1
 children_list <- list(
     HSC = c("MPP"),
     MPP = c("LMPP", "CMP"),
@@ -112,27 +111,24 @@ children_list <- list(
     CLP = c("CD4", "CD8", "NK", "B")
 )
 
-
-# set colors & shapes
+# set plot parameters
 nodes <- rownames(adj_mtx)
 node_colors <- CELL_TYPE_COLORS[nodes]
 node_shape <- 19
-border_color <- "#000000"
-stroke_size <- 1.5
 stroke_max <- 5
 point_size <- 12
 fontsize <- 3
 spacing_between_layers <- 5
 layer_jitter <- 1
+outcome_title <- "Compared to\nCorces et al. (2016)"
+tp_name <- "Consistent"
+fp_name <- "Additional"
+fn_name <- "Missing"
 
-# data
 adjacencyMatrix <- as.matrix(adj_mtx)
 
 adjacencyMatrix[adjacencyMatrix < lineage_tree_cut_off] <- 0
 
-# plot graph
-
-# Empty ggplot2 theme
 new_theme_empty <- theme_bw() 
 new_theme_empty$line <- element_blank()
 new_theme_empty$rect <- element_blank()
@@ -199,9 +195,23 @@ if (hierarchy_coordinates){
     dev.off()
 }
 
+# capture full set of undirected ground-truth edges before subtracting predicted edges
+ground_truth_pairs_all <- ground_truth_adj_mat %>% 
+    reshape2::melt() %>%
+    filter(value == 1) %>%
+    mutate(
+        a = pmin(as.character(Var1), as.character(Var2)),
+        b = pmax(as.character(Var1), as.character(Var2))
+    ) %>%
+    select(a, b) %>%
+    distinct()
+
 
 adjacencyList <- reshape2::melt(adjacencyMatrix)  # Convert to list of ties only
 adjacencyList <- adjacencyList[adjacencyList$value >= lineage_tree_cut_off, ] # prune weak edges
+
+# keys for ground-truth undirected edge membership
+gt_keys <- paste(ground_truth_pairs_all$a, ground_truth_pairs_all$b, sep=">")
 
 # only keep ground truth edges that are not in the data driven adjacency matrix
 for (i in 1:nrow(adjacencyList)){
@@ -238,6 +248,12 @@ edgeMaker <- function(whichRow, len = 100){
     edge$Sequence <- 1:len  # For size and colour weighting in plot
     edge$Group <- paste(adjacencyList[whichRow, 1:2], collapse = ">")
 
+    # compute undirected pair key and type based on ground truth membership
+    a_val <- pmin(as.character(adjacencyList[whichRow, 'Var1']), as.character(adjacencyList[whichRow, 'Var2']))
+    b_val <- pmax(as.character(adjacencyList[whichRow, 'Var1']), as.character(adjacencyList[whichRow, 'Var2']))
+    pair_key <- paste(a_val, b_val, sep=">")
+    edge$edge_type <- ifelse(pair_key %in% gt_keys, tp_name, fp_name)
+
     # add a vector 'Probability' that linearly interpolates between the weights of the current edge and its counterpart
     x <- c(1,len)
     y <- c(adjacencyMatrix[adjacencyList[whichRow,'Var1'],adjacencyList[whichRow,'Var2']],
@@ -253,11 +269,14 @@ allEdges <- do.call(rbind, allEdges)  # a fine-grained path ^, with bend ^
 head(allEdges)
 
 zp1 <- ggplot(allEdges) 
-zp1 <- zp1 + geom_segment(data = ground_truth_adj_mat_long, aes(x = x_start, y = y_start, xend = x_end, yend = y_end),
-                          color = "grey", size = 2, linetype = "21")  # linetype: draw 2, skip 1
+zp1 <- zp1 + geom_segment(
+                          data = ground_truth_adj_mat_long,
+                          aes(x = x_start, y = y_start, xend = x_end, yend = y_end,
+                              colour = fn_name, linetype = fn_name),
+                          size = 2)  # linetype: draw 2, skip 1
 
-zp1 <- zp1 + geom_path(aes(x = x, y = y, group = Group,  # Edges with gradient
-                           colour = Sequence, size = Probability))  # and taper
+zp1 <- zp1 + geom_path(aes(x = x, y = y, group = Group, size = Probability, colour = edge_type, linetype = edge_type),
+                       na.rm = TRUE)  # taper with explicit type
 
 zp1 <- zp1 + geom_point(data = data.frame(layoutCoordinates),  # Add nodes
                         aes(x = x, y = y), shape=node_shape, size = point_size, color = node_colors)
@@ -265,9 +284,36 @@ zp1 <- zp1 + geom_point(data = data.frame(layoutCoordinates),  # Add nodes
 zp1 <- zp1 + geom_text(data = data.frame(layoutCoordinates), aes(x = x, y = y, label=nodes), color='white', hjust=0.5,
                        vjust=0.5, size = fontsize, fontface = "bold")
 
-zp1 <- zp1 + scale_colour_gradient(low = gray(0), high = gray(0), guide = "none")
+zp1 <- zp1 +
+    scale_colour_manual(
+        name = outcome_title,
+        values = setNames(
+            c("black", "grey", "grey"),
+            c(tp_name, fp_name, fn_name)
+        ),
+        breaks = c(tp_name, fp_name, fn_name),
+        labels = c(tp_name, fp_name, fn_name)
+    ) +
+    scale_linetype_manual(
+        name = outcome_title,
+        values = setNames(
+            c("solid", "solid", "11"),
+            c(tp_name, fp_name, fn_name)
+        ),
+        breaks = c(tp_name, fp_name, fn_name),
+        labels = c(tp_name, fp_name, fn_name)
+    )
 
-zp1 <- zp1 + scale_size(range = c(1/10, stroke_max))#, guide = "none")  # Customize taper
+zp1 <- zp1 + scale_size(range = c(0.3, stroke_max))#, guide = "none")  # Customize taper
+
+# add padding so nodes/edges aren't clipped at plot boundaries
+zp1 <- zp1 +
+    scale_x_continuous(expand = expansion(mult = 0.12)) +
+    scale_y_continuous(expand = expansion(mult = 0.12))
+
+# add modality as text to act as title
+zp1 <- zp1 + geom_text(aes(x = min(data.frame(layoutCoordinates)$x), y = 1, label = "RNA"),
+                       hjust = 0, vjust = 1, size = 8, fontface = "bold")
 
 crosspred_p <- zp1 + 
         new_theme_empty + 
@@ -276,7 +322,7 @@ crosspred_p <- zp1 +
 
 
 
-width <- 5
+width <- 6
 # save plot
 ggsave_all_formats(path=rna_crossprediction_path,
                    plot=crosspred_p,
