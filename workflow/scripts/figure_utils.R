@@ -159,7 +159,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         y_label <- 'Differentially expressed genes'
     } else if (feature == 'Regions') {
         feature_col <- 'feature'
-        y_label <- 'Differentially accessible regions\n(mapped to genes)'
+        y_label <- 'Differentially accessible regions\n(mapped to closest gene)'
     }
     
     # Get data for both up and down regulated features
