@@ -821,7 +821,7 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
 
     # Add modality label as title text
     p <- p + geom_text(aes(x = min(data.frame(layoutCoordinates)$x), y = 1, label = modality_label),
-                       hjust = 0, vjust = 1, size = 8, fontface = "bold")
+                       hjust = 0, vjust = 1, size = 5, fontface = "bold")
 
     crosspred_plot <- p + new_theme_empty +
         guides(size = guide_legend(title = 'Average\ncross-prediction\nprobability'))
