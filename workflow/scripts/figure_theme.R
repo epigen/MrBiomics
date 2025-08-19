@@ -257,3 +257,9 @@ children_list <- list(
     MEP = c("Ery"),
     CLP = c("CD4", "CD8", "NK", "B")
 )
+
+# picked from colorpalette RdBu from ggplot2
+RdBu_extremes <- c(
+    "up" = "#B6242F",  # red
+    "down" = "#2569AD"  # blue
+)

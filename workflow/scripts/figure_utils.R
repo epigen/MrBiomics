@@ -25,7 +25,8 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
             axis.text.x = element_blank(),
-            axis.text.y = element_blank()
+            axis.text.y = element_blank(),
+            aspect.ratio = 1
         )
     
     # Save plot
@@ -307,7 +308,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
         geom_tile(linewidth = 0) +
-        scale_fill_distiller(palette = "RdBu", limits = plot_limits, guide = guide_colorbar(direction = "vertical")) +
+        scale_fill_distiller(palette = "RdBu", limits = plot_limits, guide = guide_colorbar(direction = "vertical"), name = "log2(FC)") +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
         labs(x = 'Cell type') +
@@ -644,7 +645,7 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
                                                tp_name = "Consistent",
                                                fp_name = "Additional",
                                                fn_name = "Missing",
-                                               outcome_title = "Compared to\nCorces et al. (2016)",
+                                               outcome_title = "Compared to\nliterature",
                                                node_shape = 19,
                                                point_size = 12,
                                                fontsize = 3,

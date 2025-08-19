@@ -43,51 +43,51 @@ log2FC_threshold <- 3
 lineage_tree_cut_off <- 0.07
 hierarchy_coordinates <- TRUE
 
-# ######### UMAPs (from unsupervised analysis) ############
-# # Create UMAP plots
-# rna_umap_plot <- umap_plot(CorcesRNA_umap_coords_path, rna_umap_path, title = "RNA")
+######### UMAPs (from unsupervised analysis) ############
+# Create UMAP plots
+rna_umap_plot <- umap_plot(CorcesRNA_umap_coords_path, rna_umap_path, title = "RNA")
 
 
-# ######### DEA HEATMAP ############
-# rna_dea_heatmap_plot <- plot_differential_features_heatmap(
-#     dea_results_path = CorcesRNA_dea_OvA_path,
-#     fig_path = rna_dea_heatmap_path,
-#     fdr_threshold = fdr_threshold,
-#     log2FC_threshold = log2FC_threshold,
-#     title = "RNA",
-#     feature = 'Genes',
-#     ct_clst_dist = "euclidean",
-#     ct_clst_method = "ward.D2",
-#     feature_clst_dist = "maximum",  # maximum to focus on the most differentially expressed groups when sorting genes
-#     feature_clst_method = "ward.D2",
-#     q_mask = 0.025,
-#     label_box_size_factor = 1
-# )
+######### DEA HEATMAP ############
+rna_dea_heatmap_plot <- plot_differential_features_heatmap(
+    dea_results_path = CorcesRNA_dea_OvA_path,
+    fig_path = rna_dea_heatmap_path,
+    fdr_threshold = fdr_threshold,
+    log2FC_threshold = log2FC_threshold,
+    title = "RNA",
+    feature = 'Genes',
+    ct_clst_dist = "euclidean",
+    ct_clst_method = "ward.D2",
+    feature_clst_dist = "maximum",  # maximum to focus on the most differentially expressed groups when sorting genes
+    feature_clst_method = "ward.D2",
+    q_mask = 0.025,
+    label_box_size_factor = 1
+)
 
-# ######### ENRICHMENT HEATMAP ############
-# # Function to create enrichment heatmap
-# create_rna_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.05) {
-#     # Load enrichment analysis result
-#     df <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
+######### ENRICHMENT HEATMAP ############
+# Function to create enrichment heatmap
+create_rna_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.05) {
+    # Load enrichment analysis result
+    df <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
 
-#     df_formatted <- df %>%
-#         rename(statistic = FDR_q_val, score = NES) %>%
-#         mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
+    df_formatted <- df %>%
+        rename(statistic = FDR_q_val, score = NES) %>%
+        mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
     
-#     return(df_formatted)
-# }
+    return(df_formatted)
+}
 
-# # Create enrichment heatmaps
-# rna_df_formatted <- create_rna_enrichment_df(CorcesRNA_enrichment_results_path, fdr_threshold)
-# rna_heatmap_df <- prepare_for_heatmap(df_formatted = rna_df_formatted, fdr_threshold = fdr_threshold)
-# rna_enrichment_plot <- plot_enrichment_heatmap(
-#     heatmap_df = rna_heatmap_df,
-#     fig_path = rna_enrichment_path,
-#     fill_lab = "NES",
-#     size_lab = "-log10(FDR q-value)",
-#     title = "RNA",
-#     ylabel = "Enrichment term\n(preranked GSEA, Azimuth 2023)"
-# )
+# Create enrichment heatmaps
+rna_df_formatted <- create_rna_enrichment_df(CorcesRNA_enrichment_results_path, fdr_threshold)
+rna_heatmap_df <- prepare_for_heatmap(df_formatted = rna_df_formatted, fdr_threshold = fdr_threshold)
+rna_enrichment_plot <- plot_enrichment_heatmap(
+    heatmap_df = rna_heatmap_df,
+    fig_path = rna_enrichment_path,
+    fill_lab = "NES",
+    size_lab = "-log10(q-adj.)",
+    title = "RNA",
+    ylabel = "Enrichment term\n(preranked GSEA, Azimuth 2023)"
+)
 
 ######### Lineage reconstruction using crossprediction ############
 # plot adapted from: https://gist.github.com/dsparks/4331058
