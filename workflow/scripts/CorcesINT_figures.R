@@ -25,7 +25,7 @@ head(gene_annotation)
 # transform data for plotting (for each group)
 dea <- dea_results |> mutate(cell_type = sub("cell_type(.*?)__.*", "\\1", group))
 
-#### iterate over groups ####
+#### EPIGENETIC POTENTIAL PLOT ####
 for(ct in unique(metadata$cell_type)){
 
     ## ---------- summarise mean signal per gene ----------
@@ -72,7 +72,7 @@ for(ct in unique(metadata$cell_type)){
     df_div  <-  df %>% filter(category != "Convergent")
 
     # prepare annotations instead of legend
-    cat_cols <- c("Convergent"             = "grey80",
+    cat_cols <- c("Convergent"             = "grey50",
               "Epigenetic potential"   = as.character(RdBu_extremes["up"]),
               "Transcriptional abundance"= as.character(RdBu_extremes["down"]))
 
@@ -100,17 +100,17 @@ for(ct in unique(metadata$cell_type)){
     ## ---------- plot ----------
     p <- ggplot(df, aes(x = ATAC, y = RNA, label = markers)) +
     # plot convergent first (small, faint – background)
-    geom_point(data = df_conv,
+    rasterise(geom_point(data = df_conv,
              aes(colour = category),
              size  = 0.5,
              alpha = 0.1,
              stroke = 0,
-             show.legend = FALSE) +
+             show.legend = FALSE)) +
     # overlay divergent classes (larger, more opaque – foreground)
-    geom_point(data = df_div %>% filter(markers == ""),
+    rasterise(geom_point(data = df_div %>% filter(markers == ""),
              aes(colour = category, size = log10_adjp),
              alpha = 0.5,
-             stroke = 0) +
+             stroke = 0)) +
     # colour palette 
     scale_colour_manual(
     values = cat_cols,
@@ -140,13 +140,13 @@ for(ct in unique(metadata$cell_type)){
         seed = 42,
         show.legend = FALSE
     ) +
-    # redraw labeled points on top so labels don't occlude points
-    geom_point(
-        data = df %>% filter(markers != ""),
-        aes(colour = category, size = log10_adjp),
-        alpha = 0.5,
-        stroke = 0
-    ) +
+    # # redraw labeled points on top so labels don't occlude points
+    # geom_point(
+    #     data = df %>% filter(markers != ""),
+    #     aes(colour = category, size = log10_adjp),
+    #     alpha = 0.5,
+    #     stroke = 0
+    # ) +
     # axis titles
     labs(
     title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
@@ -159,6 +159,5 @@ for(ct in unique(metadata$cell_type)){
     # print(p)
     
   ## ---------- save plot ----------
-  ggsave(file.path(plot_dir,paste0(ct,"_correlation.png")), p, width = PLOT_HEIGHT+1, height = PLOT_HEIGHT,
-         dpi = 300, bg="white")
+  ggsave_all_formats(file.path(plot_dir,paste0(ct,"_correlation.png")), p, width = PLOT_HEIGHT+1, height = PLOT_HEIGHT)
 }

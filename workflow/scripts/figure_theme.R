@@ -11,6 +11,7 @@ required_libs <- c(
     "dplyr",
     "reshape2",
     "ggrepel",
+    "ggrastr",
     "stringr",
     "gridGraphics",
     "ggplotify",
@@ -26,7 +27,7 @@ set.seed(42)
 
 # load libraries
 loaded_libs <- lapply(required_libs, function(x) suppressWarnings(suppressMessages(library(x, character.only = TRUE))))
-options(stringsAsFactors=F)
+options(stringsAsFactors=F, ggrastr.default.dpi = 500)
 
 PLOT_HEIGHT <- 5
 FONT <- "Arial"
