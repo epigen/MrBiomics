@@ -6,6 +6,8 @@ source("workflow/scripts/figure_utils.R")
 # input
 unintegrated_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/unsupervised_analysis/normupperquartile/UMAP/UMAP_correlation_15_0.1_2_data.csv"
 integrated_umap_coords_path <-   "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/unsupervised_analysis/normupperquartile_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
+unintegrated_cfa_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/normupperquartile_CFA.csv"
+integrated_cfa_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated_CFA.csv"
 norm_counts_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated.csv"
 metadata_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/annotation.csv"
 dea_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/dea_limma/normupperquartile_integrated/results.csv"
@@ -15,30 +17,130 @@ adjp_th <- 0.05
 lfc_th <- 1
 ave_expr_th <- 0
 # output
-epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
+unintegrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_cfa.pdf"
+integrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_cfa.pdf"
 integrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_umap.pdf"
 unintegrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_umap.pdf"
+epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
 
-# load data
+########################################################################################################################
+### LOAD DATA ##########################################################################################################
+########################################################################################################################
+V1_to_rowname <- function(df) {
+    rownames(df) <- df$V1
+    df <- df[,-1]
+    return(df)
+}
+
 unintegrated_umap_coords <- data.frame(fread(file.path(unintegrated_umap_coords_path), header=TRUE))
 integrated_umap_coords <- data.frame(fread(file.path(integrated_umap_coords_path), header=TRUE))
 norm_counts <- data.frame(fread(file.path(norm_counts_path), header=TRUE), row.names=1)
 metadata <- data.frame(fread(file.path(metadata_path), header=TRUE), row.names=1)
 dea_results <- data.frame(fread(file.path(dea_results_path), header=TRUE))
 gene_annotation <- data.frame(fread(file.path(gene_annotation_path), header=TRUE))
+unintegrated_cfa_data <- V1_to_rowname(data.frame(fread(file.path(unintegrated_cfa_path), header=TRUE)))
+integrated_cfa_data <- V1_to_rowname(data.frame(fread(file.path(integrated_cfa_path), header=TRUE)))
 
-# transform norm_counts for plotting (for each group)
-dea <- dea_results |> mutate(cell_type = sub("cell_type(.*?)__.*", "\\1", group))
-
-### UMAP PLOT ####
+########################################################################################################################
+### UMAP PLOT ##########################################################################################################
+########################################################################################################################
 unintegrated_umap_plot <- umap_plot(unintegrated_umap_coords_path, unintegrated_umap_plot_path, title = "Unintegrated",
                                     modality_by_shape = TRUE)
 integrated_umap_plot <- umap_plot(integrated_umap_coords_path, integrated_umap_plot_path, title = "Integrated",
                                     modality_by_shape = TRUE)
 
+########################################################################################################################
+### CFA PLOT ##########################################################################################################
+########################################################################################################################
+plot_cfa_heatmap <- function(cfa_mat, title, path, var_max=NULL, nPCs=10, metadata_rows=c('cell_type', 'modality', 'donor')){
+var_explained_df <- t(cfa_mat['var_explained', 1:nPCs]) %>%
+    as.data.frame() %>%
+    rownames_to_column(var = 'PC') %>%
+    mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))))
+cfa_mat <- cfa_mat[metadata_rows, 1:nPCs]
 
+if (is.null(var_max)) {
+    x_max <- max(var_explained_df$var_explained, na.rm = TRUE)
+} else {
+    x_max <- var_max
+}
+
+# unstack cfa_mat, remembering rownames and colnames
+cfa_mat_long <- cfa_mat %>%
+    rownames_to_column(var = "metadata_type") %>%
+    pivot_longer(cols = -metadata_type, names_to = "PC", values_to = "stat") %>%
+    mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))),
+            metadata_type = factor(metadata_type, levels = metadata_rows),
+            text_color = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "white", "black"),
+            text_fontface = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "bold", "plain")
+            )
+
+# barplot of var_explained
+var_explained_plot <- ggplot(var_explained_df, aes(y = PC, x = var_explained)) +
+    geom_bar(stat = "identity", fill = 'grey80') +
+    MrBiomics_theme() +
+    scale_x_continuous(limits = c(0, x_max), breaks = c(0, x_max/2, x_max),
+                        labels = function(x) format(x, digits = 2)) +
+    theme(
+        axis.text.y = element_blank(),integrated_cfa.png
+        axis.title.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.major.x = element_line(),
+        panel.border = element_blank(),
+        plot.margin = margin(5.5, 5.5, 5.5, 5.5)
+    ) +
+    labs(title = NULL, x = "Variance explained", y = NULL)
+
+cfa_heatmap <- ggplot(cfa_mat_long, aes(x = metadata_type, y = PC, fill = stat)) +
+    geom_tile(linewidth = 0) +
+    geom_text(aes(label = round(stat, 1), color = text_color, fontface = text_fontface), size = 3) +
+    scale_fill_gradient(low = "white", high = as.character(RdBu_extremes["up"]), name='-log10(p-adj.)') +
+    scale_color_identity(guide = "none") +
+    scale_x_discrete(labels = function(x) tools::toTitleCase(gsub("_", " ", x)), expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0, 0)) +
+    MrBiomics_theme() +
+    theme(
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "right",
+        plot.margin = margin(5.5, 5.5, 5.5, 5.5)
+    ) +
+    coord_fixed() +
+    labs(title = title, y = paste0("PC(1-", ncol(cfa_mat), ")"), x = NULL)
+
+cfa_plot <- cfa_heatmap + var_explained_plot + plot_spacer() + guide_area() +
+    plot_layout(ncol = 4, widths = c(2, 2, 0.2, 1.4), guides = "collect") +
+    plot_annotation(theme = theme(plot.margin = margin(10, 20, 10, 10))) &
+    theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5), legend.box.margin = margin(5.5, 5.5, 5.5, 10),
+            legend.margin = margin(5.5, 5.5, 5.5, 5.5))
+
+ggsave_all_formats(path = path,
+                    plot = cfa_plot,
+                    width = PLOT_HEIGHT-0.5,
+                    height = PLOT_HEIGHT)
+return(cfa_plot)
+}
+
+var_max <- max(unintegrated_cfa_data['var_explained',], integrated_cfa_data['var_explained',])
+
+unintegrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=unintegrated_cfa_data, title='Unintegrated',
+     path=unintegrated_cfa_plot_path, var_max=var_max, nPCs=10)
+integrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=integrated_cfa_data, title='Integrated',
+     path=integrated_cfa_plot_path, var_max=var_max, nPCs=10)
+
+
+
+########################################################################################################################
+### EPIGENETIC POTENTIAL PLOT ##########################################################################################
+########################################################################################################################
 # FIXME uncomment again, but takes long to run during development
-# #### EPIGENETIC POTENTIAL PLOT ####
+# # transform norm_counts for plotting (for each group)
+# dea <- dea_results |> mutate(cell_type = sub("cell_type(.*?)__.*", "\\1", group))
+
 # for(ct in unique(metadata$cell_type)){
 
 #     ## ---------- summarise mean signal per gene ----------
@@ -174,3 +276,5 @@ integrated_umap_plot <- umap_plot(integrated_umap_coords_path, integrated_umap_p
 #   ## ---------- save plot ----------
 #   ggsave_all_formats(file.path(epigenetic_scatter_dir,paste0(ct,"_correlation.png")), p, width = PLOT_HEIGHT+1, height = PLOT_HEIGHT)
 # }
+
+
