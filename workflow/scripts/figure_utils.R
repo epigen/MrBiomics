@@ -1,5 +1,5 @@
 #### UMAP plotting ####
-umap_plot <- function(data_path, fig_path, title = NULL) {
+umap_plot <- function(data_path, fig_path, title = NULL, modality_by_shape = FALSE) {
     # Load UMAP data
     umap_data <- data.frame(fread(file.path(data_path), header=TRUE))
     
@@ -12,9 +12,16 @@ umap_plot <- function(data_path, fig_path, title = NULL) {
     # Order cell types according to CELL_TYPE_COLORS
     umap_data$cell_type_colored <- factor(umap_data$cell_type_colored, 
                                          levels = names(CELL_TYPE_COLORS))
-    
-    # Create scatterplot
-    umap_plot <- ggplot(umap_data, aes(x = UMAP_1, y = UMAP_2, color = cell_type_colored)) +
+
+    if (modality_by_shape) {
+        umap_data$modality <- sapply(strsplit(umap_data$sample_name, "_"), function(x) x[3])
+        umap_plot <- ggplot(umap_data, aes(x = UMAP_1, y = UMAP_2, color = cell_type_colored, shape = modality)) +
+            scale_shape_manual(values = c("ATAC" = 17, "RNA" = 16), name = NULL)
+    } else {
+        umap_plot <- ggplot(umap_data, aes(x = UMAP_1, y = UMAP_2, color = cell_type_colored))
+    }
+
+    umap_plot <- umap_plot +
         geom_point(size = 3, alpha = 0.8) +
         scale_color_manual(values = CELL_TYPE_COLORS, name = "Cell type") +
         labs(x = "UMAP 1", y = "UMAP 2", title = title) +
