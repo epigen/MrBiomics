@@ -137,7 +137,6 @@ integrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=integrated_cfa_data, title='Inte
 ########################################################################################################################
 ### EPIGENETIC POTENTIAL PLOT ##########################################################################################
 ########################################################################################################################
-# FIXME uncomment again, but takes long to run during development
 # transform norm_counts for plotting (for each group)
 dea <- dea_results |> mutate(cell_type = sub("cell_type(.*?)__.*", "\\1", group))
 
@@ -235,7 +234,7 @@ for(ct in unique(metadata$cell_type)){
     # size legend using original -log10(adjusted p) values
     scale_size_continuous(
       name = "-log10(p-adj.)",
-      range = c(0.5, 4),
+      range = c(0.1, 2),
       breaks = size_breaks,
       labels = function(x) format(x, digits = 2)
     ) +
@@ -244,12 +243,13 @@ for(ct in unique(metadata$cell_type)){
     data = ann_df,
     inherit.aes = FALSE,
     aes(x = x, y = y, label = lab, color = category, hjust = hjust, vjust = vjust),
-    size = 5,
+    size = FONT_SIZE_NORMAL / .pt
     ) +
     # annotate divergent HAEMATOPOIESIS_MARKERS
     geom_text_repel(
         color = "black",
-        box.padding = 0.5,
+        box.padding = 0.15,
+        min.segment.length = 0,
         max.overlaps = Inf,
         seed = 42,
         show.legend = FALSE

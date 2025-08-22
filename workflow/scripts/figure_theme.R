@@ -108,7 +108,7 @@ MrBiomics_theme <- function(){
 # text in axis is in pt, but geom_text etc use other units --> fix here
 # note: .pt is a conversion factor from mm to pt (setting size.units = "pt" did not work)
 update_geom_defaults("text", list(size = FONT_SIZE_SMALL / .pt))
-update_geom_defaults("text_repel", list(size = FONT_SIZE_SMALL / .pt))
+update_geom_defaults("text_repel", list(size = FONT_SIZE_SMALL / .pt, segment.size = 0.2))
 update_geom_defaults("label", list(size = FONT_SIZE_SMALL / .pt))
 
 # same theme as MrBiomics_theme but everything removed except for the title
