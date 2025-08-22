@@ -29,16 +29,24 @@ set.seed(42)
 loaded_libs <- lapply(required_libs, function(x) suppressWarnings(suppressMessages(library(x, character.only = TRUE))))
 options(stringsAsFactors=F, ggrastr.default.dpi = 500)
 
-PLOT_HEIGHT <- 5
+# in cm, for A4 paper
+PAGE_WIDTH <- 21
+PLOT_SIZE_5_PER_ROW <- PAGE_WIDTH/5
+PLOT_SIZE_4_PER_ROW <- PAGE_WIDTH/4
+PLOT_SIZE_3_PER_ROW <- PAGE_WIDTH/3
+PLOT_SIZE_2_PER_ROW <- PAGE_WIDTH/2
+
+# as per Nature and Science guidelines
 FONT <- "Arial"
-FONT_SIZE <- 12
+FONT_SIZE_NORMAL <- 7
+FONT_SIZE_SMALL <- 5
 
 # MrBiomics plotting theme (TODO)
 MrBiomics_theme <- function(){
     
     # settings
     font <- FONT
-    size <- FONT_SIZE
+    size <- FONT_SIZE_NORMAL
     
     theme_bw(
         base_size=size,
@@ -48,7 +56,6 @@ MrBiomics_theme <- function(){
     theme(
         ###  grid elements
         axis.ticks = element_blank(),          #remove axis ticks
-        
         ### text elements
         text = element_text(              
                     family = font,           
@@ -85,27 +92,54 @@ MrBiomics_theme <- function(){
         legend.title = element_text(              #axis text
                     family = font,            #axis famuly
                     size = size),
+        
+        # compact legends globally
+        legend.key.height = grid::unit(0.4, "lines"),
+        legend.key.width  = grid::unit(0.6, "lines"),
+        legend.spacing.y  = grid::unit(0.1, "lines"),
+        legend.spacing    = grid::unit(0.2, "lines"),
+        legend.box.spacing= grid::unit(0.2, "lines")
       
 #       axis.text.x = element_text(            #margin for axis text
 #                     margin=margin(5, b = 10))
     )
 }
 
+# text in axis is in pt, but geom_text etc use other units --> fix here
+# note: .pt is a conversion factor from mm to pt (setting size.units = "pt" did not work)
+update_geom_defaults("text", list(size = FONT_SIZE_SMALL / .pt))
+update_geom_defaults("text_repel", list(size = FONT_SIZE_SMALL / .pt))
+update_geom_defaults("label", list(size = FONT_SIZE_SMALL / .pt))
+
 # same theme as MrBiomics_theme but everything removed except for the title
 MrBiomics_void <- function(){
     font <- FONT
-    size <- FONT_SIZE
+    size <- FONT_SIZE_NORMAL
     
     theme_void() +
         theme(
-            plot.title = element_text(hjust = 0, size = size, family = font, face = "bold", vjust = 2)
+            plot.title = element_text(hjust = 0, size = size, family = font, face = "bold", vjust = 2),
+            legend.text = element_text(              #axis text
+                        family = font,            #axis famuly
+                        size = size), 
+            
+            legend.title = element_text(              #axis text
+                        family = font,            #axis famuly
+                        size = size),
+            
+            # compact legends globally
+            legend.key.height = grid::unit(0.4, "lines"),
+            legend.key.width  = grid::unit(0.6, "lines"),
+            legend.spacing.y  = grid::unit(0.1, "lines"),
+            legend.spacing    = grid::unit(0.2, "lines"),
+            legend.box.spacing= grid::unit(0.2, "lines")
         )
 }
 
 ### FUNCTIONS
 
 # extended ggsave
-ggsave_all_formats <- function(path, plot, width=5, height=5, dpi=300){
+ggsave_all_formats <- function(path, plot, width=PLOT_SIZE_3_PER_ROW, height=PLOT_SIZE_3_PER_ROW, dpi=300){
 
     # close any lingering devices before opening a new one
     while (!is.null(dev.list())) dev.off()
@@ -131,6 +165,7 @@ ggsave_all_formats <- function(path, plot, width=5, height=5, dpi=300){
             width = width,
             height = height,
           limitsize = FALSE,
+          units = "cm"
         )
     }
     print(paste0("Saved ", path))

@@ -120,8 +120,8 @@ cfa_plot <- cfa_heatmap + var_explained_plot + plot_spacer() + guide_area() +
 
 ggsave_all_formats(path = path,
                     plot = cfa_plot,
-                    width = PLOT_HEIGHT-0.5,
-                    height = PLOT_HEIGHT)
+                    width = PLOT_SIZE_3_PER_ROW-0.5,
+                    height = PLOT_SIZE_3_PER_ROW)
 return(cfa_plot)
 }
 
@@ -138,143 +138,145 @@ integrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=integrated_cfa_data, title='Inte
 ### EPIGENETIC POTENTIAL PLOT ##########################################################################################
 ########################################################################################################################
 # FIXME uncomment again, but takes long to run during development
-# # transform norm_counts for plotting (for each group)
-# dea <- dea_results |> mutate(cell_type = sub("cell_type(.*?)__.*", "\\1", group))
+# transform norm_counts for plotting (for each group)
+dea <- dea_results |> mutate(cell_type = sub("cell_type(.*?)__.*", "\\1", group))
 
-# for(ct in unique(metadata$cell_type)){
+for(ct in unique(metadata$cell_type)){
 
-#     ## ---------- summarise mean signal per gene ----------
-#     atac <- rownames(metadata)[metadata$cell_type == ct & metadata$modality == "ATAC"]
-#     rna  <- rownames(metadata)[metadata$cell_type == ct & metadata$modality == "RNA" ]
+    ## ---------- summarise mean signal per gene ----------
+    atac <- rownames(metadata)[metadata$cell_type == ct & metadata$modality == "ATAC"]
+    rna  <- rownames(metadata)[metadata$cell_type == ct & metadata$modality == "RNA" ]
     
-#     df <- data.frame(
-#     feature = rownames(norm_counts),
-#     ATAC = rowMeans(norm_counts[ , atac, drop = FALSE]),
-#     RNA  = rowMeans(norm_counts[ , rna , drop = FALSE])
-#     )
+    df <- data.frame(
+    feature = rownames(norm_counts),
+    ATAC = rowMeans(norm_counts[ , atac, drop = FALSE]),
+    RNA  = rowMeans(norm_counts[ , rna , drop = FALSE])
+    )
     
-#     ## ---------- add category EP or TA ----------
-#     stat <- dea |>
-#     filter(cell_type == ct) |>
-#     select(feature, logFC, adj.P.Val, AveExpr)
+    ## ---------- add category EP or TA ----------
+    stat <- dea |>
+    filter(cell_type == ct) |>
+    select(feature, logFC, adj.P.Val, AveExpr)
     
-#     df <- df |>
-#     left_join(stat, by = "feature") |>
-#     mutate(category = case_when(
-#       adj.P.Val > adjp_th | abs(logFC) < lfc_th | AveExpr < ave_expr_th ~ "Convergent",
-#       adj.P.Val <= adjp_th & logFC >= lfc_th & AveExpr >= ave_expr_th ~ "Epigenetic potential",
-#       adj.P.Val <= adjp_th & logFC  <= -lfc_th & AveExpr >= ave_expr_th ~ "Transcriptional abundance"
-#     ))
+    df <- df |>
+    left_join(stat, by = "feature") |>
+    mutate(category = case_when(
+      adj.P.Val > adjp_th | abs(logFC) < lfc_th | AveExpr < ave_expr_th ~ "Convergent",
+      adj.P.Val <= adjp_th & logFC >= lfc_th & AveExpr >= ave_expr_th ~ "Epigenetic potential",
+      adj.P.Val <= adjp_th & logFC  <= -lfc_th & AveExpr >= ave_expr_th ~ "Transcriptional abundance"
+    ))
     
-#     ## ---------- labels with counts and stats ----------
-#     counts <- table(df$category)
+    ## ---------- labels with counts and stats ----------
+    counts <- table(df$category)
     
-#     # prepare statistics
-#     r_val <- cor(df$ATAC, df$RNA, method = "pearson", use = "complete.obs")
+    # prepare statistics
+    r_val <- cor(df$ATAC, df$RNA, method = "pearson", use = "complete.obs")
 
-#     df$log10_adjp <- -log10(df$adj.P.Val)
-#     df$gene_symbol <- gene_annotation$external_gene_name[match(df$feature, gene_annotation$ensembl_gene_id)]
+    df$log10_adjp <- -log10(df$adj.P.Val)
+    df$gene_symbol <- gene_annotation$external_gene_name[match(df$feature, gene_annotation$ensembl_gene_id)]
 
-#     # prepare HAEMATOPOIESIS_MARKERS for annotation (divergent only)
-#     df$markers <- ifelse(
-#       !is.na(df$gene_symbol) & (df$gene_symbol %in% HAEMATOPOIESIS_MARKERS) & (df$category != "Convergent"),
-#       df$gene_symbol,
-#       ""
-#     )
+    # prepare HAEMATOPOIESIS_MARKERS for annotation (divergent only)
+    df$markers <- ifelse(
+      !is.na(df$gene_symbol) & (df$gene_symbol %in% HAEMATOPOIESIS_MARKERS) & (df$category != "Convergent"),
+      df$gene_symbol,
+      ""
+    )
 
-#     # split norm_counts for plotting
-#     df_conv <-  df %>% filter(category == "Convergent")
-#     df_div  <-  df %>% filter(category != "Convergent")
+    # split norm_counts for plotting
+    df_conv <-  df %>% filter(category == "Convergent")
+    df_div  <-  df %>% filter(category != "Convergent")
 
-#     # prepare annotations instead of legend
-#     cat_cols <- c("Convergent"             = "grey50",
-#               "Epigenetic potential"   = as.character(RdBu_extremes["up"]),
-#               "Transcriptional abundance"= as.character(RdBu_extremes["down"]))
+    # prepare annotations instead of legend
+    cat_cols <- c("Convergent"             = "grey50",
+              "Epigenetic potential"   = as.character(RdBu_extremes["up"]),
+              "Transcriptional abundance"= as.character(RdBu_extremes["down"]))
 
-#     # annotation labels
-#     max_x <- max(df$ATAC)
-#     min_x <- min(df$ATAC)
-#     max_y <- max(df$RNA)
-#     min_y <- min(df$RNA)
-#     ann_df <- data.frame(
-#         category = c("Transcriptional abundance", "Convergent", "Epigenetic potential"),
-#         x = c(min_x,  min_x,  max_x),   # TL, BL, BR
-#         y = c( max_y, min_y, min_y),
-#         hjust = c(0, 0, 1),        # keep text inside panel
-#         vjust = c(1, 0, 0),
-#         lab = c(
-#             paste0("Transcriptional\nabundance\n(", counts["Transcriptional abundance"],")"),
-#             paste0("Convergent\n(", counts["Convergent"],")"),
-#             paste0("Epigenetic\npotential\n(", counts["Epigenetic potential"],")")
-#             )
-#         )
+    # annotation labels
+    max_x <- max(df$ATAC)
+    min_x <- min(df$ATAC)
+    max_y <- max(df$RNA)
+    min_y <- min(df$RNA)
+    ann_df <- data.frame(
+        category = c("Transcriptional abundance", "Convergent", "Epigenetic potential"),
+        x = c(min_x,  min_x,  max_x),   # TL, BL, BR
+        y = c( max_y, min_y, min_y),
+        hjust = c(0, 0, 1),        # keep text inside panel
+        vjust = c(1, 0, 0),
+        lab = c(
+            paste0("Transcriptional\nabundance\n(", counts["Transcriptional abundance"],")"),
+            paste0("Convergent\n(", counts["Convergent"],")"),
+            paste0("Epigenetic\npotential\n(", counts["Epigenetic potential"],")")
+            )
+        )
     
-#     # breaks for size legend based on original -log10(adjusted p)
-#     size_breaks <- pretty(range(df_div$log10_adjp, na.rm = TRUE), n = 4)
+    # breaks for size legend based on original -log10(adjusted p)
+    size_breaks <- pretty(range(df_div$log10_adjp, na.rm = TRUE), n = 4)
 
-#     ## ---------- plot ----------
-#     p <- ggplot(df, aes(x = ATAC, y = RNA, label = markers)) +
-#     # plot convergent first (small, faint – background)
-#     rasterise(geom_point(data = df_conv,
-#              aes(colour = category),
-#              size  = 0.5,
-#              alpha = 0.1,
-#              stroke = 0,
-#              show.legend = FALSE)) +
-#     # overlay divergent classes (larger, more opaque – foreground)
-#     rasterise(geom_point(data = df_div %>% filter(markers == ""),
-#              aes(colour = category, size = log10_adjp),
-#              alpha = 0.5,
-#              stroke = 0)) +
-#     # colour palette 
-#     scale_colour_manual(
-#     values = cat_cols,
-#     name   = NULL, 
-#     guide = "none"
-#     ) +
-#     # size legend using original -log10(adjusted p) values
-#     scale_size_continuous(
-#       name = "-log10(p-adj.)",
-#       range = c(0.5, 4),
-#       breaks = size_breaks,
-#       labels = function(x) format(x, digits = 2)
-#     ) +
-#     # annotation boxes with counts, also serving as legend
-#     geom_text(
-#     data = ann_df,
-#     inherit.aes = FALSE,
-#     aes(x = x, y = y, label = lab, color = category, hjust = hjust, vjust = vjust),
-#     size = 5,
-#     ) +
-#     # annotate divergent HAEMATOPOIESIS_MARKERS
-#     geom_text_repel(
-#         color = "black",
-#         size = 4,
-#         box.padding = 0.5,
-#         max.overlaps = Inf,
-#         seed = 42,
-#         show.legend = FALSE
-#     ) +
-#     # # redraw labeled points on top so labels don't occlude points
-#     # geom_point(
-#     #     data = df %>% filter(markers != ""),
-#     #     aes(colour = category, size = log10_adjp),
-#     #     alpha = 0.5,
-#     #     stroke = 0
-#     # ) +
-#     # axis titles
-#     labs(
-#     title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
-#     x = "Chromatin accessibility\n(normalized & integrated)",
-#     y = "Gene expression\n(normalized & integrated)"
-#     ) +
-#     MrBiomics_theme() + 
-#     theme(aspect.ratio = 1)
+    ## ---------- plot ----------
+    p <- ggplot(df, aes(x = ATAC, y = RNA, label = markers)) +
+    # plot convergent first (small, faint – background)
+    rasterise(geom_point(data = df_conv,
+             aes(colour = category),
+             size  = 0.5,
+             alpha = 0.1,
+             stroke = 0,
+             show.legend = FALSE)) +
+    # overlay divergent classes (larger, more opaque – foreground)
+    rasterise(geom_point(data = df_div %>% filter(markers == ""),
+             aes(colour = category, size = log10_adjp),
+             alpha = 0.5,
+             stroke = 0)) +
+    # colour palette 
+    scale_colour_manual(
+    values = cat_cols,
+    name   = NULL, 
+    guide = "none"
+    ) +
+    # size legend using original -log10(adjusted p) values
+    scale_size_continuous(
+      name = "-log10(p-adj.)",
+      range = c(0.5, 4),
+      breaks = size_breaks,
+      labels = function(x) format(x, digits = 2)
+    ) +
+    # annotation boxes with counts, also serving as legend
+    geom_text(
+    data = ann_df,
+    inherit.aes = FALSE,
+    aes(x = x, y = y, label = lab, color = category, hjust = hjust, vjust = vjust),
+    size = 5,
+    ) +
+    # annotate divergent HAEMATOPOIESIS_MARKERS
+    geom_text_repel(
+        color = "black",
+        box.padding = 0.5,
+        max.overlaps = Inf,
+        seed = 42,
+        show.legend = FALSE
+    ) +
+    # # redraw labeled points on top so labels don't occlude points
+    # geom_point(
+    #     data = df %>% filter(markers != ""),
+    #     aes(colour = category, size = log10_adjp),
+    #     alpha = 0.5,
+    #     stroke = 0
+    # ) +
+    # axis titles
+    labs(
+    title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
+    x = "Chromatin accessibility\n(normalized & integrated)",
+    y = "Gene expression\n(normalized & integrated)"
+    ) +
+    MrBiomics_theme() + 
+    theme(aspect.ratio = 1)
 
-#     # print(p)
+    # print(p)
     
-#   ## ---------- save plot ----------
-#   ggsave_all_formats(file.path(epigenetic_scatter_dir,paste0(ct,"_correlation.png")), p, width = PLOT_HEIGHT+1, height = PLOT_HEIGHT)
-# }
+  ## ---------- save plot ----------
+  ggsave_all_formats(file.path(epigenetic_scatter_dir,paste0(ct,"_correlation.png")), p,
+                    width = PLOT_SIZE_3_PER_ROW+1,
+                    height = PLOT_SIZE_3_PER_ROW
+                    )
+}
 
 

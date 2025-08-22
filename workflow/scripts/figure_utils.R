@@ -1,4 +1,6 @@
-#### UMAP plotting ####
+########################################################################################################################
+#### UMAP plotting #####################################################################################################
+########################################################################################################################
 umap_plot <- function(data_path, fig_path, title = NULL, modality_by_shape = FALSE) {
     # Load UMAP data
     umap_data <- data.frame(fread(file.path(data_path), header=TRUE))
@@ -22,10 +24,9 @@ umap_plot <- function(data_path, fig_path, title = NULL, modality_by_shape = FAL
     }
 
     umap_plot <- umap_plot +
-        geom_point(size = 3, alpha = 0.8) +
+        geom_point(size = 2, alpha = 0.8) +
         scale_color_manual(values = CELL_TYPE_COLORS, name = "Cell type") +
         labs(x = "UMAP 1", y = "UMAP 2", title = title) +
-        theme_minimal() +
         MrBiomics_theme() +
         theme(
             legend.position = "right",
@@ -37,17 +38,18 @@ umap_plot <- function(data_path, fig_path, title = NULL, modality_by_shape = FAL
         )
     
     # Save plot
-    width <- 6
     ggsave_all_formats(path = fig_path,
                        plot = umap_plot,
-                       width = width,
-                       height = PLOT_HEIGHT)
+                       width = PLOT_SIZE_3_PER_ROW+1,
+                       height = PLOT_SIZE_3_PER_ROW)
     
     return(umap_plot)
 }
 
 
-#### DEA HEATMAP ####
+########################################################################################################################
+#### DEA HEATMAP #######################################################################################################
+########################################################################################################################
 get_top_differential_features <- function(dea_results_path, fdr_threshold, log2FC_threshold) {
     # read data
     dea_df <- data.frame(fread(file.path(dea_results_path), header=TRUE))
@@ -161,7 +163,7 @@ compute_nonoverlapping_label_positions <- function(heatmap_rows, selected_featur
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
                                                feature_clst_dist, q_mask=0, label_box_size_factor = 1, n_clusters = 25,
-                                               max_marker_labels = 25, test_marker_annot = FALSE) {
+                                               max_marker_labels = 30, test_marker_annot = FALSE) {
     if (feature == 'Genes') {
         feature_col <- 'feature_name'
         y_label <- 'Differentially expressed genes'
@@ -266,16 +268,20 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = "none") +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_continuous(expand = c(0, 0)) +
-        theme_void() +
+        MrBiomics_void() +
         coord_cartesian(clip = "off") +
         theme(axis.title.y = element_blank(), plot.margin = margin(t = -12, r = 0, b = -8, l = 0, unit = "pt"))
 
     lineage_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = lineage)) +
         geom_tile(color = 'white', linewidth = 0.5) +
-        scale_fill_manual(values = LINEAGE_COLORS, name = "Lineage", guide = guide_legend(ncol = 1)) +
+        scale_fill_manual(
+            values = LINEAGE_COLORS,
+            name = "Lineage",
+            guide = guide_legend(ncol = 1, keyheight = grid::unit(0.4, "lines"), keywidth = grid::unit(0.6, "lines"))
+        ) +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_continuous(expand = c(0, 0)) +
-        theme_void() +
+        MrBiomics_void() +
         coord_cartesian(clip = "off") +
         theme(axis.title.y = element_blank(), plot.margin = margin(t = -10, r = 0, b = 0, l = 0, unit = "pt"))
 
@@ -283,14 +289,14 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     cell_type_label_plot <- ggplot() +
         annotate("text", x = 1, y = 0.5, label = "Cell type", hjust = 1, vjust = 0.5) +
         xlim(0, 1) + ylim(0, 1) +
-        theme_void() +
+        MrBiomics_void() +
         coord_cartesian(clip = "off") +
         theme(plot.margin = margin(t = -12, r = 0, b = -8, l = 4, unit = "pt"))
 
     lineage_label_plot <- ggplot() +
         annotate("text", x = 1, y = 0.5, label = "Lineage", hjust = 1, vjust = 0.5) +
         xlim(0, 1) + ylim(0, 1) +
-        theme_void() +
+        MrBiomics_void() +
         coord_cartesian(clip = "off") +
         theme(plot.margin = margin(t = -10, r = 0, b = 0, l = 4, unit = "pt"))
 
@@ -315,7 +321,12 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
         geom_tile(linewidth = 0) +
-        scale_fill_distiller(palette = "RdBu", limits = plot_limits, guide = guide_colorbar(direction = "vertical"), name = "log2(FC)") +
+        scale_fill_distiller(
+            palette = "RdBu",
+            limits = plot_limits,
+            guide = guide_colorbar(direction = "vertical"),  # , barheight = grid::unit(2, "cm"), barwidth = grid::unit(0.25, "cm")
+            name = "log2(FC)"
+        ) +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
         labs(x = 'Cell type') +
@@ -437,18 +448,18 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
         theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0))
 
-    width <- 5
     ggsave_all_formats(path = fig_path,
                        plot = gp,
-                       width = width,
-                       height = PLOT_HEIGHT, 
+                       width = PLOT_SIZE_3_PER_ROW,
+                       height = PLOT_SIZE_3_PER_ROW, 
                        dpi = 1000)
     
     return(heatmap_plot)
 }
 
-
-#### ENRICHMENT HEATMAP ####
+########################################################################################################################
+#### ENRICHMENT HEATMAP #################################################################################################
+########################################################################################################################
 filter_top_terms <- function(df, fdr_threshold) {
     df_sig <- df %>%
       filter(score > 0, statistic < fdr_threshold) 
@@ -575,8 +586,14 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       geom_point(shape=21, stroke=0.25) +
       # add star for significance
       geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=3, color = "white") +
-      scale_fill_distiller(palette = "RdBu", limits = c(-1, 1)*max(abs(heatmap_df$score)), name = fill_lab) +
-      scale_size_continuous(name = size_lab) +
+      scale_fill_distiller(
+        palette = "RdBu",
+        limits = c(-1, 1)*max(abs(heatmap_df$score)),
+        name = fill_lab,
+        guide = guide_colorbar(direction = "vertical")  # , barheight = grid::unit(2, "cm"), barwidth = grid::unit(0.25, "cm")
+      ) +
+      scale_size_continuous(name = size_lab, range = c(0.5, 3)) +
+    #   guides(size = guide_legend(keyheight = grid::unit(0.4, "lines"), keywidth = grid::unit(0.6, "lines"))) +
       labs(title = title, x = "Cell type", y = ylabel) +
       # ensure square tiles
       coord_fixed() +
@@ -586,19 +603,20 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       )
 
     # Save plot
-    width <- 7
     ggsave_all_formats(path = fig_path,
                        plot = enrichment_plot,
-                       width = width,
-                       height = PLOT_HEIGHT)
+                       width = PLOT_SIZE_3_PER_ROW+2,
+                       height = PLOT_SIZE_3_PER_ROW)
     
     return(enrichment_plot)
 }
 
-#### Lineage reconstruction via crossprediction ####
+########################################################################################################################
+#### Lineage reconstruction via crossprediction #######################################################################
+########################################################################################################################
 # Generate hierarchical layout coordinates based on a predefined tree
-generate_hierarchy_layout_coordinates <- function(nodes, children_list, root_node = "HSC",
-                                                 spacing_between_layers = 5, jitter_step = 1) {
+generate_hierarchy_layout_coordinates <- function(nodes, children_list, root_node,
+                                                 spacing_between_layers , jitter_step) {
     nodes_in_current_layer <- c(root_node)
     y <- 0
     x <- 0
@@ -643,21 +661,20 @@ generate_hierarchy_layout_coordinates <- function(nodes, children_list, root_nod
 plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
                                                fig_path,
                                                coordinates_out_path,
+                                               modality_label,
                                                lineage_tree_cut_off = 0.05,
                                                hierarchy_coordinates = TRUE,
-                                               modality_label = "RNA",
                                                root_node = "HSC",
                                                spacing_between_layers = 5,
-                                               jitter_step = 1,
-                                               tp_name = "Consistent",
-                                               fp_name = "Additional",
-                                               fn_name = "Missing",
+                                               jitter_step = 1.5,
                                                outcome_title = "Compared to\nliterature",
                                                node_shape = 19,
-                                               point_size = 12,
-                                               fontsize = 3,
-                                               stroke_max = 5,
-                                               fig_width = 6) {
+                                               point_size = 8, 
+                                               tp_name = "Consistent",
+                                               fp_name = "Additional",
+                                               fn_name = "Missing") {
+
+
 
     # Load adjacency matrix and harmonize labels
     adj_mtx <- data.frame(fread(file.path(adjacency_matrix_path), header = TRUE), row.names = 1)
@@ -773,16 +790,6 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
         allEdges <- data.frame()
     }
 
-    # Minimal blank theme for network plots
-    new_theme_empty <- theme_bw()
-    new_theme_empty$line <- element_blank()
-    new_theme_empty$rect <- element_blank()
-    new_theme_empty$strip.text <- element_blank()
-    new_theme_empty$axis.text <- element_blank()
-    new_theme_empty$plot.title <- element_blank()
-    new_theme_empty$axis.title <- element_blank()
-    new_theme_empty$plot.margin <- structure(c(0, 0, 0, 0), unit = "lines", valid.unit = 3L, class = "unit")
-
     # Build plot
     p <- ggplot()
     if (nrow(ground_truth_adj_mat_long) > 0) {
@@ -790,7 +797,7 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
             data = ground_truth_adj_mat_long,
             aes(x = x_start, y = y_start, xend = x_end, yend = y_end,
                 colour = fn_name, linetype = fn_name),
-            size = 2
+            size = 1
         )
     }
     if (nrow(allEdges) > 0) {
@@ -803,8 +810,7 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
     p <- p + geom_point(data = data.frame(layoutCoordinates),
                         aes(x = x, y = y), shape = node_shape, size = point_size, color = node_colors)
     p <- p + geom_text(data = data.frame(layoutCoordinates),
-                       aes(x = x, y = y, label = nodes), color = 'white', hjust = 0.5, vjust = 0.5,
-                       size = fontsize, fontface = "bold")
+                       aes(x = x, y = y, label = nodes), color = 'white', hjust = 0.5, vjust = 0.5, fontface = "bold")
 
     p <- p +
         scale_colour_manual(
@@ -820,7 +826,7 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
             labels = c(tp_name, fp_name, fn_name)
         )
 
-    p <- p + scale_size(range = c(0.3, stroke_max))
+    p <- p + scale_size(range = c(0.1, 3))
 
     # Add padding so nodes/edges aren't clipped at plot boundaries
     p <- p +
@@ -829,16 +835,21 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
 
     # Add modality label as title text
     p <- p + geom_text(aes(x = min(data.frame(layoutCoordinates)$x), y = 1, label = modality_label),
-                       hjust = 0, vjust = 1, size = 5, fontface = "bold")
+                       hjust = 0, vjust = 1, fontface = "bold", size = FONT_SIZE_NORMAL / .pt)
 
-    crosspred_plot <- p + new_theme_empty +
-        guides(size = guide_legend(title = 'Average\ncross-prediction\nprobability'))
+    crosspred_plot <- p +
+        guides(
+            size = guide_legend(title = 'Average\ncross-prediction\nprobability'),
+            colour = guide_legend(),
+            linetype = guide_legend()
+        ) +
+        MrBiomics_void()
 
     # Save plot and coordinates
     ggsave_all_formats(path = fig_path,
                        plot = crosspred_plot,
-                       width = fig_width,
-                       height = PLOT_HEIGHT)
+                       width = PLOT_SIZE_3_PER_ROW+2,
+                       height = PLOT_SIZE_3_PER_ROW)
 
     write.csv(layoutCoordinates, file.path(coordinates_out_path))
 

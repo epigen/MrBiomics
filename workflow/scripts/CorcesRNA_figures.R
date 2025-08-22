@@ -61,7 +61,7 @@ rna_dea_heatmap_plot <- plot_differential_features_heatmap(
     feature_clst_dist = "maximum",  # maximum to focus on the most differentially expressed groups when sorting genes
     feature_clst_method = "ward.D2",
     q_mask = 0.025,
-    label_box_size_factor = 1
+    label_box_size_factor = 0.8
 )
 
 ######### ENRICHMENT HEATMAP ############
@@ -92,35 +92,11 @@ rna_enrichment_plot <- plot_enrichment_heatmap(
 ######### Lineage reconstruction using crossprediction ############
 # plot adapted from: https://gist.github.com/dsparks/4331058
 
-# set plot parameters
-node_shape <- 19
-stroke_max <- 5
-point_size <- 12
-fontsize <- 3
-spacing_between_layers <- 5
-layer_jitter <- 1
-outcome_title <- "Compared to\nCorces et al. (2016)"
-tp_name <- "Consistent"
-fp_name <- "Additional"
-fn_name <- "Missing"
-
 crosspred_p <- plot_crossprediction_from_adjacency(
     adjacency_matrix_path = CorcesRNA_crossprediction_adj_mtx_path,
     fig_path = rna_crossprediction_path,
     coordinates_out_path = rna_crossprediction_coordinates_path,
     lineage_tree_cut_off = lineage_tree_cut_off,
     hierarchy_coordinates = hierarchy_coordinates,
-    modality_label = "RNA",
-    root_node = "HSC",
-    spacing_between_layers = spacing_between_layers,
-    jitter_step = layer_jitter,
-    tp_name = tp_name,
-    fp_name = fp_name,
-    fn_name = fn_name,
-    outcome_title = outcome_title,
-    node_shape = node_shape,
-    point_size = point_size,
-    fontsize = fontsize,
-    stroke_max = stroke_max,
-    fig_width = 6
+    modality_label = "RNA"
 )
