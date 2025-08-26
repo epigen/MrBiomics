@@ -12,8 +12,12 @@ norm_counts_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spi
 metadata_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/annotation.csv"
 dea_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/dea_limma/normupperquartile_integrated/results.csv"
 gene_annotation_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv"
+enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv"
+# enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"
+
 # parameters
 adjp_th <- 0.05
+fdr_threshold <- 0.05
 lfc_th <- 1
 ave_expr_th <- 0
 # output
@@ -22,6 +26,7 @@ integrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesI
 integrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_umap.pdf"
 unintegrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_umap.pdf"
 epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
+int_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/enrichment.pdf"
 
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
@@ -279,4 +284,31 @@ for(ct in unique(metadata$cell_type)){
                     )
 }
 
+########################################################################################################################
+### ENRICHMENT HEATMAP #################################################################################################
+########################################################################################################################
+create_int_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.05) {
+    # Load enrichment analysis result
+    df <- data.frame(fread(file.path(enrichment_results_path), header=TRUE))
+    df_formatted <- df %>%
+        rename(statistic = FDR_q_val, score = NES) %>%
+        mutate(name = recode(name, !!!DATA_TO_CELL_TYPE_COLORS_MAPPING))
+    return(df_formatted)
+}
 
+int_df_formatted <- create_int_enrichment_df(enrichment_results_path, fdr_threshold)
+int_heatmap_df <- prepare_for_heatmap(df_formatted = int_df_formatted, fdr_threshold = fdr_threshold, top_n_per_name = 2)
+int_enrichment_plot <- plot_clustered_enrichment_heatmap(
+    heatmap_df = int_heatmap_df,
+    fig_path = int_enrichment_path,
+    fill_lab = "NES",
+    size_lab = "-log10(q-adj.)",
+    title = "",
+    ylabel = "Enrichment term\n(preranked GSEA,\nGOBP 2025)",
+    ct_clst_dist = "euclidean",
+    ct_clst_method = "ward.D2",
+    term_clst_dist = "euclidean",
+    term_clst_method = "ward.D2",
+    n_clusters = 25,
+    width = PLOT_SIZE_2_PER_ROW
+)

@@ -160,6 +160,122 @@ compute_nonoverlapping_label_positions <- function(heatmap_rows, selected_featur
 	return(result)
 }
 
+compute_diagonal_cluster_order <- function(mat,
+                                           row_clst_dist = "euclidean",
+                                           row_clst_method = "ward.D2",
+                                           col_clst_dist = "euclidean",
+                                           col_clst_method = "ward.D2",
+                                           n_clusters = 25) {
+
+    # Row clustering (features)
+    row_hclust <- hclust(dist(mat, method = row_clst_dist), method = row_clst_method)
+    row_dendro <- dendsort(as.dendrogram(row_hclust))
+    row_order <- order.dendrogram(row_dendro)
+
+    # Column clustering (cell types)
+    col_hclust <- hclust(dist(t(mat), method = col_clst_dist), method = col_clst_method)
+    col_dendro <- dendsort(as.dendrogram(col_hclust))
+    col_order <- order.dendrogram(col_dendro)
+
+    # Derive diagonal-friendly row order by clustering rows, assigning each cluster to
+    # the column with the highest mean, then grouping clusters by column order
+    rownames_in_hclust_order <- rownames(mat)[row_order]
+    k_effective <- max(1, min(n_clusters, nrow(mat)))
+    cluster_assignments <- cutree(row_hclust, k = k_effective)
+    cluster_ids <- sort(unique(cluster_assignments))
+    column_names_in_order <- colnames(mat)[col_order]
+
+    cluster_summary <- lapply(cluster_ids, function(cl_id) {
+        rows_in_cluster <- names(cluster_assignments)[cluster_assignments == cl_id]
+        col_means <- colMeans(mat[rows_in_cluster, , drop = FALSE])
+        best_col <- names(which.max(col_means))
+        first_pos <- min(match(rows_in_cluster, rownames_in_hclust_order), na.rm = TRUE)
+        list(
+            cluster_id = cl_id,
+            rows = rows_in_cluster,
+            best_column = best_col,
+            best_column_rank = match(best_col, column_names_in_order),
+            first_pos = first_pos
+        )
+    })
+
+    cluster_order_idx <- order(
+        vapply(cluster_summary, function(x) x$best_column_rank, numeric(1)),
+        vapply(cluster_summary, function(x) x$first_pos, numeric(1))
+    )
+    cluster_summary <- cluster_summary[cluster_order_idx]
+
+    final_row_order <- unlist(lapply(cluster_summary, function(cs) {
+        rows <- cs$rows
+        rows[order(match(rows, rownames_in_hclust_order))]
+    }), use.names = FALSE)
+
+    return(list(
+        row_order = final_row_order,
+        col_order = column_names_in_order,
+        col_dendro = col_dendro
+    ))
+}
+
+build_column_annotations <- function(col_order, col_dendro, title = NULL) {
+    annotation_df <- data.frame(group = col_order)
+    annotation_df$group <- factor(annotation_df$group, levels = col_order)
+    annotation_df$lineage <- CELL_TYPE_TO_LINEAGE_MAPPING[as.character(annotation_df$group)]
+
+    cell_type_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = group)) +
+        geom_tile(color = 'white', linewidth = 0.5) +
+        scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = "none") +
+        scale_x_discrete(expand = expansion(add = 0.6)) +
+        scale_y_continuous(expand = c(0, 0)) +
+        MrBiomics_void() +
+        coord_cartesian(clip = "off") +
+        theme(axis.title.y = element_blank(), plot.margin = margin(t = -12, r = 0, b = -8, l = 0, unit = "pt"))
+
+    lineage_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = lineage)) +
+        geom_tile(color = 'white', linewidth = 0.5) +
+        scale_fill_manual(
+            values = LINEAGE_COLORS,
+            name = "Lineage",
+            guide = guide_legend(ncol = 1, keyheight = grid::unit(0.4, "lines"), keywidth = grid::unit(0.6, "lines"))
+        ) +
+        scale_x_discrete(expand = expansion(add = 0.6)) +
+        scale_y_continuous(expand = c(0, 0)) +
+        MrBiomics_void() +
+        coord_cartesian(clip = "off") +
+        theme(axis.title.y = element_blank(), plot.margin = margin(t = -10, r = 0, b = 0, l = 0, unit = "pt"))
+
+    cell_type_label_plot <- ggplot() +
+        annotate("text", x = 1, y = 0.5, label = "Cell type", hjust = 1, vjust = 0.5, family = FONT) +
+        xlim(0, 1) + ylim(0, 1) +
+        MrBiomics_void() +
+        coord_cartesian(clip = "off") +
+        theme(plot.margin = margin(t = -12, r = 0, b = -8, l = 4, unit = "pt"))
+
+    lineage_label_plot <- ggplot() +
+        annotate("text", x = 1, y = 0.5, label = "Lineage", hjust = 1, vjust = 0.5, family = FONT) +
+        xlim(0, 1) + ylim(0, 1) +
+        MrBiomics_void() +
+        coord_cartesian(clip = "off") +
+        theme(plot.margin = margin(t = -10, r = 0, b = 0, l = 4, unit = "pt"))
+
+    n_cols <- length(col_order)
+    dendro_data_obj <- dendro_data(col_dendro, type = "rectangle")
+    dendro_plot <- ggdendrogram(dendro_data_obj, labels = FALSE) +
+        scale_x_continuous(limits = c(0.5, n_cols + 0.5), expand = c(0, 0)) +
+        scale_y_continuous(expand = c(0, 0)) +
+        labs(title = title) +
+        MrBiomics_void() +
+        theme(plot.margin = margin(t = 0, r = 0, b = -14, l = 0, unit = "pt"))
+
+    return(list(
+        cell_type_plot = cell_type_plot,
+        lineage_plot = lineage_plot,
+        cell_type_label_plot = cell_type_label_plot,
+        lineage_label_plot = lineage_label_plot,
+        dendro_plot = dendro_plot
+    ))
+}
+
 plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_threshold, log2FC_threshold, title = NULL, 
                                                feature, ct_clst_method, ct_clst_dist, feature_clst_method,
                                                feature_clst_dist, q_mask=0, label_box_size_factor = 1, n_clusters = 25,
@@ -211,94 +327,21 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         column_to_rownames(feature_col_to_plot) %>%
         as.matrix()
 
-    # Row clustering (features)
-    row_hclust <- hclust(dist(mat, method = feature_clst_dist), method = feature_clst_method)
-    row_dendro <- dendsort(as.dendrogram(row_hclust))
-    row_order <- order.dendrogram(row_dendro)
-
-    # Column clustering (cell types)
-    col_hclust <- hclust(dist(t(mat), method = ct_clst_dist), method = ct_clst_method)
-    col_dendro <- dendsort(as.dendrogram(col_hclust))
-    col_order <- order.dendrogram(col_dendro)
-
-    # Derive diagonal-friendly row order by clustering rows, assigning each cluster to
-    # the column with the highest mean logFC, then grouping clusters by column order
-    rownames_in_hclust_order <- rownames(mat)[row_order]
-    k_effective <- max(1, min(n_clusters, nrow(mat)))
-    cluster_assignments <- cutree(row_hclust, k = k_effective)
-    cluster_ids <- sort(unique(cluster_assignments))
-    column_names_in_order <- colnames(mat)[col_order]
-
-    cluster_summary <- lapply(cluster_ids, function(cl_id) {
-        rows_in_cluster <- names(cluster_assignments)[cluster_assignments == cl_id]
-        col_means <- colMeans(mat[rows_in_cluster, , drop = FALSE])
-        best_col <- names(which.max(col_means))
-        first_pos <- min(match(rows_in_cluster, rownames_in_hclust_order), na.rm = TRUE)
-        list(
-            cluster_id = cl_id,
-            rows = rows_in_cluster,
-            best_column = best_col,
-            best_column_rank = match(best_col, column_names_in_order),
-            first_pos = first_pos
-        )
-    })
-
-    cluster_order_idx <- order(
-        vapply(cluster_summary, function(x) x$best_column_rank, numeric(1)),
-        vapply(cluster_summary, function(x) x$first_pos, numeric(1))
+    ord <- compute_diagonal_cluster_order(
+        mat,
+        row_clst_dist = feature_clst_dist,
+        row_clst_method = feature_clst_method,
+        col_clst_dist = ct_clst_dist,
+        col_clst_method = ct_clst_method,
+        n_clusters = n_clusters
     )
-    cluster_summary <- cluster_summary[cluster_order_idx]
-
-    final_row_order <- unlist(lapply(cluster_summary, function(cs) {
-        rows <- cs$rows
-        rows[order(match(rows, rownames_in_hclust_order))]
-    }), use.names = FALSE)
 
     feature_vector <- heatmap_df[[feature_col_to_plot]]
-    heatmap_df[[feature_col_to_plot]] <- factor(feature_vector, levels = rev(final_row_order))
-    heatmap_df$group <- factor(heatmap_df$group, levels = column_names_in_order)
+    heatmap_df[[feature_col_to_plot]] <- factor(feature_vector, levels = rev(ord$row_order))
+    heatmap_df$group <- factor(heatmap_df$group, levels = ord$col_order)
     
-    # Annotation bars for cell type and lineage
-    annotation_df <- data.frame(group = colnames(mat)[col_order])
-    annotation_df$group <- factor(annotation_df$group, levels = colnames(mat)[col_order])
-    annotation_df$lineage <- CELL_TYPE_TO_LINEAGE_MAPPING[as.character(annotation_df$group)]
-    
-    cell_type_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = group)) +
-        geom_tile(color = 'white', linewidth = 0.5) +
-        scale_fill_manual(values = CELL_TYPE_COLORS, name = "Cell type", guide = "none") +
-        scale_x_discrete(expand = c(0, 0)) +
-        scale_y_continuous(expand = c(0, 0)) +
-        MrBiomics_void() +
-        coord_cartesian(clip = "off") +
-        theme(axis.title.y = element_blank(), plot.margin = margin(t = -12, r = 0, b = -8, l = 0, unit = "pt"))
-
-    lineage_plot <- ggplot(annotation_df, aes(x = group, y = 1, fill = lineage)) +
-        geom_tile(color = 'white', linewidth = 0.5) +
-        scale_fill_manual(
-            values = LINEAGE_COLORS,
-            name = "Lineage",
-            guide = guide_legend(ncol = 1, keyheight = grid::unit(0.4, "lines"), keywidth = grid::unit(0.6, "lines"))
-        ) +
-        scale_x_discrete(expand = c(0, 0)) +
-        scale_y_continuous(expand = c(0, 0)) +
-        MrBiomics_void() +
-        coord_cartesian(clip = "off") +
-        theme(axis.title.y = element_blank(), plot.margin = margin(t = -10, r = 0, b = 0, l = 0, unit = "pt"))
-
-    # Right-side labels for the annotation strips
-    cell_type_label_plot <- ggplot() +
-        annotate("text", x = 1, y = 0.5, label = "Cell type", hjust = 1, vjust = 0.5) +
-        xlim(0, 1) + ylim(0, 1) +
-        MrBiomics_void() +
-        coord_cartesian(clip = "off") +
-        theme(plot.margin = margin(t = -12, r = 0, b = -8, l = 4, unit = "pt"))
-
-    lineage_label_plot <- ggplot() +
-        annotate("text", x = 1, y = 0.5, label = "Lineage", hjust = 1, vjust = 0.5) +
-        xlim(0, 1) + ylim(0, 1) +
-        MrBiomics_void() +
-        coord_cartesian(clip = "off") +
-        theme(plot.margin = margin(t = -10, r = 0, b = 0, l = 4, unit = "pt"))
+    # Annotation bars and dendrogram for cell type and lineage
+    ann_plots <- build_column_annotations(ord$col_order, ord$col_dendro, title = title)
 
     # Quantile masking to remove outliers from color scale of heatmap
     if(q_mask > 0) {
@@ -310,14 +353,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm=TRUE)
 
-    n_cols <- length(col_order)
-    dendro_data <- dendro_data(col_dendro, type = "rectangle")
-    dendro_plot <- ggdendrogram(dendro_data, labels=FALSE) + 
-        scale_x_continuous(limits = c(0.5, n_cols + 0.5), expand = c(0, 0)) +
-        scale_y_continuous(expand = c(0, 0)) +
-        labs(title = title) +
-        MrBiomics_void() +
-        theme(plot.margin = margin(t = 0, r = 0, b = -14, l = 0, unit = "pt"))
+    dendro_plot <- ann_plots$dendro_plot
 
     heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
         geom_tile(linewidth = 0) +
@@ -437,16 +473,21 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     # Assemble the final plot using patchwork's wrap_plots for robust layout
     plot_list <- list(
         plot_spacer(),          dendro_plot,
-        cell_type_label_plot,   cell_type_plot,
-        lineage_label_plot,     lineage_plot,
+        ann_plots$cell_type_label_plot,   ann_plots$cell_type_plot,
+        ann_plots$lineage_label_plot,     ann_plots$lineage_plot,
         marker_label_plot,      heatmap_plot
     )
     gp <- wrap_plots(plot_list, ncol = 2,
-                     widths = c(1, 3),
+                     widths = c(1.2, 3),
                      heights = c(0.6, 0.35, 0.35, 10)) +
         plot_layout(guides = "collect") +
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
-        theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0))
+        theme(
+            legend.position = "right",
+            legend.box = "vertical",
+            plot.margin = margin(0, 0, 0, 0),
+            panel.spacing = grid::unit(0, "pt")
+        )
 
     ggsave_all_formats(path = fig_path,
                        plot = gp,
@@ -460,18 +501,19 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 ########################################################################################################################
 #### ENRICHMENT HEATMAP #################################################################################################
 ########################################################################################################################
-filter_top_terms <- function(df, fdr_threshold) {
+filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2) {
     df_sig <- df %>%
       filter(score > 0, statistic < fdr_threshold) 
 
-    tissues_to_keep <- c("PBMC", "Bone Marrow")
-    df_sig <- df_sig %>%
-      filter(grepl(paste(tissues_to_keep, collapse = "|"), Term))
+    if (!is.null(tissues_to_keep)) {
+        df_sig <- df_sig %>%
+            filter(grepl(paste(tissues_to_keep, collapse = "|"), Term))
+    }
 
-    # Identify top term for each cell type
+    # Identify top term(s) for each cell type
     top_hits <- df_sig %>%
       group_by(name) %>%
-      slice_max(order_by = score, n = 2, with_ties = FALSE) %>%
+      slice_max(order_by = score, n = top_n_per_name, with_ties = FALSE) %>%
       ungroup()
 
     # Get the list of top terms
@@ -495,8 +537,8 @@ filter_top_terms <- function(df, fdr_threshold) {
     return(df_top)
 }
 
-prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
-    df_top <- filter_top_terms(df_formatted, fdr_threshold)
+prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2) {
+    df_top <- filter_top_terms(df = df_formatted, fdr_threshold = fdr_threshold, tissues_to_keep = tissues_to_keep, top_n_per_name = top_n_per_name)
 
     mat_df <- df_top %>%
       select(name, Term, score) %>%
@@ -552,6 +594,9 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
         short_term_levels <- gsub(names(cell_type_replacements)[i], cell_type_replacements[i], short_term_levels)
     }
 
+    # for the GOBP terms, shorten the names by removing the text in the brackets at the end (incl the brackets)
+    short_term_levels <- gsub("\\s*\\(.*\\)", "", short_term_levels)
+
     # Print the mapping of original to shortened names
     term_map_df <- data.frame(Original = original_term_levels, Shortened = short_term_levels)
     message("Shortening term names for heatmap:")
@@ -578,19 +623,20 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold) {
     return(heatmap_df)
 }
 
-plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL, ylabel = NULL) {
+plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL, ylabel = NULL, width = NULL) {
     # mask those values where the log statistic is tiny with NaN, to drop them in the heatmap
     heatmap_df$neg_log10_statistic <- ifelse(heatmap_df$neg_log10_statistic < 1, NaN, heatmap_df$neg_log10_statistic)
+    lim <- c(-1, 1) * max(abs(heatmap_df$score), na.rm = TRUE)
 
     enrichment_plot <- ggplot(heatmap_df, aes(x = name, y = Term, size=neg_log10_statistic, fill = score)) +
       geom_point(shape=21, stroke=0.25) +
       # add star for significance
-      geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=3, color = "white") +
+      geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=2, color = "white") +
       scale_fill_distiller(
         palette = "RdBu",
-        limits = c(-1, 1)*max(abs(heatmap_df$score)),
+        limits = lim,
         name = fill_lab,
-        guide = guide_colorbar(direction = "vertical")  # , barheight = grid::unit(2, "cm"), barwidth = grid::unit(0.25, "cm")
+        guide = guide_colorbar(direction = "vertical")
       ) +
       scale_size_continuous(name = size_lab, range = c(0.5, 3)) +
     #   guides(size = guide_legend(keyheight = grid::unit(0.4, "lines"), keywidth = grid::unit(0.6, "lines"))) +
@@ -599,16 +645,142 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       coord_fixed() +
       MrBiomics_theme() + 
       theme(
-        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), 
+        axis.text.y = element_text(size = FONT_SIZE_SMALL),
       )
+
+    if (is.null(width)) {
+        width <- PLOT_SIZE_3_PER_ROW + 2
+    }
 
     # Save plot
     ggsave_all_formats(path = fig_path,
                        plot = enrichment_plot,
-                       width = PLOT_SIZE_3_PER_ROW+2,
+                       width = width,
                        height = PLOT_SIZE_3_PER_ROW)
     
     return(enrichment_plot)
+}
+
+plot_clustered_enrichment_heatmap <- function(heatmap_df,
+                                              fig_path,
+                                              fill_lab,
+                                              size_lab,
+                                              title = NULL,
+                                              ylabel = NULL,
+                                              ct_clst_dist = "euclidean",
+                                              ct_clst_method = "ward.D2",
+                                              term_clst_dist = "euclidean",
+                                              term_clst_method = "ward.D2",
+                                              n_clusters = 25,
+                                              width = NULL) {
+
+    # Build term-by-celltype matrix of enrichment scores for clustering
+    mat_df <- heatmap_df %>%
+        select(name, Term, score) %>%
+        tidyr::pivot_wider(names_from = name, values_from = score, values_fill = 0)
+    mat <- mat_df %>% column_to_rownames("Term") %>% as.matrix()
+
+    ord <- compute_diagonal_cluster_order(
+        mat,
+        row_clst_dist = term_clst_dist,
+        row_clst_method = term_clst_method,
+        col_clst_dist = ct_clst_dist,
+        col_clst_method = ct_clst_method,
+        n_clusters = n_clusters
+    )
+
+    # Apply orders
+    heatmap_df$Term <- factor(as.character(heatmap_df$Term), levels = rev(ord$row_order))
+    heatmap_df$name <- factor(as.character(heatmap_df$name), levels = ord$col_order)
+
+    # Mask tiny p-values from size scale
+    heatmap_df$neg_log10_statistic <- ifelse(heatmap_df$neg_log10_statistic < 1, NaN, heatmap_df$neg_log10_statistic)
+
+    # Color scale limits based on scores
+    lim <- c(-1, 1) * max(abs(heatmap_df$score), na.rm = TRUE)
+
+    # FIXME break long term names into multiple lines, breaking at the first space after 20 characters
+
+    # Bubble heatmap with significance stars (y-axis labels moved to separate plot)
+    bubble <- ggplot(heatmap_df, aes(x = name, y = Term, size = neg_log10_statistic, fill = score)) +
+        geom_point(shape = 21, stroke = 0.25) +
+        geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size = 2, color = "white") +
+        scale_fill_distiller(
+            palette = "RdBu",
+            limits = lim,
+            name = fill_lab,
+            guide = guide_colorbar(direction = "vertical")
+        ) +
+        scale_size_continuous(name = size_lab, range = c(0.5, 3)) +
+        scale_x_discrete(expand = expansion(add = 0.6)) +
+        scale_y_discrete(expand = expansion(add = 0.6)) +
+        labs(title = NULL, x = "Cell type", y = NULL) +
+        coord_cartesian(clip = "off") +
+        MrBiomics_theme() +
+        theme(
+            axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+            axis.text.y = element_blank(),
+            axis.title.y = element_blank(),
+            plot.margin = margin(t = -18, r = 4, b = -8, l = 4, unit = "pt")
+        )
+
+    # Top annotations + dendrogram
+    ann_plots <- build_column_annotations(ord$col_order, ord$col_dendro, title = title)
+
+    # Left-side term labels (y-axis moved out of bubble plot)
+    term_levels <- levels(heatmap_df$Term)
+    if (is.null(term_levels)) {
+        term_levels <- rev(ord$row_order)
+    }
+    n_rows <- length(term_levels)
+    term_labels_df <- data.frame(Term = term_levels, y = seq_len(n_rows))
+    term_label_plot <- ggplot(term_labels_df, aes(y = y)) +
+        geom_text(aes(x = 0.94, label = Term), hjust = 1, family = FONT) +
+        scale_y_continuous(limits = c(0.5, n_rows + 0.5), expand = c(0, 0)) +
+        scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+        labs(y = ylabel) +
+        MrBiomics_theme() +
+        theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.ticks = element_blank(),
+            axis.text.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.text.y = element_blank(),
+            axis.title.y = element_text(margin = margin(l = 20)),
+            panel.border = element_blank(),
+            panel.background = element_rect(fill = "transparent", color = NA),
+            plot.background = element_rect(fill = "transparent", color = NA),
+            plot.margin = margin(0, 0, 0, 20)
+        ) +
+        coord_cartesian(clip = "on")
+
+    # Assemble    
+    plot_list <- list(
+        plot_spacer(),              ann_plots$dendro_plot,
+        ann_plots$cell_type_label_plot, ann_plots$cell_type_plot,
+        ann_plots$lineage_label_plot,   ann_plots$lineage_plot,
+        term_label_plot,            bubble
+    )
+
+    gp <- wrap_plots(plot_list, ncol = 2,
+                     widths = c(1, 1),
+                     heights = c(0.6, 0.35, 0.35, 10)) +
+        plot_layout(guides = "collect") +
+        plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
+        theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0), panel.spacing = grid::unit(0, "pt"))
+
+    if (is.null(width)) {
+        width <- PLOT_SIZE_3_PER_ROW + 2
+    }
+
+    ggsave_all_formats(path = fig_path,
+                       plot = gp,
+                       width = width,
+                       height = PLOT_SIZE_3_PER_ROW)
+
+    return(gp)
 }
 
 ########################################################################################################################

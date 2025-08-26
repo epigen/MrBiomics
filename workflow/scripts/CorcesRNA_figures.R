@@ -79,7 +79,9 @@ create_rna_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.
 
 # Create enrichment heatmaps
 rna_df_formatted <- create_rna_enrichment_df(CorcesRNA_enrichment_results_path, fdr_threshold)
-rna_heatmap_df <- prepare_for_heatmap(df_formatted = rna_df_formatted, fdr_threshold = fdr_threshold)
+rna_heatmap_df <- prepare_for_heatmap(df_formatted = rna_df_formatted,
+                                      fdr_threshold = fdr_threshold,
+                                      tissues_to_keep = c("PBMC", "Bone Marrow"))
 rna_enrichment_plot <- plot_enrichment_heatmap(
     heatmap_df = rna_heatmap_df,
     fig_path = rna_enrichment_path,

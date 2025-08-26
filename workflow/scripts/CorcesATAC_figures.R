@@ -72,7 +72,9 @@ create_atac_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0
 }
 
 atac_df_formatted <- create_atac_enrichment_df(CorcesATAC_enrichment_results_path, fdr_threshold)
-atac_heatmap_df <- prepare_for_heatmap(df_formatted = atac_df_formatted, fdr_threshold = fdr_threshold)
+atac_heatmap_df <- prepare_for_heatmap(df_formatted = atac_df_formatted,
+                                      fdr_threshold = fdr_threshold,
+                                      tissues_to_keep = c("PBMC", "Bone Marrow"))
 atac_enrichment_plot <- plot_enrichment_heatmap(
     heatmap_df = atac_heatmap_df, 
     fig_path = atac_enrichment_path,
