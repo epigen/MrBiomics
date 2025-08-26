@@ -297,7 +297,7 @@ create_int_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.
 }
 
 int_df_formatted <- create_int_enrichment_df(enrichment_results_path, fdr_threshold)
-int_heatmap_df <- prepare_for_heatmap(df_formatted = int_df_formatted, fdr_threshold = fdr_threshold, top_n_per_name = 2)
+int_heatmap_df <- prepare_for_heatmap(df_formatted = int_df_formatted, fdr_threshold = fdr_threshold, top_n_per_name = 3)
 int_enrichment_plot <- plot_clustered_enrichment_heatmap(
     heatmap_df = int_heatmap_df,
     fig_path = int_enrichment_path,

@@ -245,14 +245,14 @@ build_column_annotations <- function(col_order, col_dendro, title = NULL) {
         theme(axis.title.y = element_blank(), plot.margin = margin(t = -10, r = 0, b = 0, l = 0, unit = "pt"))
 
     cell_type_label_plot <- ggplot() +
-        annotate("text", x = 1, y = 0.5, label = "Cell type", hjust = 1, vjust = 0.5, family = FONT) +
+        annotate("text", x = 1, y = 0.5, label = "Cell type", hjust = 1, vjust = 0.5) +
         xlim(0, 1) + ylim(0, 1) +
         MrBiomics_void() +
         coord_cartesian(clip = "off") +
         theme(plot.margin = margin(t = -12, r = 0, b = -8, l = 4, unit = "pt"))
 
     lineage_label_plot <- ggplot() +
-        annotate("text", x = 1, y = 0.5, label = "Lineage", hjust = 1, vjust = 0.5, family = FONT) +
+        annotate("text", x = 1, y = 0.5, label = "Lineage", hjust = 1, vjust = 0.5) +
         xlim(0, 1) + ylim(0, 1) +
         MrBiomics_void() +
         coord_cartesian(clip = "off") +
@@ -630,8 +630,18 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
 
     enrichment_plot <- ggplot(heatmap_df, aes(x = name, y = Term, size=neg_log10_statistic, fill = score)) +
       geom_point(shape=21, stroke=0.25) +
-      # add star for significance
-      geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size=2, color = "white") +
+      # add star for significance (overlay centered star points)
+      geom_point(
+        data = subset(heatmap_df, sig),
+        aes(x = name, y = Term),
+        inherit.aes = FALSE,
+        shape = 8,
+        size = 0.5,
+        alpha = 0.8,
+        stroke = 0.25,
+        color = "white",
+        show.legend = FALSE
+      ) +
       scale_fill_distiller(
         palette = "RdBu",
         limits = lim,
@@ -705,14 +715,25 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
     # Bubble heatmap with significance stars (y-axis labels moved to separate plot)
     bubble <- ggplot(heatmap_df, aes(x = name, y = Term, size = neg_log10_statistic, fill = score)) +
         geom_point(shape = 21, stroke = 0.25) +
-        geom_text(aes(label = ifelse(sig, "✳︎", "")), vjust = 0.5, size = 2, color = "white") +
+        # add asterisks for significance (overlay centered star points)
+        geom_point(
+            data = subset(heatmap_df, sig),
+            aes(x = name, y = Term),
+            inherit.aes = FALSE,
+            shape = 8,
+            size = 0.5,
+            alpha = 0.8,
+            stroke = 0.25,
+            color = "white",
+            show.legend = FALSE
+        ) +
         scale_fill_distiller(
             palette = "RdBu",
             limits = lim,
             name = fill_lab,
             guide = guide_colorbar(direction = "vertical")
         ) +
-        scale_size_continuous(name = size_lab, range = c(0.5, 3)) +
+        scale_size_continuous(name = size_lab, range = c(0.5, 2.3)) +
         scale_x_discrete(expand = expansion(add = 0.6)) +
         scale_y_discrete(expand = expansion(add = 0.6)) +
         labs(title = NULL, x = "Cell type", y = NULL) +
@@ -736,7 +757,7 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
     n_rows <- length(term_levels)
     term_labels_df <- data.frame(Term = term_levels, y = seq_len(n_rows))
     term_label_plot <- ggplot(term_labels_df, aes(y = y)) +
-        geom_text(aes(x = 0.94, label = Term), hjust = 1, family = FONT) +
+        geom_text(aes(x = 0.98, label = Term), hjust = 1) +
         scale_y_continuous(limits = c(0.5, n_rows + 0.5), expand = c(0, 0)) +
         scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
         labs(y = ylabel) +
@@ -754,7 +775,7 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
             plot.background = element_rect(fill = "transparent", color = NA),
             plot.margin = margin(0, 0, 0, 20)
         ) +
-        coord_cartesian(clip = "on")
+        coord_cartesian(clip = "off")
 
     # Assemble    
     plot_list <- list(
@@ -765,11 +786,12 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
     )
 
     gp <- wrap_plots(plot_list, ncol = 2,
-                     widths = c(1, 1),
+                     widths = c(1.5, 1),
                      heights = c(0.6, 0.35, 0.35, 10)) +
         plot_layout(guides = "collect") +
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
-        theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0), panel.spacing = grid::unit(0, "pt"))
+        theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0),
+               panel.spacing = grid::unit(0, "pt"), legend.margin = margin(l = -10))
 
     if (is.null(width)) {
         width <- PLOT_SIZE_3_PER_ROW + 2
