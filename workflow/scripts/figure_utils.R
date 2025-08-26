@@ -685,6 +685,11 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
                                               n_clusters = 25,
                                               width = NULL) {
 
+    # drop the term 'Nonsense Mediated Decay', since it's a duplicate due to type with 'Nonsense-Mediated Decay'
+    # and has exactly the same enrichment score and stats
+    heatmap_df <- heatmap_df %>%
+        filter(Term != "Nonsense Mediated Decay")
+    
     # Build term-by-celltype matrix of enrichment scores for clustering
     mat_df <- heatmap_df %>%
         select(name, Term, score) %>%

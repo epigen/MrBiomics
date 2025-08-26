@@ -12,8 +12,8 @@ norm_counts_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spi
 metadata_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/annotation.csv"
 dea_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/dea_limma/normupperquartile_integrated/results.csv"
 gene_annotation_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv"
-enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv"
-# enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"
+GO_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv"
+Reactome_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"
 
 # parameters
 adjp_th <- 0.05
@@ -26,7 +26,8 @@ integrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesI
 integrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_umap.pdf"
 unintegrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_umap.pdf"
 epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
-int_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/enrichment.pdf"
+GO_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/GO_enrichment.pdf"
+Reactome_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/Reactome_enrichment.pdf"
 
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
@@ -296,15 +297,33 @@ create_int_enrichment_df <- function(enrichment_results_path, fdr_threshold = 0.
     return(df_formatted)
 }
 
-int_df_formatted <- create_int_enrichment_df(enrichment_results_path, fdr_threshold)
-int_heatmap_df <- prepare_for_heatmap(df_formatted = int_df_formatted, fdr_threshold = fdr_threshold, top_n_per_name = 3)
-int_enrichment_plot <- plot_clustered_enrichment_heatmap(
-    heatmap_df = int_heatmap_df,
-    fig_path = int_enrichment_path,
+GO_df_formatted <- create_int_enrichment_df(GO_enrichment_results_path, fdr_threshold)
+GO_heatmap_df <- prepare_for_heatmap(df_formatted = GO_df_formatted, fdr_threshold = fdr_threshold, top_n_per_name = 3)
+GO_enrichment_plot <- plot_clustered_enrichment_heatmap(
+    heatmap_df = GO_heatmap_df,
+    fig_path = GO_enrichment_path,
     fill_lab = "NES",
     size_lab = "-log10(q-adj.)",
     title = "",
     ylabel = "Enrichment term\n(preranked GSEA,\nGOBP 2025)",
+    ct_clst_dist = "euclidean",
+    ct_clst_method = "ward.D2",
+    term_clst_dist = "euclidean",
+    term_clst_method = "ward.D2",
+    n_clusters = 25,
+    width = PLOT_SIZE_2_PER_ROW
+)
+
+Reactome_df_formatted <- create_int_enrichment_df(Reactome_enrichment_results_path, fdr_threshold)
+Reactome_heatmap_df <- prepare_for_heatmap(df_formatted = Reactome_df_formatted, fdr_threshold = fdr_threshold,
+                                           top_n_per_name = 2)
+Reactome_enrichment_plot <- plot_clustered_enrichment_heatmap(
+    heatmap_df = Reactome_heatmap_df,
+    fig_path = Reactome_enrichment_path,
+    fill_lab = "NES",
+    size_lab = "-log10(q-adj.)",
+    title = "",
+    ylabel = "Enrichment term\n(preranked GSEA, Reactome)",
     ct_clst_dist = "euclidean",
     ct_clst_method = "ward.D2",
     term_clst_dist = "euclidean",
