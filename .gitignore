@@ -156,6 +156,8 @@ metadata/
 */.snakemake/*
 .snakemake/
 
+paper
+
 # macOS specific files
 *DS_Store*
 ._*

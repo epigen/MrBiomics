@@ -14,12 +14,15 @@ dea_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/dea
 gene_annotation_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv"
 GO_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv"
 Reactome_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"
+Mono_TF_EP_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/Mono_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_EP_hg38_500bp_up_100bp_down_v10clust.csv"
+Mono_TF_TA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/Mono_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_TA_hg38_500bp_up_100bp_down_v10clust.csv"
 
 # parameters
 adjp_th <- 0.05
 fdr_threshold <- 0.05
 lfc_th <- 1
 ave_expr_th <- 0
+MAX_GENES_TF_PLOT <- 25
 # output
 unintegrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_cfa.pdf"
 integrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_cfa.pdf"
@@ -28,7 +31,7 @@ unintegrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/Corc
 epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
 GO_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/GO_enrichment.pdf"
 Reactome_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/Reactome_enrichment.pdf"
-
+Mono_TF_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/Mono_TF.pdf"
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
 ########################################################################################################################
@@ -331,3 +334,124 @@ Reactome_enrichment_plot <- plot_clustered_enrichment_heatmap(
     n_clusters = 25,
     width = PLOT_SIZE_2_PER_ROW
 )
+
+dir.create("/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/tmp", showWarnings = FALSE)
+Reactome_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path("/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/tmp/Reactome_enrichment_sig.csv"), row.names = FALSE)
+GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path("/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/tmp/GO_enrichment_sig.csv"), row.names = FALSE)
+
+
+########################################################################################################################
+### MONO TF PLOT #######################################################################################################
+########################################################################################################################
+# helper: load and preprocess Mono TF enrichment CSV
+load_prepare_mono_tf <- function(csv_path) {
+  df <- data.frame(fread(file.path(csv_path), header=TRUE))
+  df <- df %>%
+    mutate(.row_id = row_number()) %>%
+    select(.row_id, NES, nEnrGenes, TF_highConf) %>%
+    mutate(
+      TF_highConf = coalesce(TF_highConf, ""),
+      TF_highConf = str_remove_all(TF_highConf, "\\([^)]*\\)"),   # drop (directAnnotation) etc.
+      TF_highConf = str_replace_all(TF_highConf, ",", " "),       # remove stray commas
+      TF_highConf = str_squish(TF_highConf)
+    ) %>%
+    separate_rows(TF_highConf, sep = ";") %>%
+    mutate(TF = str_remove_all(str_squish(TF_highConf), "[\\.\\s]")) %>%
+    filter(TF != "") %>%
+    distinct(.row_id, TF, .keep_all = TRUE) %>%
+    select(TF, NES, nEnrGenes) %>%
+    filter(nEnrGenes >= 100) %>%
+    as.data.frame()
+  return(df)
+}
+
+# helper: order TFs by max NES (ascending) for y-axis
+order_by_max_nes <- function(df) {
+  tf_order <- df %>%
+    group_by(TF) %>%
+    summarise(max_NES = max(NES, na.rm = TRUE)) %>%
+    arrange(max_NES) %>%
+    pull(TF)
+  df$TF <- factor(df$TF, levels = tf_order)
+  return(df)
+}
+
+# load & prepare EP and TA
+Mono_TF_EP_df <- load_prepare_mono_tf(Mono_TF_EP_path)
+Mono_TF_TA_df <- load_prepare_mono_tf(Mono_TF_TA_path)
+
+# balance TF counts by trimming the dataset with more TFs (lowest NES removed first)
+n_EP <- n_distinct(Mono_TF_EP_df$TF)
+n_TA <- n_distinct(Mono_TF_TA_df$TF)
+if (n_EP > n_TA) {
+  keep_ep <- Mono_TF_EP_df %>%
+    group_by(TF) %>%
+    summarise(max_NES = max(NES, na.rm = TRUE)) %>%
+    slice_max(order_by = max_NES, n = n_TA, with_ties = FALSE) %>%
+    pull(TF)
+  Mono_TF_EP_df <- Mono_TF_EP_df %>% filter(TF %in% keep_ep)
+} else if (n_TA > n_EP) {
+  keep_ta <- Mono_TF_TA_df %>%
+    group_by(TF) %>%
+    summarise(max_NES = max(NES, na.rm = TRUE)) %>%
+    slice_max(order_by = max_NES, n = n_EP, with_ties = FALSE) %>%
+    pull(TF)
+  Mono_TF_TA_df <- Mono_TF_TA_df %>% filter(TF %in% keep_ta)
+}
+
+# After balancing, select top N TFs by max NES across both datasets
+N_matched <- min(n_distinct(Mono_TF_EP_df$TF), n_distinct(Mono_TF_TA_df$TF), MAX_GENES_TF_PLOT)
+
+select_top_by_max_nes <- function(df, N) {
+  keep <- df %>% group_by(TF) %>% summarise(max_NES = max(NES, na.rm = TRUE)) %>%
+    slice_max(order_by = max_NES, n = N, with_ties = FALSE) %>% pull(TF)
+  df %>% filter(TF %in% keep)
+}
+
+Mono_TF_EP_df <- select_top_by_max_nes(Mono_TF_EP_df, N_matched)
+Mono_TF_TA_df <- select_top_by_max_nes(Mono_TF_TA_df, N_matched)
+
+# order y-axis for each dataset
+Mono_TF_EP_df <- order_by_max_nes(Mono_TF_EP_df)
+Mono_TF_TA_df <- order_by_max_nes(Mono_TF_TA_df)
+
+# unified scales across both panels
+max_nes_both <- max(c(Mono_TF_EP_df$NES, Mono_TF_TA_df$NES), na.rm = TRUE)
+size_range <- c(1, 3)
+
+# EP plot (red scale)
+Mono_TF_EP_plot <- ggplot(Mono_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
+  geom_point(alpha = 0.8, shape = 16) +
+  MrBiomics_theme() +
+  scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
+  scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["up"]), name = "NES", guide = "none") +
+  labs(x = "NES", y = NULL, title = "Epigenetic potential")
+
+# TA plot (blue scale)
+Mono_TF_TA_plot <- ggplot(Mono_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
+  geom_point(alpha = 0.8, shape = 16) +
+  MrBiomics_theme() +
+  scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes") +
+  scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["down"]), name = "NES", guide = "none") +
+  labs(x = "NES", y = NULL, title = "Transcriptional abundance")
+
+# combine with patchwork and save
+# dummy plot to provide a single black-white NES colorbar legend
+legend_dummy_df <- data.frame(x = 1:2, y = 1, NES = c(0, max_nes_both))
+legend_dummy <- ggplot(legend_dummy_df, aes(x = x, y = y, color = NES)) +
+  geom_point(alpha = 0, size = 0) +
+  scale_color_gradient(
+    limits = c(0, max_nes_both), low = "white", high = "black", name = "NES",
+    guide = guide_colorbar(direction = "vertical", barheight = grid::unit(2, "cm"), barwidth = grid::unit(0.22, "cm"))
+  ) +
+  MrBiomics_void() +
+  theme(legend.box.margin = margin(0, 0, 0, 0), legend.margin = margin(0, 0, 0, 0))
+
+# combine with collected legends (only one colorbar from dummy, one size legend from TA)
+Mono_TF_combined_plot <- Mono_TF_EP_plot | Mono_TF_TA_plot | legend_dummy
+Mono_TF_combined_plot <- Mono_TF_combined_plot +
+  plot_layout(ncol = 3, widths = c(1, 1, 0.1), guides = "collect") &
+  theme(legend.position = "right", legend.box.margin = margin(0, 0, 0, 0), legend.margin = margin(0, 0, 0, 0))
+
+ggsave_all_formats(path = Mono_TF_plot_path, plot = Mono_TF_combined_plot,
+                   width = PLOT_SIZE_3_PER_ROW * 2, height = PLOT_SIZE_3_PER_ROW)
