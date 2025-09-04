@@ -20,7 +20,8 @@ required_libs <- c(
     "svglite",
     "sna",
     "RColorBrewer",
-    "Hmisc"
+    "Hmisc",
+    "ggtext"
 )
 
 set.seed(42)

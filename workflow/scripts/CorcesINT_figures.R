@@ -494,12 +494,51 @@ size_range <- c(1, 2.5)
 segment_color <- "grey80"
 segment_width <- 0.8
 
+# helper: build rich y-axis labels (bold if in Papalexi; color by shared status)
+red_col <- as.character(RdBu_extremes["up"])    # epigenetic potential color
+blue_col <- as.character(RdBu_extremes["down"])  # transcriptional abundance color
+violet_col <- "purple"
+
+Mono_EP_TFs <- unique(as.character(Mono_TF_EP_df$TF))
+Mono_TA_TFs <- unique(as.character(Mono_TF_TA_df$TF))
+HSC_EP_TFs  <- unique(as.character(HSC_TF_EP_df$TF))
+HSC_TA_TFs  <- unique(as.character(HSC_TF_TA_df$TF))
+
+build_tf_axis_labels <- function(tfs, papalexi_set, red_set, blue_set) {
+  vapply(tfs, function(tf) {
+    is_pap <- tf %in% papalexi_set
+    in_red <- tf %in% red_set
+    in_blue <- tf %in% blue_set
+
+    if (in_red && in_blue) {
+      col <- violet_col
+    } else if (in_red) {
+      col <- red_col
+    } else if (in_blue) {
+      col <- blue_col
+    } else {
+      col <- NA_character_
+    }
+
+    lab <- tf
+    if (is_pap) {
+      lab <- paste0("<b>", lab, "</b>")
+    }
+    if (!is.na(col)) {
+      lab <- paste0("<span style='color:", col, "'>", lab, "</span>")
+    }
+    lab
+  }, character(1))
+}
+
 # EP plot (red scale) MONO
 Mono_TF_EP_plot <- ggplot(Mono_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
+  theme(axis.text.y = ggtext::element_markdown()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
+  scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, HSC_EP_TFs, HSC_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
   scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["up"]), name = "NES", guide = "none") +
   labs(x = "NES", y = NULL, title = "Mono\nEpigenetic\npotential")
@@ -509,7 +548,9 @@ Mono_TF_TA_plot <- ggplot(Mono_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, 
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
+  theme(axis.text.y = ggtext::element_markdown()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
+  scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, HSC_EP_TFs, HSC_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes") +
   scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["down"]), name = "NES", guide = "none") +
   labs(x = "NES", y = NULL, title = "Mono\nTranscriptional\nabundance")
@@ -519,7 +560,9 @@ HSC_TF_EP_plot <- ggplot(HSC_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, co
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
+  theme(axis.text.y = ggtext::element_markdown()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
+  scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, Mono_EP_TFs, Mono_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
   scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["up"]), name = "NES", guide = "none") +
   labs(x = "NES", y = NULL, title = "HSC\nEpigenetic\npotential")
@@ -529,7 +572,9 @@ HSC_TF_TA_plot <- ggplot(HSC_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, co
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
+  theme(axis.text.y = ggtext::element_markdown()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
+  scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, Mono_EP_TFs, Mono_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
   scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["down"]), name = "NES", guide = "none") +
   labs(x = "NES", y = NULL, title = "HSC\nTranscriptional\nabundance")
