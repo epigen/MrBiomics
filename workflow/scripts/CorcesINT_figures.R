@@ -16,6 +16,8 @@ GO_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/Cor
 Reactome_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"
 Mono_TF_EP_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/Mono_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_EP_hg38_500bp_up_100bp_down_v10clust.csv"
 Mono_TF_TA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/Mono_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_TA_hg38_500bp_up_100bp_down_v10clust.csv"
+HSC_TF_EP_path  <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/HSC_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_EP_hg38_500bp_up_100bp_down_v10clust.csv"
+HSC_TF_TA_path  <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/HSC_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_TA_hg38_500bp_up_100bp_down_v10clust.csv"
 
 # parameters
 adjp_th <- 0.05
@@ -31,7 +33,7 @@ unintegrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/Corc
 epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
 GO_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/GO_enrichment.pdf"
 Reactome_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/Reactome_enrichment.pdf"
-Mono_TF_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/Mono_TF.pdf"
+TF_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/TF_lollipop.pdf"
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
 ########################################################################################################################
@@ -343,8 +345,8 @@ GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(fil
 ########################################################################################################################
 ### MONO TF PLOT #######################################################################################################
 ########################################################################################################################
-# helper: load and preprocess Mono TF enrichment CSV
-load_prepare_mono_tf <- function(csv_path) {
+# helper: load and preprocess TF enrichment CSV (Mono/HSC)
+load_prepare_tf <- function(csv_path) {
   df <- data.frame(fread(file.path(csv_path), header=TRUE))
   df <- df %>%
     mutate(.row_id = row_number()) %>%
@@ -355,32 +357,50 @@ load_prepare_mono_tf <- function(csv_path) {
       TF_highConf = str_replace_all(TF_highConf, ",", " "),       # remove stray commas
       TF_highConf = str_squish(TF_highConf)
     ) %>%
-    separate_rows(TF_highConf, sep = ";") %>%
-    mutate(TF = str_remove_all(str_squish(TF_highConf), "[\\.\\s]")) %>%
+    # split TFs on semicolons or periods used as separators
+    separate_rows(TF_highConf, sep = ";|\\.") %>%
+    mutate(
+      TF = str_squish(TF_highConf),
+      TF = str_remove(TF, "\\.$")   # drop trailing dots if any remain
+    ) %>%
     filter(TF != "") %>%
     distinct(.row_id, TF, .keep_all = TRUE) %>%
     select(TF, NES, nEnrGenes) %>%
-    filter(nEnrGenes >= 100) %>%
+    filter(nEnrGenes >= 30) %>%
     as.data.frame()
   return(df)
 }
 
-# helper: order TFs by max NES (ascending) for y-axis
+# helper: order TFs by max NES (ascending) with tiebreaker by sum(NES)
 order_by_max_nes <- function(df) {
   tf_order <- df %>%
     group_by(TF) %>%
-    summarise(max_NES = max(NES, na.rm = TRUE)) %>%
-    arrange(max_NES) %>%
+    summarise(
+      max_NES = max(NES, na.rm = TRUE),
+      sum_NES = sum(NES, na.rm = TRUE)
+    ) %>%
+    arrange(max_NES, sum_NES) %>%
     pull(TF)
   df$TF <- factor(df$TF, levels = tf_order)
   return(df)
 }
 
-# load & prepare EP and TA
-Mono_TF_EP_df <- load_prepare_mono_tf(Mono_TF_EP_path)
-Mono_TF_TA_df <- load_prepare_mono_tf(Mono_TF_TA_path)
+# load & prepare Mono EP and TA
+Mono_TF_EP_df <- load_prepare_tf(Mono_TF_EP_path)
+Mono_TF_TA_df <- load_prepare_tf(Mono_TF_TA_path)
 
-# balance TF counts by trimming the dataset with more TFs (lowest NES removed first)
+# load & prepare HSC EP and TA
+HSC_TF_EP_df <- load_prepare_tf(HSC_TF_EP_path)
+HSC_TF_TA_df <- load_prepare_tf(HSC_TF_TA_path)
+
+# save all the dfs as csv right next to the plot path
+Mono_TF_EP_df %>% write.csv(file.path(str_replace(TF_plot_path, "\\.pdf$", "__Mono_TF_EP_df.csv")), row.names = FALSE)
+Mono_TF_TA_df %>% write.csv(file.path(str_replace(TF_plot_path, "\\.pdf$", "__Mono_TF_TA_df.csv")), row.names = FALSE)
+HSC_TF_EP_df %>% write.csv(file.path(str_replace(TF_plot_path, "\\.pdf$", "__HSC_TF_EP_df.csv")), row.names = FALSE)
+HSC_TF_TA_df %>% write.csv(file.path(str_replace(TF_plot_path, "\\.pdf$", "__HSC_TF_TA_df.csv")), row.names = FALSE)
+
+# balance TF counts within each cell type by trimming the dataset with more TFs (lowest NES removed first)
+# Mono
 n_EP <- n_distinct(Mono_TF_EP_df$TF)
 n_TA <- n_distinct(Mono_TF_TA_df$TF)
 if (n_EP > n_TA) {
@@ -399,8 +419,28 @@ if (n_EP > n_TA) {
   Mono_TF_TA_df <- Mono_TF_TA_df %>% filter(TF %in% keep_ta)
 }
 
-# After balancing, select top N TFs by max NES across both datasets
-N_matched <- min(n_distinct(Mono_TF_EP_df$TF), n_distinct(Mono_TF_TA_df$TF), MAX_GENES_TF_PLOT)
+# HSC
+n_EP_h <- n_distinct(HSC_TF_EP_df$TF)
+n_TA_h <- n_distinct(HSC_TF_TA_df$TF)
+if (n_EP_h > n_TA_h) {
+  keep_ep_h <- HSC_TF_EP_df %>%
+    group_by(TF) %>%
+    summarise(max_NES = max(NES, na.rm = TRUE)) %>%
+    slice_max(order_by = max_NES, n = n_TA_h, with_ties = FALSE) %>%
+    pull(TF)
+  HSC_TF_EP_df <- HSC_TF_EP_df %>% filter(TF %in% keep_ep_h)
+} else if (n_TA_h > n_EP_h) {
+  keep_ta_h <- HSC_TF_TA_df %>%
+    group_by(TF) %>%
+    summarise(max_NES = max(NES, na.rm = TRUE)) %>%
+    slice_max(order_by = max_NES, n = n_EP_h, with_ties = FALSE) %>%
+    pull(TF)
+  HSC_TF_TA_df <- HSC_TF_TA_df %>% filter(TF %in% keep_ta_h)
+}
+
+# After balancing, select top N TFs by max NES within each cell type
+N_matched_mono <- min(n_distinct(Mono_TF_EP_df$TF), n_distinct(Mono_TF_TA_df$TF), MAX_GENES_TF_PLOT)
+N_matched_hsc  <- min(n_distinct(HSC_TF_EP_df$TF),  n_distinct(HSC_TF_TA_df$TF),  MAX_GENES_TF_PLOT)
 
 select_top_by_max_nes <- function(df, N) {
   keep <- df %>% group_by(TF) %>% summarise(max_NES = max(NES, na.rm = TRUE)) %>%
@@ -408,32 +448,63 @@ select_top_by_max_nes <- function(df, N) {
   df %>% filter(TF %in% keep)
 }
 
-Mono_TF_EP_df <- select_top_by_max_nes(Mono_TF_EP_df, N_matched)
-Mono_TF_TA_df <- select_top_by_max_nes(Mono_TF_TA_df, N_matched)
+Mono_TF_EP_df <- select_top_by_max_nes(Mono_TF_EP_df, N_matched_mono)
+Mono_TF_TA_df <- select_top_by_max_nes(Mono_TF_TA_df, N_matched_mono)
+HSC_TF_EP_df  <- select_top_by_max_nes(HSC_TF_EP_df,  N_matched_hsc)
+HSC_TF_TA_df  <- select_top_by_max_nes(HSC_TF_TA_df,  N_matched_hsc)
 
-# order y-axis for each dataset
+# order y-axis for each dataset (with tiebreaker)
 Mono_TF_EP_df <- order_by_max_nes(Mono_TF_EP_df)
 Mono_TF_TA_df <- order_by_max_nes(Mono_TF_TA_df)
+HSC_TF_EP_df  <- order_by_max_nes(HSC_TF_EP_df)
+HSC_TF_TA_df  <- order_by_max_nes(HSC_TF_TA_df)
 
-# unified scales across both panels
-max_nes_both <- max(c(Mono_TF_EP_df$NES, Mono_TF_TA_df$NES), na.rm = TRUE)
-size_range <- c(1, 3)
+# unified scales across all four panels
+max_nes_both <- max(c(Mono_TF_EP_df$NES, Mono_TF_TA_df$NES, HSC_TF_EP_df$NES, HSC_TF_TA_df$NES), na.rm = TRUE)
+size_range <- c(1, 2.5)
 
-# EP plot (red scale)
+segment_color <- "grey80"
+segment_width <- 0.8
+
+# EP plot (red scale) MONO
 Mono_TF_EP_plot <- ggplot(Mono_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
+  geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
+  scale_x_continuous(limits = c(0, max_nes_both)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
   scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["up"]), name = "NES", guide = "none") +
-  labs(x = "NES", y = NULL, title = "Epigenetic potential")
+  labs(x = "NES", y = NULL, title = "Mono\nEpigenetic\npotential")
 
-# TA plot (blue scale)
+# TA plot (blue scale) MONO
 Mono_TF_TA_plot <- ggplot(Mono_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
+  geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
+  scale_x_continuous(limits = c(0, max_nes_both)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes") +
   scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["down"]), name = "NES", guide = "none") +
-  labs(x = "NES", y = NULL, title = "Transcriptional abundance")
+  labs(x = "NES", y = NULL, title = "Mono\nTranscriptional\nabundance")
+
+# EP plot (red scale) HSC
+HSC_TF_EP_plot <- ggplot(HSC_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
+  geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
+  geom_point(alpha = 0.8, shape = 16) +
+  MrBiomics_theme() +
+  scale_x_continuous(limits = c(0, max_nes_both)) +
+  scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
+  scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["up"]), name = "NES", guide = "none") +
+  labs(x = "NES", y = NULL, title = "HSC\nEpigenetic\npotential")
+
+# TA plot (blue scale) HSC
+HSC_TF_TA_plot <- ggplot(HSC_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, color = NES)) +
+  geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
+  geom_point(alpha = 0.8, shape = 16) +
+  MrBiomics_theme() +
+  scale_x_continuous(limits = c(0, max_nes_both)) +
+  scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
+  scale_color_gradient(limits = c(0, max_nes_both), low = "white", high = as.character(RdBu_extremes["down"]), name = "NES", guide = "none") +
+  labs(x = "NES", y = NULL, title = "HSC\nTranscriptional\nabundance")
 
 # combine with patchwork and save
 # dummy plot to provide a single black-white NES colorbar legend
@@ -447,11 +518,11 @@ legend_dummy <- ggplot(legend_dummy_df, aes(x = x, y = y, color = NES)) +
   MrBiomics_void() +
   theme(legend.box.margin = margin(0, 0, 0, 0), legend.margin = margin(0, 0, 0, 0))
 
-# combine with collected legends (only one colorbar from dummy, one size legend from TA)
-Mono_TF_combined_plot <- Mono_TF_EP_plot | Mono_TF_TA_plot | legend_dummy
-Mono_TF_combined_plot <- Mono_TF_combined_plot +
-  plot_layout(ncol = 3, widths = c(1, 1, 0.1), guides = "collect") &
+# combine with collected legends (only one colorbar from dummy, one size legend from Mono TA)
+TF_combined_plot <- (HSC_TF_EP_plot | HSC_TF_TA_plot | Mono_TF_EP_plot | Mono_TF_TA_plot | legend_dummy)
+TF_combined_plot <- TF_combined_plot +
+  plot_layout(ncol = 5, widths = c(1, 1, 1, 1, 0.1), guides = "collect") &
   theme(legend.position = "right", legend.box.margin = margin(0, 0, 0, 0), legend.margin = margin(0, 0, 0, 0))
 
-ggsave_all_formats(path = Mono_TF_plot_path, plot = Mono_TF_combined_plot,
-                   width = PLOT_SIZE_3_PER_ROW * 2, height = PLOT_SIZE_3_PER_ROW)
+ggsave_all_formats(path = TF_plot_path, plot = TF_combined_plot,
+                   width = PLOT_SIZE_3_PER_ROW*2, height = PLOT_SIZE_3_PER_ROW)
