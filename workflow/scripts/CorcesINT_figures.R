@@ -24,7 +24,11 @@ adjp_th <- 0.05
 fdr_threshold <- 0.05
 lfc_th <- 1
 ave_expr_th <- 0
-MAX_GENES_TF_PLOT <- 25
+max_genes_tf_plot <- 25
+TFs_in_papalexi <- c(
+  "ATF2", "BRD4", "CAV1", "CD86", "CMTM6", "CUL3", "ETV7", "IFNGR1", "IFNGR2", "IRF1", "IRF7", "JAK2", "CMIR", "MARCH8",
+  "MYC", "NFKB1A", "PDCD1LG2", "POU2F2", "SMAD4", "SPI1", "STAT1", "STAT2", "STAT3", "STAT5A", "TNFRSF14", "UBE2L6"
+)
 # output
 unintegrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_cfa.pdf"
 integrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_cfa.pdf"
@@ -63,77 +67,79 @@ integrated_umap_plot <- umap_plot(integrated_umap_coords_path, integrated_umap_p
 ########################################################################################################################
 ### CFA PLOT ##########################################################################################################
 ########################################################################################################################
-plot_cfa_heatmap <- function(cfa_mat, title, path, var_max=NULL, nPCs=10, metadata_rows=c('cell_type', 'modality', 'donor')){
-var_explained_df <- t(cfa_mat['var_explained', 1:nPCs]) %>%
-    as.data.frame() %>%
-    rownames_to_column(var = 'PC') %>%
-    mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))))
-cfa_mat <- cfa_mat[metadata_rows, 1:nPCs]
+plot_cfa_heatmap <- function(cfa_mat, title, path, var_max=NULL, nPCs=10, 
+                             metadata_rows=c('cell_type', 'modality', 'donor')
+                             ){
+  var_explained_df <- t(cfa_mat['var_explained', 1:nPCs]) %>%
+      as.data.frame() %>%
+      rownames_to_column(var = 'PC') %>%
+      mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))))
+  cfa_mat <- cfa_mat[metadata_rows, 1:nPCs]
 
-if (is.null(var_max)) {
-    x_max <- max(var_explained_df$var_explained, na.rm = TRUE)
-} else {
-    x_max <- var_max
-}
+  if (is.null(var_max)) {
+      x_max <- max(var_explained_df$var_explained, na.rm = TRUE)
+  } else {
+      x_max <- var_max
+  }
 
-# unstack cfa_mat, remembering rownames and colnames
-cfa_mat_long <- cfa_mat %>%
-    rownames_to_column(var = "metadata_type") %>%
-    pivot_longer(cols = -metadata_type, names_to = "PC", values_to = "stat") %>%
-    mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))),
-            metadata_type = factor(metadata_type, levels = metadata_rows),
-            text_color = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "white", "black"),
-            text_fontface = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "bold", "plain")
-            )
+  # unstack cfa_mat, remembering rownames and colnames
+  cfa_mat_long <- cfa_mat %>%
+      rownames_to_column(var = "metadata_type") %>%
+      pivot_longer(cols = -metadata_type, names_to = "PC", values_to = "stat") %>%
+      mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))),
+              metadata_type = factor(metadata_type, levels = metadata_rows),
+              text_color = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "white", "black"),
+              text_fontface = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "bold", "plain")
+              )
 
-# barplot of var_explained
-var_explained_plot <- ggplot(var_explained_df, aes(y = PC, x = var_explained)) +
-    geom_bar(stat = "identity", fill = 'grey80') +
-    MrBiomics_theme() +
-    scale_x_continuous(limits = c(0, x_max), breaks = c(0, x_max/2, x_max),
-                        labels = function(x) format(x, digits = 2)) +
-    theme(
-        axis.text.y = element_blank(),integrated_cfa.png
-        axis.title.y = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.grid.major.y = element_blank(),
-        panel.grid.major.x = element_line(),
-        panel.border = element_blank(),
-        plot.margin = margin(5.5, 5.5, 5.5, 5.5)
-    ) +
-    labs(title = NULL, x = "Variance explained", y = NULL)
+  # barplot of var_explained
+  var_explained_plot <- ggplot(var_explained_df, aes(y = PC, x = var_explained)) +
+      geom_bar(stat = "identity", fill = 'grey80') +
+      MrBiomics_theme() +
+      scale_x_continuous(limits = c(0, x_max), breaks = c(0, x_max/2, x_max),
+                          labels = function(x) format(x, digits = 2)) +
+      theme(
+          axis.text.y = element_blank(),
+          axis.title.y = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_line(),
+          panel.border = element_blank(),
+          plot.margin = margin(5.5, 5.5, 5.5, 5.5)
+      ) +
+      labs(title = NULL, x = "Variance explained", y = NULL)
 
-cfa_heatmap <- ggplot(cfa_mat_long, aes(x = metadata_type, y = PC, fill = stat)) +
-    geom_tile(linewidth = 0) +
-    geom_text(aes(label = round(stat, 1), color = text_color, fontface = text_fontface), size = 3) +
-    scale_fill_gradient(low = "white", high = as.character(RdBu_extremes["up"]), name='-log10(p-adj.)') +
-    scale_color_identity(guide = "none") +
-    scale_x_discrete(labels = function(x) tools::toTitleCase(gsub("_", " ", x)), expand = c(0, 0)) +
-    scale_y_discrete(expand = c(0, 0)) +
-    MrBiomics_theme() +
-    theme(
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.text.y = element_blank(),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
-        plot.title = element_text(hjust = 0.5),
-        legend.position = "right",
-        plot.margin = margin(5.5, 5.5, 5.5, 5.5)
-    ) +
-    coord_fixed() +
-    labs(title = title, y = paste0("PC(1-", ncol(cfa_mat), ")"), x = NULL)
+  cfa_heatmap <- ggplot(cfa_mat_long, aes(x = metadata_type, y = PC, fill = stat)) +
+      geom_tile(linewidth = 0) +
+      geom_text(aes(label = round(stat, 1), color = text_color, fontface = text_fontface)) +
+      scale_fill_gradient(low = "white", high = as.character(RdBu_extremes["up"]), name='-log10(p-adj.)\nfor association\nof PC &\nmetadata') +
+      scale_color_identity(guide = "none") +
+      scale_x_discrete(labels = function(x) tools::toTitleCase(gsub("_", " ", x)), expand = c(0, 0)) +
+      scale_y_discrete(expand = c(0, 0)) +
+      MrBiomics_theme() +
+      theme(
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+          plot.title = element_text(hjust = 0.5),
+          legend.position = "right",
+          plot.margin = margin(5.5, 5.5, 5.5, 5.5)
+      ) +
+      coord_fixed() +
+      labs(title = title, y = paste0("PC(1-", ncol(cfa_mat), ")"), x = NULL)
 
-cfa_plot <- cfa_heatmap + var_explained_plot + plot_spacer() + guide_area() +
-    plot_layout(ncol = 4, widths = c(2, 2, 0.2, 1.4), guides = "collect") +
-    plot_annotation(theme = theme(plot.margin = margin(10, 20, 10, 10))) &
-    theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5), legend.box.margin = margin(5.5, 5.5, 5.5, 10),
-            legend.margin = margin(5.5, 5.5, 5.5, 5.5))
+  cfa_plot <- cfa_heatmap + var_explained_plot + plot_spacer() + guide_area() +
+      plot_layout(ncol = 4, widths = c(2, 2, 0.2, 1.4), guides = "collect") +
+      plot_annotation(theme = theme(plot.margin = margin(10, 20, 10, 10))) &
+      theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5), legend.box.margin = margin(5.5, 5.5, 5.5, 10),
+              legend.margin = margin(5.5, 5.5, 5.5, 5.5))
 
-ggsave_all_formats(path = path,
-                    plot = cfa_plot,
-                    width = PLOT_SIZE_3_PER_ROW-0.5,
-                    height = PLOT_SIZE_3_PER_ROW)
-return(cfa_plot)
+  ggsave_all_formats(path = path,
+                      plot = cfa_plot,
+                      width = PLOT_SIZE_3_PER_ROW-0.5,
+                      height = PLOT_SIZE_3_PER_ROW)
+  return(cfa_plot)
 }
 
 var_max <- max(unintegrated_cfa_data['var_explained',], integrated_cfa_data['var_explained',])
@@ -343,7 +349,7 @@ GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(fil
 
 
 ########################################################################################################################
-### MONO TF PLOT #######################################################################################################
+### TF PLOT ############################################################################################################
 ########################################################################################################################
 # helper: load and preprocess TF enrichment CSV (Mono/HSC)
 load_prepare_tf <- function(csv_path) {
@@ -439,12 +445,34 @@ if (n_EP_h > n_TA_h) {
 }
 
 # After balancing, select top N TFs by max NES within each cell type
-N_matched_mono <- min(n_distinct(Mono_TF_EP_df$TF), n_distinct(Mono_TF_TA_df$TF), MAX_GENES_TF_PLOT)
-N_matched_hsc  <- min(n_distinct(HSC_TF_EP_df$TF),  n_distinct(HSC_TF_TA_df$TF),  MAX_GENES_TF_PLOT)
+N_matched_mono <- min(n_distinct(Mono_TF_EP_df$TF), n_distinct(Mono_TF_TA_df$TF), max_genes_tf_plot)
+N_matched_hsc  <- min(n_distinct(HSC_TF_EP_df$TF),  n_distinct(HSC_TF_TA_df$TF),  max_genes_tf_plot)
 
 select_top_by_max_nes <- function(df, N) {
-  keep <- df %>% group_by(TF) %>% summarise(max_NES = max(NES, na.rm = TRUE)) %>%
-    slice_max(order_by = max_NES, n = N, with_ties = FALSE) %>% pull(TF)
+  # Prioritize TFs from TFs_in_papalexi, then fill remaining slots by max NES
+  tf_stats <- df %>%
+    group_by(TF) %>%
+    summarise(max_NES = max(NES, na.rm = TRUE))
+
+  # 1) Take up to N TFs that are in TFs_in_papalexi, highest max NES first
+  pri <- tf_stats %>%
+    filter(TF %in% TFs_in_papalexi) %>%
+    slice_max(order_by = max_NES, n = N, with_ties = FALSE) %>%
+    pull(TF)
+
+  remaining_n <- max(N - length(pri), 0)
+
+  # 2) Fill the remaining with non-priority TFs by highest max NES
+  if (remaining_n > 0) {
+    non_pri <- tf_stats %>%
+      filter(!(TF %in% pri)) %>%
+      slice_max(order_by = max_NES, n = remaining_n, with_ties = FALSE) %>%
+      pull(TF)
+    keep <- c(pri, non_pri)
+  } else {
+    keep <- pri
+  }
+
   df %>% filter(TF %in% keep)
 }
 
@@ -519,7 +547,7 @@ legend_dummy <- ggplot(legend_dummy_df, aes(x = x, y = y, color = NES)) +
   theme(legend.box.margin = margin(0, 0, 0, 0), legend.margin = margin(0, 0, 0, 0))
 
 # combine with collected legends (only one colorbar from dummy, one size legend from Mono TA)
-TF_combined_plot <- (HSC_TF_EP_plot | HSC_TF_TA_plot | Mono_TF_EP_plot | Mono_TF_TA_plot | legend_dummy)
+TF_combined_plot <- (HSC_TF_TA_plot | HSC_TF_EP_plot | Mono_TF_TA_plot | Mono_TF_EP_plot | legend_dummy)
 TF_combined_plot <- TF_combined_plot +
   plot_layout(ncol = 5, widths = c(1, 1, 1, 1, 0.1), guides = "collect") &
   theme(legend.position = "right", legend.box.margin = margin(0, 0, 0, 0), legend.margin = margin(0, 0, 0, 0))

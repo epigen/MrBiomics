@@ -501,6 +501,46 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 ########################################################################################################################
 #### ENRICHMENT HEATMAP #################################################################################################
 ########################################################################################################################
+split_long_label_at_middle <- function(labels, threshold = 30, longer_first_margin = 5) {
+    vapply(labels, function(s) {
+        s <- as.character(s)
+        if (is.na(s)) return(NA_character_)
+        total_len <- nchar(s, type = "chars")
+        if (total_len <= threshold) return(s)
+        half <- ceiling(total_len / 2)
+        # Candidate breakpoints: spaces (break replaces the space) and hyphens (break after the dash)
+        spaces <- gregexpr(" ", s, fixed = TRUE)[[1]]
+        hyphens <- gregexpr("-", s, fixed = TRUE)[[1]]
+        if (length(spaces) == 1 && spaces[1] == -1) spaces <- integer(0)
+        if (length(hyphens) == 1 && hyphens[0 + 1] == -1) hyphens <- integer(0)
+        spaces <- spaces[spaces > 1 & spaces < total_len]
+        hyphens <- hyphens[hyphens > 1 & hyphens < total_len]
+        if (length(spaces) == 0 && length(hyphens) == 0) return(s)
+        positions <- c(spaces, hyphens)
+        is_hyphen <- c(rep(FALSE, length(spaces)), rep(TRUE, length(hyphens)))
+        if (length(positions) == 0) return(s)
+        # Compute left/right lengths based on breakpoint type
+        left_lens <- ifelse(is_hyphen, positions, positions - 1)
+        right_lens <- total_len - positions
+        # Enforce margin: line 1 can be up to `longer_first_margin` shorter than line 2
+        ok_mask <- left_lens >= (right_lens - longer_first_margin)
+        eligible_positions <- positions[ok_mask]
+        eligible_is_hyphen <- is_hyphen[ok_mask]
+        if (length(eligible_positions) == 0) {
+            eligible_positions <- positions
+            eligible_is_hyphen <- is_hyphen
+        }
+        sel <- which.min(abs(eligible_positions - half))
+        idx <- eligible_positions[sel]
+        hy <- eligible_is_hyphen[sel]
+        if (hy) {
+            paste0(substr(s, 1, idx), "\n", substr(s, idx + 1, total_len))
+        } else {
+            paste0(substr(s, 1, idx - 1), "\n", substr(s, idx + 1, total_len))
+        }
+    }, character(1))
+}
+
 filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2) {
     df_sig <- df %>%
       filter(score > 0, statistic < fdr_threshold) 
@@ -596,6 +636,9 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = N
 
     # for the GOBP terms, shorten the names by removing the text in the brackets at the end (incl the brackets)
     short_term_levels <- gsub("\\s*\\(.*\\)", "", short_term_levels)
+
+    # Split long labels into two lines at the space nearest the middle
+    short_term_levels <- split_long_label_at_middle(short_term_levels, threshold = 30, longer_first_margin = 5)
 
     # Print the mapping of original to shortened names
     term_map_df <- data.frame(Original = original_term_levels, Shortened = short_term_levels)
