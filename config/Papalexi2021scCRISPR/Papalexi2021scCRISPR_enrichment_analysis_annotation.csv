@@ -1,0 +1,12 @@
+name,features_path,background_name,background_path,group
+BRD4,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/BRD4_featureScores.csv,,,KO
+CUL3,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/CUL3_featureScores.csv,,,KO
+IFNGR1,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/IFNGR1_featureScores.csv,,,KO
+IFNGR2,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/IFNGR2_featureScores.csv,,,KO
+IRF1,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/IRF1_featureScores.csv,,,KO
+JAK2,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/JAK2_featureScores.csv,,,KO
+MYC,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/MYC_featureScores.csv,,,KO
+SMAD4,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/SMAD4_featureScores.csv,,,KO
+SPI1,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/SPI1_featureScores.csv,,,KO
+STAT1,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/STAT1_featureScores.csv,,,KO
+STAT2,results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/feature_lists/STAT2_featureScores.csv,,,KO

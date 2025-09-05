@@ -1,0 +1,49 @@
+
+##### RESOURCES #####
+mem: '32000'
+threads: 1
+
+##### GENERAL #####
+annotation: config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_mixscape_seurat_annotation.csv
+result_path: results/Papalexi2021scCRISPR/
+project_name: Papalexi2021scCRISPR
+
+##### MIXSCAPE #####
+
+# used to split gRNA terms into target gene and guide number eg for symbol "-": STAT1-3 -> gene=STAT1; guide RNA number=3
+grna_split_symbol: "g"
+
+# which assay to use (eg "SCT" or "RNA"), if scale.data is empty standard Seurat methods are applied: NormalizeData(object = data) %>% FindVariableFeatures() %>% ScaleData()
+assay: "SCT"
+
+# perform analysis using only variable features (yes=1, no=0)
+variable_features_only: 0
+
+# parameters for https://satijalab.org/seurat/reference/calcperturbsig
+CalcPerturbSig:
+    grna_col: "guide_ID"
+    gene_col: "gene"
+    nt_term: "NT"
+    n_neighbors: 20
+    ndims: 10
+    split_by_col: ""
+
+# parameters for https://satijalab.org/seurat/reference/runmixscape
+RunMixscape:
+    mixscape_fine_mode: 'FALSE' 
+    lfc_th: 0.1
+    split_by_col: ''
+    min_de_genes: 5
+    min_cells: 5
+    prtb_type: "KO"
+
+##### LDA #####
+
+# parameters for https://satijalab.org/seurat/reference/mixscapelda
+MixscapeLDA:
+    npcs: 10
+
+##### VISUALIZATION #####
+
+# names for the Seurat Assays mapped to 10X genomics feature Antibody_Capture (leave empty "" if not applicable)
+Antibody_Capture: "ADT"

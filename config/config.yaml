@@ -33,3 +33,9 @@ workflows:
         unsupervised_analysis: "config/CorcesINT/CorcesINT_unsupervised_analysis_config.yaml"
         dea_limma: "config/CorcesINT/CorcesINT_dea_limma_config.yaml"
         enrichment_analysis: "config/CorcesINT/CorcesINT_enrichment_analysis_config.yaml"
+    Papalexi2021scCRISPR:
+        scrnaseq_processing_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_scrnaseq_processing_seurat_config.yaml"
+        mixscape_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_mixscape_seurat_config.yaml"
+        unsupervised_analysis: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_unsupervised_analysis_config.yaml"
+        dea_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_dea_seurat_config.yaml"
+        enrichment_analysis: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_enrichment_analysis_config.yaml"

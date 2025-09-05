@@ -1,0 +1,48 @@
+
+##### RESOURCES #####
+mem: '32000'
+threads: 1
+
+##### GENERAL #####
+annotation: config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_dea_seurat_annotation.csv
+result_path: results/Papalexi2021scCRISPR/
+project_name: Papalexi2021scCRISPR
+
+##### DEA #####
+
+# parameters for https://satijalab.org/seurat/reference/findmarkers
+logfc_threshold: 0.1
+test_use: "wilcox"
+min_pct: 0.1
+
+# additional parameter for https://satijalab.org/seurat/reference/findallmarkers
+return_thresh: 1
+
+##### AGGREGATION #####
+# score_formula is used to calculate a score for each gene and comparison (group) that can be used downstream e.g., for preranked GSEA
+# eval based score calculation -> eval(parse(text=" "))
+# DEA result dataframe is called: dea_results
+# available numerical columns: p_val, avg_log2FC, pct.1, pct.2, p_val_adj
+# common/popular example: "-log10(dea_results$p_val)*sign(dea_results$logFC)"
+# if not used leave empty: ""
+score_formula: "-log10(dea_results$p_val)*sign(dea_results$avg_log2FC)"
+
+# filters are applied to the DEA results and used for all outputs
+filters:
+    adj_pval: 0.05
+    lfc: 0.1
+    min_pct: 0.1
+
+##### VISUALIZATION #####
+
+# parameters for https://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html
+volcano:
+    pCutoff: 0.05
+    FCcutoff: 0.1
+
+# path(s) to feature lists as plain text files (.txt) with one gene per line.
+# used to highlight features in volcano plots and generate LFC clustered heatmaps.
+# only use camelCase for the feature_list names like in the examples below.
+# if not used: put an empty entry e.g., noGenes: ""
+feature_lists:
+    noGenes: ""

@@ -1,0 +1,5 @@
+﻿name,data,metadata,samples_by_features
+merged_CORRECTED,results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/CORRECTED/RNA.csv,results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/CORRECTED/metadata.csv,0
+merged_NORMALIZED,results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/NORMALIZED/RNA.csv,results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/NORMALIZED/metadata.csv,0
+merged_MIXSCAPE_PRTB,results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_PRTB_data.csv,results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_metadata.csv,0
+merged_MIXSCAPE_LDA,results/Papalexi2021scCRISPR/mixscape_seurat/merged/LDA_data.csv,results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_metadata.csv,1

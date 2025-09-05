@@ -1,0 +1,118 @@
+
+##### RESOURCES #####
+mem: '64000'
+threads: 1
+
+##### GENERAL #####
+sample_annotation: config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_scrnaseq_processing_seurat_annotation.csv
+result_path: results/Papalexi2021scCRISPR/
+project_name: Papalexi2021scCRISPR
+
+# flag if counts after each processing steps (of all modalities) should be saved as CSV, which is time and storage intense options are: RAW, FILTERED, NORMALIZED, CORRECTED, if no count matrices are desired leave empty []
+save_counts: ['NORMALIZED','CORRECTED']
+    
+# stop flag, options are: RAW, FILTERED, NORMALIZED, CORRECTED (-> only if variables_to_regress is provided!)
+stop_after: 'CORRECTED'
+
+##### PREPARE #####
+
+# names for the Seurat Assays mapped to 10X genomics features (leave empty "" if not applicable)
+modality_flags:
+    Antibody_Capture: "ADT"
+    CRISPR_Guide_Capture: ""
+    Custom: ""
+
+# CRISPR UMI background treshold for gRNA assignment (gRNA counts <= crispr_umi_threshold will be set 0)
+crispr_umi_threshold: 1
+
+# gRNA to gene-symbol REGEX for gene_symbol <- gsub(grna_regex,"",guide_rna_name)
+grna_regex: ""
+
+# REGEX-based metadata extension used with Seurat::PercentageFeatureSet
+# every entry is a new metadata column (use Camel case eg mitoPercent, no underlines '_')
+# https://satijalab.org/seurat/reference/percentagefeatureset  
+percentage_regex:
+    mitoPercent: "^MT-"
+    riboPercent: "^RP[SL][[:digit:]]|^RPLP[[:digit:]]|^RPSA"
+
+# eval based metadata column transformations -> eval(parse(text=" ")) -> escape \\ has to be \\\\
+# every entry is a new metadata column (use Camel case eg mitoPercent, no underlines '_')
+# metadata dataframe is called "metadata"
+metadata_eval:
+    batch: ""
+
+##### MERGE #####
+# specify additional metadata file path (CSV) with rows as cells/barcodes (as first column) and columns as metadata. eg clustering results emerged from downstream analyses
+# (leave empty "" if not applicable) this will trigger a rerun starting from the merge step to include the new metadata downstream (only if the metadata file is newer than the previous results)
+extra_metadata: ""
+
+##### SPLIT #####
+# needs to be categorical variable in metadata
+# data subsets are only generated for the indicated groups, because we are not always interested in all possible subsets eg negatives/doublets
+# 'batch' denotes samples (ie sample_names from sample_annotation)
+split_by:
+    batch: []
+
+##### FILTER #####
+# logical expression for filtering, all variables need to be in metadata (leave empty "" if not applicable)
+filter_expression: ""
+
+##### PSEUDOBULK #####
+# configure pseudobulking by metadata columns, aggregation method and cell count threshold
+# leave method empty "" to skip
+pseudobulk:
+    by: ['gene','orig.ident','replicate'] # have to be metadata columns
+    method: "sum" # options: "sum", "mean", or "median"
+    cell_count_th: 20 # pseudobulked samples with less cells than cell_count_th are removed
+
+##### NORMALIZATION #####
+# using SCTransform v2 defaults https://satijalab.org/seurat/reference/sctransform
+
+# Use this many features (integer) as variable features after ranking by residual variance for all downstream steps.
+# Use "auto" to instead of setting a fixed number of variable features, a residual variance cutoff of 1.3 is used.
+# Use 0 to use all features for downstream analysis.
+variable_features_n: "0" # options: "auto", 0, integer
+
+# filter for genes that have been detected in at least min_cells_per_gene cells (default: 5)
+min_cells_per_gene: 5
+
+##### CELL SCORES #####
+# calculated using normalized counts (ie assay="SCT", slot="data")
+
+# perform cell cycle analysis with given gene lists of S and G2/M phase respectively using https://satijalab.org/seurat/reference/cellcyclescoring
+# to use markers loaded with Seurat from Tirosh et al 2015 -> put 'tirosh2015'
+# if not applicable -> leave empty ''
+# adds 3 columns to metadata: S.Score, G2M.Score, and Phase
+cell_cycle:
+    s_phase_genes: 'tirosh2015'
+    g2m_phase_genes: 'tirosh2015'
+
+# provide paths to gene lists in plain .txt to perform scoring using https://satijalab.org/seurat/reference/addmodulescore
+module_gene_lists:
+    moduleX: ""
+
+##### CORRECTION #####
+# performed on filtered raw data (includes normalization) and stores the corrected data in assay="SCT", slot="scale.data" of the Seurat object
+
+# need to be variables in metadata post cell scoring (ie normalization step)
+variables_to_regress: ["Phase","replicate","orig.ident"]
+
+##### VISUALIZATION #####
+# of metadata (after each step) and expression data after normalization (slot="data") and correction (slot="scale.data"), respectively
+# ridge plots & violin plots for other modalities are only generated after normalization (using slot="data")
+# dot plots: only uses data from slot="data" (-> only generated for step NORMALIZED), averages the values, and then passes them to scale. These are then Min-Maxed based on the col.min and col.max parameter values.
+# heatmaps: always use data from slot="scale.data"
+
+# categorical metadata variables to group cells in plots eg condition
+vis_categories: ['gene']
+
+# provide paths to gene lists in plain .txt to plot expression individually (Ridge plots, Violin plots) and grouped (eg Heatmap, Dot plots)
+vis_gene_lists:
+    geneList: ""
+
+# features per modality (if not applicable, leave empty []), which expression should be plotted, ['all'] plots every feature
+vis_features:
+    Antibody_Capture: ['all']
+    CRISPR_Guide_Capture: []
+    Custom: []
+    Metadata: ['mitoPercent','riboPercent']

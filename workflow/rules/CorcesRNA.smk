@@ -78,6 +78,7 @@ rule CorcesRNA_reconstruct_lineage:
         graph = os.path.join("results/CorcesRNA/special_analyses/crossprediction/graph.png"),
     params:
         group_var = "cell_type",
+        group_rm = "",
         top_features_n = 5,
         prune_th = 0.2,
         feature_annotation_var = "external_gene_name",
