@@ -1270,3 +1270,80 @@ plot_crossprediction_for_kos <- function(adjacency_matrix_path,
     )
     return(p)
 }
+
+########################################################################################################################
+#### KO enrichment lollipop (Corces TA signatures) #####################################################################
+########################################################################################################################
+# Create a simple lollipop plot with one row per term and NES on x-axis.
+# Strictly uses 'Term' (y) and 'NES' (x) from the CSV.
+plot_ko_ta_lollipop <- function(results_csv_path,
+                                fig_path,
+                                title = NULL,
+                                width = NULL,
+                                fdr_threshold = 0.05) {
+
+    df <- data.frame(fread(file.path(results_csv_path), header = TRUE))
+
+    stopifnot(all(c("Term", "NES") %in% names(df)))
+
+    # significance from FDR_q_val if available
+    if ("FDR_q_val" %in% names(df)) {
+        df$sig <- (!is.na(df$FDR_q_val)) & is.finite(df$FDR_q_val) & (df$FDR_q_val < fdr_threshold)
+    } else {
+        df$sig <- FALSE
+    }
+
+    # Keep a single row per Term if duplicates occur (prefer largest |NES|)
+    df <- df %>%
+        dplyr::mutate(Term = as.character(Term)) %>%
+        dplyr::group_by(Term) %>%
+        dplyr::slice_max(order_by = abs(NES), n = 1, with_ties = FALSE) %>%
+        dplyr::ungroup()
+
+    # Order terms by NES for a tidy diverging plot
+    df$Term <- factor(df$Term, levels = df$Term[order(df$NES)])
+
+    # Symmetric x-limits around 0
+    max_abs_nes <- max(abs(df$NES), na.rm = TRUE)
+    if (!is.finite(max_abs_nes) || max_abs_nes == 0) max_abs_nes <- 1
+
+    lollipop <- ggplot(df, aes(y = Term)) +
+        geom_segment(aes(x = 0, xend = NES, yend = Term), color = "grey80", linewidth = 0.8) +
+        geom_point(aes(x = NES, color = NES), size = 3.2, alpha = 0.9) +
+        # significance stars overlay (centered)
+        geom_point(
+            data = subset(df, sig),
+            aes(x = NES, y = Term),
+            inherit.aes = FALSE,
+            shape = 8,
+            size = 0.8,
+            alpha = 0.9,
+            stroke = 0.25,
+            color = "white",
+            show.legend = FALSE
+        ) +
+        scale_x_continuous(limits = c(-max_abs_nes, max_abs_nes)) +
+        scale_color_gradient2(
+            low = as.character(RdBu_extremes["down"]),
+            mid = "white",
+            high = as.character(RdBu_extremes["up"]),
+            name = "NES"
+        ) +
+        labs(x = "NES", y = NULL, title = title) +
+        MrBiomics_theme() +
+        theme(
+            panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank()
+        )
+
+    if (is.null(width)) {
+        width <- PLOT_SIZE_3_PER_ROW + 1
+    }
+
+    ggsave_all_formats(path = fig_path,
+                       plot = lollipop,
+                       width = width,
+                       height = PLOT_SIZE_3_PER_ROW)
+
+    return(lollipop)
+}
