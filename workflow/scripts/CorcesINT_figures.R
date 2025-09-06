@@ -536,7 +536,9 @@ Mono_TF_EP_plot <- ggplot(Mono_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, 
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
-  theme(axis.text.y = ggtext::element_markdown()) +
+  theme(axis.text.y = ggtext::element_markdown(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
   scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, HSC_EP_TFs, HSC_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
@@ -548,7 +550,9 @@ Mono_TF_TA_plot <- ggplot(Mono_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, 
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
-  theme(axis.text.y = ggtext::element_markdown()) +
+  theme(axis.text.y = ggtext::element_markdown(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
   scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, HSC_EP_TFs, HSC_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes") +
@@ -560,7 +564,9 @@ HSC_TF_EP_plot <- ggplot(HSC_TF_EP_df, aes(x = NES, y = TF, size = nEnrGenes, co
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
-  theme(axis.text.y = ggtext::element_markdown()) +
+  theme(axis.text.y = ggtext::element_markdown(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
   scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, Mono_EP_TFs, Mono_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +
@@ -572,7 +578,9 @@ HSC_TF_TA_plot <- ggplot(HSC_TF_TA_df, aes(x = NES, y = TF, size = nEnrGenes, co
   geom_segment(aes(x = 0, xend = NES, y = TF, yend = TF), color = segment_color, linewidth = segment_width) +
   geom_point(alpha = 0.8, shape = 16) +
   MrBiomics_theme() +
-  theme(axis.text.y = ggtext::element_markdown()) +
+  theme(axis.text.y = ggtext::element_markdown(),
+        panel.grid.major.y = element_blank(),
+        panel.grid.minor.y = element_blank()) +
   scale_x_continuous(limits = c(0, max_nes_both)) +
   scale_y_discrete(labels = function(x) build_tf_axis_labels(x, TFs_in_papalexi, Mono_EP_TFs, Mono_TA_TFs)) +
   scale_size_continuous(range = size_range, name = "Number of\nenriched\ngenes", guide = "none") +

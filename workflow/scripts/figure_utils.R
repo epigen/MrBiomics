@@ -46,6 +46,78 @@ umap_plot <- function(data_path, fig_path, title = NULL, modality_by_shape = FAL
     return(umap_plot)
 }
 
+# UMAP with metadata join and direct labeling for categorical variable
+umap_plot_with_metadata <- function(data_path, metadata_path, fig_path, category_col, title = NULL,
+                                    color_map = NULL, label_points = TRUE, min_points_for_label = 1) {
+    umap_data <- data.frame(fread(file.path(data_path), header = TRUE))
+    metadata_df <- data.frame(fread(file.path(metadata_path), header = TRUE, check.names = FALSE))
+
+    # join by sample_name = first column in metadata
+    row_id_col <- colnames(metadata_df)[1]
+    colnames(metadata_df)[1] <- "sample_name"
+    df <- umap_data %>% left_join(metadata_df, by = "sample_name")
+
+    stopifnot(category_col %in% colnames(df))
+    df[[category_col]] <- as.character(df[[category_col]])
+
+    # Determine color mapping; default to global Papalexi KO colors
+    if (is.null(color_map)) {
+        if (exists("PAPALEXI_KO_COLORS") && length(PAPALEXI_KO_COLORS) > 0) {
+            color_map <- PAPALEXI_KO_COLORS
+        } else {
+            stop("PAPALEXI_KO_COLORS not defined; please define in figure_theme.R or pass color_map")
+        }
+    }
+
+    # Fix factor levels to include the full mapping so nothing is dropped
+    df[[category_col]] <- factor(df[[category_col]], levels = names(color_map))
+
+    p <- ggplot(df, aes(x = UMAP_1, y = UMAP_2, color = .data[[category_col]])) +
+        rasterise(geom_point(size = 0.01, alpha = 0.7, shape=16)) +
+        scale_color_manual(values = color_map, name = NULL, guide = "none") +
+        labs(x = "UMAP 1", y = "UMAP 2", title = title) +
+        MrBiomics_theme() +
+        theme(
+            legend.position = "none",
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            aspect.ratio = 1
+        )
+
+    if (label_points) {
+        centers <- df %>%
+            group_by(.data[[category_col]]) %>%
+            summarise(
+                n = n(),
+                UMAP_1 = median(UMAP_1, na.rm = TRUE),
+                UMAP_2 = median(UMAP_2, na.rm = TRUE),
+                .groups = "drop"
+            ) %>%
+            filter(n >= min_points_for_label)
+        p <- p + ggrepel::geom_label_repel(
+            data = centers,
+            aes(x = UMAP_1, y = UMAP_2, label = .data[[category_col]], fill = .data[[category_col]]),
+            inherit.aes = FALSE,
+            label.size = 0.2,
+            label.padding = grid::unit(0.1, "lines"),
+            min.segment.length = 0,
+            seed = 42,
+            max.overlaps = Inf,
+            show.legend = FALSE
+        )
+        p <- p + scale_fill_manual(values = color_map, guide = "none")
+    }
+
+    ggsave_all_formats(path = fig_path,
+                       plot = p,
+                       width = PLOT_SIZE_3_PER_ROW + 1,
+                       height = PLOT_SIZE_3_PER_ROW)
+
+    return(p)
+}
+
 
 ########################################################################################################################
 #### DEA HEATMAP #######################################################################################################
@@ -356,7 +428,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
     dendro_plot <- ann_plots$dendro_plot
 
     heatmap_plot <- ggplot(heatmap_df, aes_string(x = "group", y = feature_col_to_plot, fill = "logFC")) +
-        geom_tile(linewidth = 0) +
+        rasterise(geom_tile(linewidth = 0)) +
         scale_fill_distiller(
             palette = "RdBu",
             limits = plot_limits,
@@ -1043,11 +1115,11 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
         )
     }
     if (nrow(allEdges) > 0) {
-        p <- p + geom_path(
+        p <- p + rasterise(geom_path(
             data = allEdges,
             aes(x = x, y = y, group = Group, size = Probability, colour = edge_type, linetype = edge_type),
             na.rm = TRUE
-        )
+        ))
     }
     p <- p + geom_point(data = data.frame(layoutCoordinates),
                         aes(x = x, y = y), shape = node_shape, size = point_size, color = node_colors)
@@ -1096,4 +1168,32 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
     write.csv(layoutCoordinates, file.path(coordinates_out_path))
 
     return(crosspred_plot)
+}
+
+# Wrapper: crossprediction for KO similarity (no coordinates_out)
+plot_crossprediction_for_kos <- function(adjacency_matrix_path,
+                                         fig_path,
+                                         cut_off = 0.05,
+                                         use_hierarchy_layout = FALSE,
+                                         label = "KO similarity") {
+    # Load adjacency, keep KO order
+    adj_mtx <- data.frame(fread(file.path(adjacency_matrix_path), header = TRUE), row.names = 1)
+    nodes <- rownames(adj_mtx)
+    # Use KO color map if available
+    node_colors <- NULL
+    if (exists("PAPALEXI_KO_COLORS") && length(PAPALEXI_KO_COLORS) > 0) {
+        node_colors <- PAPALEXI_KO_COLORS[nodes]
+    }
+
+    # Reuse plotting with generic layout path by creating a temporary coordinates path
+    tmp_csv <- tempfile(fileext = ".csv")
+    p <- plot_crossprediction_from_adjacency(
+        adjacency_matrix_path = adjacency_matrix_path,
+        fig_path = fig_path,
+        coordinates_out_path = tmp_csv,
+        lineage_tree_cut_off = cut_off,
+        hierarchy_coordinates = use_hierarchy_layout,
+        modality_label = label
+    )
+    return(p)
 }

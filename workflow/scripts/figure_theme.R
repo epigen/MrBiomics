@@ -111,6 +111,7 @@ MrBiomics_theme <- function(){
 update_geom_defaults("text", list(size = FONT_SIZE_SMALL / .pt, family = FONT, lineheight = 0.6))
 update_geom_defaults("text_repel", list(size = FONT_SIZE_SMALL / .pt, segment.size = 0.2, family = FONT))
 update_geom_defaults("label", list(size = FONT_SIZE_SMALL / .pt, family = FONT))
+update_geom_defaults("label_repel", list(size = FONT_SIZE_SMALL / .pt, segment.size = 0.2, family = FONT))
 
 # same theme as MrBiomics_theme but everything removed except for the title
 MrBiomics_void <- function(){
@@ -300,3 +301,22 @@ RdBu_extremes <- c(
     "up" = "#B6242F",  # red
     "down" = "#2569AD"  # blue
 )
+
+# Papalexi 2021 scCRISPR knockout color scheme (built from metadata)
+# This fixed palette is generated once at load-time based on the measured KOs
+# defined in the Papalexi CORRECTED metadata file.
+PAPALEXI_KO_LIST = c(
+    "SPI1", "CUL3", "IRF1", "MYC", "STAT1", "STAT2", "BRD4", "IFNGR1", "IFNGR2", "JAK2", "SMAD4", 
+    "ATF2", "CAV1", "CD86", "CMTM6",  "ETV7", "IRF7", "MARCH8",
+    "NFKBIA", "PDCD1LG2", "POU2F2", "STAT3", "STAT5A", "TNFRSF14", "UBE2L6"
+)  # don't include NT, this should be grey
+
+PAPALEXI_KO_COLORS <- c(
+    RColorBrewer::brewer.pal(8, "Set1"),
+    RColorBrewer::brewer.pal(7, "Dark2"),
+    RColorBrewer::brewer.pal(12, "Set3"),
+    RColorBrewer::brewer.pal(8, "Set2")
+)
+PAPALEXI_KO_COLORS <- PAPALEXI_KO_COLORS[1:length(PAPALEXI_KO_COLORS)]
+PAPALEXI_KO_COLORS <- c('grey80', PAPALEXI_KO_COLORS)
+names(PAPALEXI_KO_COLORS) <- c('NT', PAPALEXI_KO_LIST)

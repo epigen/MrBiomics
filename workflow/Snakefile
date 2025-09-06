@@ -38,7 +38,6 @@ include: os.path.join("rules", "CorcesATAC.smk")
 include: os.path.join("rules", "CorcesINT.smk")
 include: os.path.join("rules", "docs.smk")
 
-
 #### Target Rule ####
 rule all:
     input:
