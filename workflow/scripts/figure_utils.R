@@ -971,6 +971,16 @@ generate_hierarchy_layout_coordinates <- function(nodes, children_list, root_nod
     return(layoutCoordinates)
 }
 
+# Helper: safely recode names using a named mapping; keep originals if no match
+safe_recode_names <- function(x, mapping) {
+    if (is.null(mapping) || length(mapping) == 0) return(x)
+    out <- as.character(x)
+    matched <- out %in% names(mapping)
+    if (!any(matched)) return(out)
+    out[matched] <- mapping[out[matched]]
+    return(out)
+}
+
 # Build and save the crossprediction plot from an adjacency matrix CSV
 plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
                                                fig_path,
@@ -983,23 +993,38 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
                                                jitter_step = 1.5,
                                                outcome_title = "Compared to\nliterature",
                                                node_shape = 19,
-                                               point_size = 8, 
+                                               point_size = 8,
                                                tp_name = "Consistent",
                                                fp_name = "Additional",
-                                               fn_name = "Missing") {
+                                               fn_name = "Missing",
+                                               node_colors = NULL,
+                                               compare_to_literature = TRUE) {
 
 
 
-    # Load adjacency matrix and harmonize labels
+    # Load adjacency matrix and harmonize labels (only recode when mapping matches)
     adj_mtx <- data.frame(fread(file.path(adjacency_matrix_path), header = TRUE), row.names = 1)
-    rownames(adj_mtx) <- recode(rownames(adj_mtx), !!!DATA_TO_CELL_TYPE_COLORS_MAPPING)
-    colnames(adj_mtx) <- recode(colnames(adj_mtx), !!!DATA_TO_CELL_TYPE_COLORS_MAPPING)
+    rownames(adj_mtx) <- safe_recode_names(rownames(adj_mtx), DATA_TO_CELL_TYPE_COLORS_MAPPING)
+    colnames(adj_mtx) <- safe_recode_names(colnames(adj_mtx), DATA_TO_CELL_TYPE_COLORS_MAPPING)
 
     adjacencyMatrix <- as.matrix(adj_mtx)
     adjacencyMatrix[adjacencyMatrix < lineage_tree_cut_off] <- 0
 
     nodes <- rownames(adj_mtx)
-    node_colors <- CELL_TYPE_COLORS[nodes]
+    # Determine node colors if not provided: prefer CELL_TYPE_COLORS; fallback to KO colors when available
+    if (is.null(node_colors)) {
+        if (all(nodes %in% names(CELL_TYPE_COLORS))) {
+            node_colors <- CELL_TYPE_COLORS[nodes]
+        } else if (exists("PAPALEXI_KO_COLORS") && length(PAPALEXI_KO_COLORS) > 0 && all(nodes %in% names(PAPALEXI_KO_COLORS))) {
+            node_colors <- PAPALEXI_KO_COLORS[nodes]
+        } else {
+            node_colors <- rep("grey50", length(nodes))
+            names(node_colors) <- nodes
+        }
+    } else {
+        # If provided as a named vector, align to node order
+        if (!is.null(names(node_colors))) node_colors <- node_colors[nodes]
+    }
 
     # Create layout coordinates
     if (hierarchy_coordinates) {
@@ -1021,56 +1046,63 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
         dev.off()
     }
 
-    # Build symmetric ground-truth adjacency from lineage tree
-    ground_truth_adj_mat <- matrix(0, nrow = length(nodes), ncol = length(nodes))
-    rownames(ground_truth_adj_mat) <- nodes
-    colnames(ground_truth_adj_mat) <- nodes
-    for (parent in names(children_list)) {
-        children <- children_list[[parent]]
-        children <- intersect(children, nodes)
-        if (length(children) > 0 && parent %in% nodes) {
-            ground_truth_adj_mat[parent, children] <- 1
-            ground_truth_adj_mat[children, parent] <- 1
-        }
-    }
-
-    # Capture full set of undirected ground-truth edges before subtracting predicted edges
-    ground_truth_pairs_all <- ground_truth_adj_mat %>%
-        reshape2::melt() %>%
-        dplyr::filter(value == 1) %>%
-        dplyr::mutate(
-            a = pmin(as.character(Var1), as.character(Var2)),
-            b = pmax(as.character(Var1), as.character(Var2))
-        ) %>%
-        dplyr::select(a, b) %>%
-        dplyr::distinct()
-    gt_keys <- paste(ground_truth_pairs_all$a, ground_truth_pairs_all$b, sep = ">")
-
-    # Convert to list of ties only (>= cutoff) and remove ground-truth edges that are predicted
+    # Prepare adjacency list of predicted ties and (optionally) ground truth edges
     adjacencyList <- reshape2::melt(adjacencyMatrix)
     adjacencyList <- adjacencyList[adjacencyList$value >= lineage_tree_cut_off, , drop = FALSE]
-    if (nrow(adjacencyList) > 0) {
-        for (i in seq_len(nrow(adjacencyList))) {
-            v1 <- adjacencyList[i, 'Var1']
-            v2 <- adjacencyList[i, 'Var2']
-            ground_truth_adj_mat[v1, v2] <- 0
-            ground_truth_adj_mat[v2, v1] <- 0
-        }
-    }
 
-    # Unstack remaining ground-truth edges and add coordinates
-    layoutCoordinates_df <- data.frame(layoutCoordinates)
-    layoutCoordinates_df['node_name'] <- nodes
-    ground_truth_adj_mat_long <- ground_truth_adj_mat %>%
-        reshape2::melt() %>%
-        dplyr::filter(value == 1) %>%
-        dplyr::mutate(Var1 = as.character(Var1), Var2 = as.character(Var2)) %>%
-        dplyr::filter(Var1 < Var2) %>%
-        dplyr::select(-value) %>%
-        dplyr::left_join(layoutCoordinates_df, by = c("Var1" = "node_name"), copy = TRUE) %>%
-        dplyr::rename(x_start = x, y_start = y) %>%
-        dplyr::left_join(layoutCoordinates_df, by = c("Var2" = "node_name"), copy = TRUE) %>%
-        dplyr::rename(x_end = x, y_end = y)
+    if (compare_to_literature) {
+        # Build symmetric ground-truth adjacency from lineage tree
+        ground_truth_adj_mat <- matrix(0, nrow = length(nodes), ncol = length(nodes))
+        rownames(ground_truth_adj_mat) <- nodes
+        colnames(ground_truth_adj_mat) <- nodes
+        for (parent in names(children_list)) {
+            children <- children_list[[parent]]
+            children <- intersect(children, nodes)
+            if (length(children) > 0 && parent %in% nodes) {
+                ground_truth_adj_mat[parent, children] <- 1
+                ground_truth_adj_mat[children, parent] <- 1
+            }
+        }
+
+        # Capture full set of undirected ground-truth edges before subtracting predicted edges
+        ground_truth_pairs_all <- ground_truth_adj_mat %>%
+            reshape2::melt() %>%
+            dplyr::filter(value == 1) %>%
+            dplyr::mutate(
+                a = pmin(as.character(Var1), as.character(Var2)),
+                b = pmax(as.character(Var1), as.character(Var2))
+            ) %>%
+            dplyr::select(a, b) %>%
+            dplyr::distinct()
+        gt_keys <- paste(ground_truth_pairs_all$a, ground_truth_pairs_all$b, sep = ">")
+
+        # Remove ground-truth edges that are predicted
+        if (nrow(adjacencyList) > 0) {
+            for (i in seq_len(nrow(adjacencyList))) {
+                v1 <- adjacencyList[i, 'Var1']
+                v2 <- adjacencyList[i, 'Var2']
+                ground_truth_adj_mat[v1, v2] <- 0
+                ground_truth_adj_mat[v2, v1] <- 0
+            }
+        }
+
+        # Unstack remaining ground-truth edges and add coordinates
+        layoutCoordinates_df <- data.frame(layoutCoordinates)
+        layoutCoordinates_df['node_name'] <- nodes
+        ground_truth_adj_mat_long <- ground_truth_adj_mat %>%
+            reshape2::melt() %>%
+            dplyr::filter(value == 1) %>%
+            dplyr::mutate(Var1 = as.character(Var1), Var2 = as.character(Var2)) %>%
+            dplyr::filter(Var1 < Var2) %>%
+            dplyr::select(-value) %>%
+            dplyr::left_join(layoutCoordinates_df, by = c("Var1" = "node_name"), copy = TRUE) %>%
+            dplyr::rename(x_start = x, y_start = y) %>%
+            dplyr::left_join(layoutCoordinates_df, by = c("Var2" = "node_name"), copy = TRUE) %>%
+            dplyr::rename(x_end = x, y_end = y)
+    } else {
+        ground_truth_adj_mat_long <- data.frame()
+        gt_keys <- character(0)
+    }
 
     # Edge path generator with type and probability
     edgeMaker <- function(whichRow, len = 100) {
@@ -1081,11 +1113,15 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
         edge$Sequence <- 1:len
         edge$Group <- paste(adjacencyList[whichRow, 1:2], collapse = ">")
 
-        # Determine undirected pair key and type based on ground truth membership
-        a_val <- pmin(as.character(adjacencyList[whichRow, 'Var1']), as.character(adjacencyList[whichRow, 'Var2']))
-        b_val <- pmax(as.character(adjacencyList[whichRow, 'Var1']), as.character(adjacencyList[whichRow, 'Var2']))
-        pair_key <- paste(a_val, b_val, sep = ">")
-        edge$edge_type <- ifelse(pair_key %in% gt_keys, tp_name, fp_name)
+        # Determine undirected pair key and type based on ground truth membership, when applicable
+        if (compare_to_literature) {
+            a_val <- pmin(as.character(adjacencyList[whichRow, 'Var1']), as.character(adjacencyList[whichRow, 'Var2']))
+            b_val <- pmax(as.character(adjacencyList[whichRow, 'Var1']), as.character(adjacencyList[whichRow, 'Var2']))
+            pair_key <- paste(a_val, b_val, sep = ">")
+            edge$edge_type <- ifelse(pair_key %in% gt_keys, tp_name, fp_name)
+        } else {
+            edge$edge_type <- "Edge"
+        }
 
         # Interpolate between the weights of the current edge and its counterpart
         x <- c(1, len)
@@ -1106,7 +1142,7 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
 
     # Build plot
     p <- ggplot()
-    if (nrow(ground_truth_adj_mat_long) > 0) {
+    if (compare_to_literature && nrow(ground_truth_adj_mat_long) > 0) {
         p <- p + geom_segment(
             data = ground_truth_adj_mat_long,
             aes(x = x_start, y = y_start, xend = x_end, yend = y_end,
@@ -1115,30 +1151,56 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
         )
     }
     if (nrow(allEdges) > 0) {
-        p <- p + rasterise(geom_path(
-            data = allEdges,
-            aes(x = x, y = y, group = Group, size = Probability, colour = edge_type, linetype = edge_type),
-            na.rm = TRUE
-        ))
+        if (compare_to_literature) {
+            p <- p + rasterise(geom_path(
+                data = allEdges,
+                aes(x = x, y = y, group = Group, size = Probability, colour = edge_type, linetype = edge_type),
+                na.rm = TRUE
+            ))
+        } else {
+            p <- p + rasterise(geom_path(
+                data = allEdges,
+                aes(x = x, y = y, group = Group, size = Probability),
+                colour = "black",
+                linetype = "solid",
+                na.rm = TRUE
+            ))
+        }
     }
-    p <- p + geom_point(data = data.frame(layoutCoordinates),
-                        aes(x = x, y = y), shape = node_shape, size = point_size, color = node_colors)
+    nodes_df <- data.frame(layoutCoordinates)
+    nodes_df$node_name <- nodes
+    # attach per-node color (already ordered by nodes)
+    nodes_df$node_color <- unname(node_colors)
+
+    # draw nodes using fill so edge colour scale remains intact
+    p <- p + geom_point(
+        data = nodes_df,
+        aes(x = x, y = y, fill = node_color),
+        shape = 21,
+        size = point_size,
+        stroke = 0.2,
+        colour = "black",
+        show.legend = FALSE
+    ) +
+    scale_fill_identity(guide = "none")
     p <- p + geom_text(data = data.frame(layoutCoordinates),
                        aes(x = x, y = y, label = nodes), color = 'white', hjust = 0.5, vjust = 0.5, fontface = "bold")
 
-    p <- p +
-        scale_colour_manual(
-            name = outcome_title,
-            values = setNames(c("black", "grey", "grey"), c(tp_name, fp_name, fn_name)),
-            breaks = c(tp_name, fp_name, fn_name),
-            labels = c(tp_name, fp_name, fn_name)
-        ) +
-        scale_linetype_manual(
-            name = outcome_title,
-            values = setNames(c("solid", "solid", "11"), c(tp_name, fp_name, fn_name)),
-            breaks = c(tp_name, fp_name, fn_name),
-            labels = c(tp_name, fp_name, fn_name)
-        )
+    if (compare_to_literature) {
+        p <- p +
+            scale_colour_manual(
+                name = outcome_title,
+                values = setNames(c("black", "grey", "grey"), c(tp_name, fp_name, fn_name)),
+                breaks = c(tp_name, fp_name, fn_name),
+                labels = c(tp_name, fp_name, fn_name)
+            ) +
+            scale_linetype_manual(
+                name = outcome_title,
+                values = setNames(c("solid", "solid", "11"), c(tp_name, fp_name, fn_name)),
+                breaks = c(tp_name, fp_name, fn_name),
+                labels = c(tp_name, fp_name, fn_name)
+            )
+    }
 
     p <- p + scale_size(range = c(0.1, 3))
 
@@ -1151,13 +1213,21 @@ plot_crossprediction_from_adjacency <- function(adjacency_matrix_path,
     p <- p + geom_text(aes(x = min(data.frame(layoutCoordinates)$x), y = 1, label = modality_label),
                        hjust = 0, vjust = 1, fontface = "bold", size = FONT_SIZE_NORMAL / .pt)
 
-    crosspred_plot <- p +
-        guides(
-            size = guide_legend(title = 'Average\ncross-prediction\nprobability'),
-            colour = guide_legend(),
-            linetype = guide_legend()
-        ) +
-        MrBiomics_void()
+    if (compare_to_literature) {
+        crosspred_plot <- p +
+            guides(
+                size = guide_legend(title = 'Average\ncross-prediction\nprobability'),
+                colour = guide_legend(),
+                linetype = guide_legend()
+            ) +
+            MrBiomics_void()
+    } else {
+        crosspred_plot <- p +
+            guides(
+                size = guide_legend(title = 'Average\ncross-prediction\nprobability')
+            ) +
+            MrBiomics_void()
+    }
 
     # Save plot and coordinates
     ggsave_all_formats(path = fig_path,
@@ -1193,7 +1263,10 @@ plot_crossprediction_for_kos <- function(adjacency_matrix_path,
         coordinates_out_path = tmp_csv,
         lineage_tree_cut_off = cut_off,
         hierarchy_coordinates = use_hierarchy_layout,
-        modality_label = label
+        modality_label = label,
+        point_size = 8,
+        node_colors = node_colors,
+        compare_to_literature = FALSE
     )
     return(p)
 }

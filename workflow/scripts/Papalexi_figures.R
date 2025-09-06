@@ -25,8 +25,9 @@ umap_corrected_plot <- umap_plot_with_metadata(
     metadata_path = CORRECTED_metadata_path,
     fig_path = umap_corrected_fig_path,
     category_col = ko_column,
-    title = "scCRISPR (CORRECTED)",
-    min_points_for_label = 1
+    title = "scCRISPR-seq (colored by KO)",
+    min_points_for_label = 1,
+    label_points = FALSE
 )
 
 umap_lda_plot <- umap_plot_with_metadata(
@@ -34,7 +35,7 @@ umap_lda_plot <- umap_plot_with_metadata(
     metadata_path = MIXSCAPE_metadata_path,
     fig_path = umap_lda_fig_path,
     category_col = ko_column,
-    title = "scCRISPR (LDA)",
+    title = "scCRISPR-seq (LDA)",
     min_points_for_label = 1
 )
 
