@@ -4,21 +4,26 @@
 source("workflow/scripts/figure_theme.R")
 source("workflow/scripts/figure_utils.R")
 
+# Root of the repository on the current machine
+# Change if running locally: 
+# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
+repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
+
 # Inputs
-CORRECTED_umap_coords_path  <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/unsupervised_analysis/merged_CORRECTED/UMAP/UMAP_correlation_10_0.1_2_data.csv"
-CORRECTED_metadata_path     <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/CORRECTED/metadata.csv"
-MIXSCAPE_umap_coords_path   <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/unsupervised_analysis/merged_MIXSCAPE_LDA/UMAP/UMAP_correlation_10_0.1_2_data.csv"
-MIXSCAPE_metadata_path      <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_metadata.csv"
-KO_crossprediction_adj_mtx_path <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/special_analyses/crossprediction/adjacency_matrix.csv"
+CORRECTED_umap_coords_path  <- file.path(repo_root, "results/Papalexi2021scCRISPR/unsupervised_analysis/merged_CORRECTED/UMAP/UMAP_correlation_10_0.1_2_data.csv")
+CORRECTED_metadata_path     <- file.path(repo_root, "results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/CORRECTED/metadata.csv")
+MIXSCAPE_umap_coords_path   <- file.path(repo_root, "results/Papalexi2021scCRISPR/unsupervised_analysis/merged_MIXSCAPE_LDA/UMAP/UMAP_correlation_10_0.1_2_data.csv")
+MIXSCAPE_metadata_path      <- file.path(repo_root, "results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_metadata.csv")
+KO_crossprediction_adj_mtx_path <- file.path(repo_root, "results/Papalexi2021scCRISPR/special_analyses/crossprediction/adjacency_matrix.csv")
 # KO enrichment in Corces TA signatures
-KO_TA_all_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/enrichment_analysis/KO/preranked_GSEApy/Corces_TA_signatures/KO_Corces_TA_signatures_all.csv"
-SPI1_TA_results_path   <- "/nobackup/lab_bock/projects/MrBiomics/results/Papalexi2021scCRISPR/enrichment_analysis/SPI1/preranked_GSEApy/Corces_TA_signatures/SPI1_Corces_TA_signatures.csv"
+KO_TA_all_results_path <- file.path(repo_root, "results/Papalexi2021scCRISPR/enrichment_analysis/KO/preranked_GSEApy/Corces_TA_signatures/KO_Corces_TA_signatures_all.csv")
+SPI1_TA_results_path   <- file.path(repo_root, "results/Papalexi2021scCRISPR/enrichment_analysis/SPI1/preranked_GSEApy/Corces_TA_signatures/SPI1_Corces_TA_signatures.csv")
 
 # Outputs
-umap_corrected_fig_path  <- "/nobackup/lab_bock/projects/MrBiomics/paper/Papalexi/umap_CORRECTED.pdf"
-umap_lda_fig_path        <- "/nobackup/lab_bock/projects/MrBiomics/paper/Papalexi/umap_LDA.pdf"
-crossprediction_fig_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/Papalexi/crossprediction.pdf"
-spi1_ta_lollipop_fig_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/Papalexi/SPI1_TA_lollipop.pdf"
+umap_corrected_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED.pdf")
+umap_lda_fig_path        <- file.path(repo_root, "paper/Papalexi/umap_LDA.pdf")
+crossprediction_fig_path <- file.path(repo_root, "paper/Papalexi/crossprediction.pdf")
+spi1_ta_lollipop_fig_path <- file.path(repo_root, "paper/Papalexi/SPI1_TA_lollipop.pdf")
 
 dir.create(dirname(umap_corrected_fig_path), recursive = TRUE, showWarnings = FALSE)
 

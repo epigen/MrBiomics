@@ -3,21 +3,25 @@ source("workflow/scripts/figure_utils.R")
 
 # FIXME snakemakeify
 #### configuration ####
+# Root of the repository on the current machine
+# Change if running locally: 
+# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
+repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
 # input
-unintegrated_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/unsupervised_analysis/normupperquartile/UMAP/UMAP_correlation_15_0.1_2_data.csv"
-integrated_umap_coords_path <-   "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/unsupervised_analysis/normupperquartile_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
-unintegrated_cfa_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/normupperquartile_CFA.csv"
-integrated_cfa_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated_CFA.csv"
-norm_counts_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated.csv"
-metadata_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/spilterlize_integrate/all/annotation.csv"
-dea_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/dea_limma/normupperquartile_integrated/results.csv"
-gene_annotation_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv"
-GO_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv"
-Reactome_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"
-Mono_TF_EP_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/Mono_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_EP_hg38_500bp_up_100bp_down_v10clust.csv"
-Mono_TF_TA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/Mono_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_TA_hg38_500bp_up_100bp_down_v10clust.csv"
-HSC_TF_EP_path  <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/HSC_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_EP_hg38_500bp_up_100bp_down_v10clust.csv"
-HSC_TF_TA_path  <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesINT/enrichment_analysis/HSC_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_TA_hg38_500bp_up_100bp_down_v10clust.csv"
+unintegrated_umap_coords_path <- file.path(repo_root, "results/CorcesINT/unsupervised_analysis/normupperquartile/UMAP/UMAP_correlation_15_0.1_2_data.csv")
+integrated_umap_coords_path <-   file.path(repo_root, "results/CorcesINT/unsupervised_analysis/normupperquartile_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv")
+unintegrated_cfa_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/normupperquartile_CFA.csv")
+integrated_cfa_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated_CFA.csv")
+norm_counts_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated.csv")
+metadata_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/annotation.csv")
+dea_results_path <- file.path(repo_root, "results/CorcesINT/dea_limma/normupperquartile_integrated/results.csv")
+gene_annotation_path <- file.path(repo_root, "results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv")
+GO_enrichment_results_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv")
+Reactome_enrichment_results_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv")
+Mono_TF_EP_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/Mono_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_EP_hg38_500bp_up_100bp_down_v10clust.csv")
+Mono_TF_TA_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/Mono_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_TA_hg38_500bp_up_100bp_down_v10clust.csv")
+HSC_TF_EP_path  <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/HSC_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_EP_hg38_500bp_up_100bp_down_v10clust.csv")
+HSC_TF_TA_path  <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/HSC_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_TA_hg38_500bp_up_100bp_down_v10clust.csv")
 
 # parameters
 adjp_th <- 0.05
@@ -30,14 +34,14 @@ TFs_in_papalexi <- c(
   "MYC", "NFKB1A", "PDCD1LG2", "POU2F2", "SMAD4", "SPI1", "STAT1", "STAT2", "STAT3", "STAT5A", "TNFRSF14", "UBE2L6"
 )
 # output
-unintegrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_cfa.pdf"
-integrated_cfa_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_cfa.pdf"
-integrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/integrated_umap.pdf"
-unintegrated_umap_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/unintegrated_umap.pdf"
-epigenetic_scatter_dir <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/correlation_plots"
-GO_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/GO_enrichment.pdf"
-Reactome_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/Reactome_enrichment.pdf"
-TF_plot_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/TF_lollipop.pdf"
+unintegrated_cfa_plot_path <- file.path(repo_root, "paper/CorcesINT/unintegrated_cfa.pdf")
+integrated_cfa_plot_path <- file.path(repo_root, "paper/CorcesINT/integrated_cfa.pdf")
+integrated_umap_plot_path <- file.path(repo_root, "paper/CorcesINT/integrated_umap.pdf")
+unintegrated_umap_plot_path <- file.path(repo_root, "paper/CorcesINT/unintegrated_umap.pdf")
+epigenetic_scatter_dir <- file.path(repo_root, "paper/CorcesINT/correlation_plots")
+GO_enrichment_path <- file.path(repo_root, "paper/CorcesINT/GO_enrichment.pdf")
+Reactome_enrichment_path <- file.path(repo_root, "paper/CorcesINT/Reactome_enrichment.pdf")
+TF_plot_path <- file.path(repo_root, "paper/CorcesINT/TF_lollipop.pdf")
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
 ########################################################################################################################
@@ -343,9 +347,9 @@ Reactome_enrichment_plot <- plot_clustered_enrichment_heatmap(
     width = PLOT_SIZE_2_PER_ROW
 )
 
-dir.create("/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/tmp", showWarnings = FALSE)
-Reactome_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path("/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/tmp/Reactome_enrichment_sig.csv"), row.names = FALSE)
-GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path("/nobackup/lab_bock/projects/MrBiomics/paper/CorcesINT/tmp/GO_enrichment_sig.csv"), row.names = FALSE)
+dir.create(file.path(repo_root, "paper/CorcesINT/tmp"), showWarnings = FALSE)
+Reactome_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path(repo_root, "paper/CorcesINT/tmp/Reactome_enrichment_sig.csv"), row.names = FALSE)
+GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path(repo_root, "paper/CorcesINT/tmp/GO_enrichment_sig.csv"), row.names = FALSE)
 
 
 ########################################################################################################################

@@ -164,3 +164,6 @@ paper
 
 # vscode
 settings.json
+
+# just a helper, don't want to sync this
+rsync_input_files_to_local.sh

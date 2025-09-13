@@ -25,17 +25,22 @@ source("workflow/scripts/figure_utils.R")
 # # lineage reconstructions
 # cut_off <- snakemake@params[["cut_off"]]
 
+# Root of the repository on the current machine
+# Change if running locally: 
+# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
+repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
+
 # input
-CorcesRNA_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
-CorcesRNA_dea_OvA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/results.csv"
-CorcesRNA_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv"
-CorcesRNA_crossprediction_adj_mtx_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"
+CorcesRNA_umap_coords_path <- file.path(repo_root, "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv")
+CorcesRNA_dea_OvA_path <- file.path(repo_root, "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/results.csv")
+CorcesRNA_enrichment_results_path <- file.path(repo_root, "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv")
+CorcesRNA_crossprediction_adj_mtx_path <- file.path(repo_root, "results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv")
 # output
-rna_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/umap.pdf"
-rna_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/differential_heatmap.pdf"
-rna_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/enrichment.pdf"
-rna_crossprediction_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/crossprediction.pdf"
-rna_crossprediction_coordinates_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesRNA/crossprediction_coordinates.csv"
+rna_umap_path <- file.path(repo_root, "paper/CorcesRNA/umap.pdf")
+rna_dea_heatmap_path <- file.path(repo_root, "paper/CorcesRNA/differential_heatmap.pdf")
+rna_enrichment_path <- file.path(repo_root, "paper/CorcesRNA/enrichment.pdf")
+rna_crossprediction_path <- file.path(repo_root, "paper/CorcesRNA/crossprediction.pdf")
+rna_crossprediction_coordinates_path <- file.path(repo_root, "paper/CorcesRNA/crossprediction_coordinates.csv")
 # params
 # enrichment analysis
 fdr_threshold <- 0.05

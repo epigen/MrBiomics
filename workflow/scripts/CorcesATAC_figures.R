@@ -18,17 +18,22 @@ source("workflow/scripts/figure_utils.R")
 # ## params
 # fdr_threshold <- snakemake@params[["fdr_threshold"]]
 
+# Root of the repository on the current machine
+# Change if running locally: 
+# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
+repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
+
 # input
-CorcesATAC_umap_coords_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"
-CorcesATAC_dea_OvA_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/results.csv"
-CorcesATAC_enrichment_results_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv"
-CorcesATAC_crossprediction_adj_mtx_path <- "/nobackup/lab_bock/projects/MrBiomics/results/CorcesATAC/special_analyses/crossprediction/adjacency_matrix.csv"
+CorcesATAC_umap_coords_path <- file.path(repo_root, "results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv")
+CorcesATAC_dea_OvA_path <- file.path(repo_root, "results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/results.csv")
+CorcesATAC_enrichment_results_path <- file.path(repo_root, "results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv")
+CorcesATAC_crossprediction_adj_mtx_path <- file.path(repo_root, "results/CorcesATAC/special_analyses/crossprediction/adjacency_matrix.csv")
 # output
-atac_umap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/umap.pdf"
-atac_dea_heatmap_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/differential_heatmap.pdf"
-atac_enrichment_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/enrichment.pdf"
-atac_crossprediction_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/crossprediction.pdf"
-atac_crossprediction_coordinates_path <- "/nobackup/lab_bock/projects/MrBiomics/paper/CorcesATAC/crossprediction_coordinates.csv"
+atac_umap_path <- file.path(repo_root, "paper/CorcesATAC/umap.pdf")
+atac_dea_heatmap_path <- file.path(repo_root, "paper/CorcesATAC/differential_heatmap.pdf")
+atac_enrichment_path <- file.path(repo_root, "paper/CorcesATAC/enrichment.pdf")
+atac_crossprediction_path <- file.path(repo_root, "paper/CorcesATAC/crossprediction.pdf")
+atac_crossprediction_coordinates_path <- file.path(repo_root, "paper/CorcesATAC/crossprediction_coordinates.csv")
 # params
 fdr_threshold <- 0.05
 log2FC_threshold <- 3
