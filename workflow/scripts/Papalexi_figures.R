@@ -1,6 +1,5 @@
 #### libraries
 # source this for libraries, MrBiomics theme and utility functions
-
 source("workflow/scripts/figure_theme.R")
 source("workflow/scripts/figure_utils.R")
 
@@ -20,23 +19,49 @@ KO_TA_all_results_path <- file.path(repo_root, "results/Papalexi2021scCRISPR/enr
 SPI1_TA_results_path   <- file.path(repo_root, "results/Papalexi2021scCRISPR/enrichment_analysis/SPI1/preranked_GSEApy/Corces_TA_signatures/SPI1_Corces_TA_signatures.csv")
 
 # Outputs
+umap_corrected_KO_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED_KO.pdf")
+umap_corrected_phase_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED_phase.pdf")
 umap_corrected_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED.pdf")
 umap_lda_fig_path        <- file.path(repo_root, "paper/Papalexi/umap_LDA.pdf")
 crossprediction_fig_path <- file.path(repo_root, "paper/Papalexi/crossprediction.pdf")
 spi1_ta_lollipop_fig_path <- file.path(repo_root, "paper/Papalexi/SPI1_TA_lollipop.pdf")
 
-dir.create(dirname(umap_corrected_fig_path), recursive = TRUE, showWarnings = FALSE)
+dir.create(dirname(umap_corrected_KO_fig_path), recursive = TRUE, showWarnings = FALSE)
 
 ko_column <- "gene"
+phase_column <- "Phase"
 
 umap_corrected_plot <- umap_plot_with_metadata(
     data_path = CORRECTED_umap_coords_path,
     metadata_path = CORRECTED_metadata_path,
-    fig_path = umap_corrected_fig_path,
+    fig_path = umap_corrected_KO_fig_path,
     category_col = ko_column,
     title = "scCRISPR-seq of 25 gene knockouts (KO) in\nstimulated THP-1 cells (colored by KO)",
     min_points_for_label = 1,
     label_points = FALSE
+)
+
+# New: 2x2 panels (KO + three phase highlights)
+umap_corrected_panels_plot <- umap_panels_ko_and_phase_highlights(
+    data_path = CORRECTED_umap_coords_path,
+    metadata_path = CORRECTED_metadata_path,
+    fig_path = umap_corrected_fig_path,
+    ko_column = ko_column,
+    phase_column = phase_column,
+    point_size_all = 0.000001,
+    point_size_highlight = 0.000001,
+)
+
+umap_corrected_phase_plot <- umap_plot_with_metadata(
+    data_path = CORRECTED_umap_coords_path,
+    metadata_path = CORRECTED_metadata_path,
+    fig_path = umap_corrected_phase_fig_path,
+    category_col = phase_column,
+    color_map = CELL_CYCLE_COLORS,
+    title = "Cell cycle phase",
+    min_points_for_label = 1,
+    label_points = FALSE, 
+    guide = TRUE
 )
 
 umap_lda_plot <- umap_plot_with_metadata(

@@ -31,7 +31,7 @@ loaded_libs <- lapply(required_libs, function(x) suppressWarnings(suppressMessag
 options(stringsAsFactors=F, ggrastr.default.dpi = 500)
 
 # in cm, for A4 paper
-PAGE_WIDTH <- 21
+PAGE_WIDTH <- 19
 PLOT_SIZE_5_PER_ROW <- PAGE_WIDTH/5
 PLOT_SIZE_4_PER_ROW <- PAGE_WIDTH/4
 PLOT_SIZE_3_PER_ROW <- PAGE_WIDTH/3
@@ -156,7 +156,7 @@ ggsave_all_formats <- function(path, plot, width=PLOT_SIZE_3_PER_ROW, height=PLO
     }
     
     # SVG, PNG & PDF
-    for (format in c('svg','png','pdf')){
+    for (format in c('svg','pdf','png')){
         ggsave(
           paste0(filename,'.',format),
           plot = plot,
@@ -170,7 +170,7 @@ ggsave_all_formats <- function(path, plot, width=PLOT_SIZE_3_PER_ROW, height=PLO
           units = "cm"
         )
     }
-    print(paste0("Saved ", path))
+    print(paste0("Saved ", file.path(dir_path, paste0(filename,'.',format))))
 }
                       
 remove_term_suffix <- function(db, terms){
@@ -320,3 +320,6 @@ PAPALEXI_KO_COLORS <- c(
 PAPALEXI_KO_COLORS <- PAPALEXI_KO_COLORS[1:length(PAPALEXI_KO_COLORS)]
 PAPALEXI_KO_COLORS <- c('grey80', PAPALEXI_KO_COLORS)
 names(PAPALEXI_KO_COLORS) <- c('NT', PAPALEXI_KO_LIST)
+
+CELL_CYCLE_COLORS <- viridis::plasma(3, end = 0.8)
+names(CELL_CYCLE_COLORS) <- c("G1", "S", "G2M")

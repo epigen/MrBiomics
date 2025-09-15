@@ -47,7 +47,7 @@ umap_plot <- function(data_path, fig_path, title = NULL, modality_by_shape = FAL
 }
 
 # UMAP with metadata join and direct labeling for categorical variable
-umap_plot_with_metadata <- function(data_path, metadata_path, fig_path, category_col, title = NULL,
+umap_plot_with_metadata <- function(data_path, metadata_path, fig_path, category_col, title = NULL, guide=FALSE,
                                     color_map = NULL, label_points = TRUE, min_points_for_label = 1) {
     umap_data <- data.frame(fread(file.path(data_path), header = TRUE))
     metadata_df <- data.frame(fread(file.path(metadata_path), header = TRUE, check.names = FALSE))
@@ -74,11 +74,11 @@ umap_plot_with_metadata <- function(data_path, metadata_path, fig_path, category
 
     p <- ggplot(df, aes(x = UMAP_1, y = UMAP_2, color = .data[[category_col]])) +
         rasterise(geom_point(size = 0.01, alpha = 0.7, shape=16)) +
-        scale_color_manual(values = color_map, name = NULL, guide = "none") +
         labs(x = "UMAP 1", y = "UMAP 2", title = title) +
+        scale_color_manual(values = color_map, name = NULL) +
         MrBiomics_theme() +
         theme(
-            legend.position = "none",
+            legend.position = if (guide) "right" else "none",
             panel.grid.minor = element_blank(),
             panel.grid.major = element_blank(),
             axis.text.x = element_blank(),
@@ -116,6 +116,110 @@ umap_plot_with_metadata <- function(data_path, metadata_path, fig_path, category
                        height = PLOT_SIZE_3_PER_ROW)
 
     return(p)
+}
+
+
+# 2x2 panel: KO-colored UMAP + three panels highlighting each cell-cycle phase
+umap_panels_ko_and_phase_highlights <- function(data_path,
+                                               metadata_path,
+                                               fig_path,
+                                               ko_column,
+                                               phase_column,
+                                               supertitle = "scCRISPR-seq of 25 gene knockouts (KO)",
+                                               point_size_all = 0.01,
+                                               point_size_highlight = 0.01,
+                                               background_grey = "grey85",
+                                               highlight_color = NULL) {
+
+    # Load data
+    umap_data <- data.frame(fread(file.path(data_path), header = TRUE))
+    metadata_df <- data.frame(fread(file.path(metadata_path), header = TRUE, check.names = FALSE))
+
+    # Join
+    row_id_col <- colnames(metadata_df)[1]
+    colnames(metadata_df)[1] <- "sample_name"
+    df <- umap_data %>% left_join(metadata_df, by = "sample_name")
+
+    stopifnot(ko_column %in% colnames(df))
+    stopifnot(phase_column %in% colnames(df))
+
+    # KO color map
+    stopifnot(exists("PAPALEXI_KO_COLORS"))
+    ko_colors <- PAPALEXI_KO_COLORS
+    df[[ko_column]] <- factor(as.character(df[[ko_column]]), levels = names(ko_colors))
+
+    # Highlight color for phases (prefer CELL_CYCLE_COLORS per phase; fallback to RdBu_extremes['up'])
+    default_highlight <- tryCatch({ as.character(RdBu_extremes["up"]) }, error = function(e) "#B6242F")
+    if (is.null(highlight_color)) highlight_color <- default_highlight
+
+    # Common theme for tiny panels
+    panel_theme <- MrBiomics_theme() +
+        theme(
+            legend.position = "none",
+            panel.grid.minor = element_blank(),
+            panel.grid.major = element_blank(),
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            aspect.ratio = 1
+        )
+
+    # Panel 1: KO colored (subtitle; supertitle applied on the combined plot)
+    p_ko <- ggplot(df, aes(x = UMAP_1, y = UMAP_2, color = .data[[ko_column]])) +
+        rasterise(geom_point(size = point_size_all, alpha = 0.7, shape = 16)) +
+        scale_color_manual(values = ko_colors, name = NULL) +
+        labs(subtitle = 'Knockout') +
+        panel_theme
+
+    # Phase panels: one per level in CELL_CYCLE_COLORS order if present, else unique values
+    phase_levels <- intersect(c("G1", "S", "G2M"), unique(as.character(df[[phase_column]])))
+    if (length(phase_levels) == 0) phase_levels <- unique(as.character(df[[phase_column]]))
+    phase_levels <- phase_levels[seq_len(min(3, length(phase_levels)))]
+
+    build_phase_panel <- function(phase_name) {
+        df_phase <- df[df[[phase_column]] == phase_name, , drop = FALSE]
+        # pick color per phase if available; otherwise fallback to highlight_color
+        phase_col <- tryCatch({
+            if (exists("CELL_CYCLE_COLORS") && phase_name %in% names(CELL_CYCLE_COLORS)) {
+                as.character(CELL_CYCLE_COLORS[phase_name])
+            } else if (exists("CELL_CYCLE_COLORS") && length(CELL_CYCLE_COLORS) >= 3 && phase_name %in% c("G1","S","G2M")) {
+                # ensure named vector; fallback indexing if names missing
+                as.character(CELL_CYCLE_COLORS[match(phase_name, c("G1","S","G2M"))])
+            } else {
+                highlight_color
+            }
+        }, error = function(e) highlight_color)
+        ggplot(df, aes(x = UMAP_1, y = UMAP_2)) +
+            rasterise(geom_point(color = background_grey, size = point_size_all, alpha = 0.5, shape = 16)) +
+            rasterise(geom_point(data = df_phase, color = phase_col, size = point_size_highlight, alpha = 0.5, shape = 16)) +
+            labs(subtitle = phase_name) +
+            panel_theme
+    }
+
+    panels <- lapply(phase_levels, build_phase_panel)
+    # If fewer than 3 phases available, fill with spacers to keep 2x2 grid
+    while (length(panels) < 3) {
+        panels[[length(panels) + 1]] <- plot_spacer()
+    }
+
+    # Layout 2x2: [KO | Phase1]
+    #              [Phase2 | Phase3]
+    gp <- wrap_plots(list(p_ko, panels[[1]], panels[[2]], panels[[3]]), ncol = 2) +
+        plot_annotation(title = supertitle) &
+        theme(
+            plot.margin = margin(0, 0, 0, 0),
+            plot.title = element_text(hjust = 0, size = FONT_SIZE_NORMAL, family = FONT, face = "bold"),
+            plot.subtitle = element_text(hjust = 0, size = FONT_SIZE_NORMAL, family = FONT, face = "plain")
+        )
+
+    # Save with suffix appended to fig_path base name
+    ggsave_all_formats(path = fig_path,
+                       plot = gp,
+                       width = PLOT_SIZE_3_PER_ROW + 1,
+                       height = PLOT_SIZE_3_PER_ROW)
+
+    return(gp)
 }
 
 
