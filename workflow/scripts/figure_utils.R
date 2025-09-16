@@ -219,16 +219,28 @@ umap_panels_ko_and_phase_highlights <- function(data_path,
                        width = PLOT_SIZE_3_PER_ROW + 1,
                        height = PLOT_SIZE_3_PER_ROW)
 
-    return(gp)
+    return(heatmap_plot)
 }
 
 
 ########################################################################################################################
 #### DEA HEATMAP #######################################################################################################
 ########################################################################################################################
-get_top_differential_features <- function(dea_results_path, fdr_threshold, log2FC_threshold) {
+get_top_differential_features <- function(dea_results_path, fdr_threshold, log2FC_threshold,
+                                          adj.P.Val_col = NULL, logFC_col = NULL,
+                                          group_renaming_map = DATA_TO_CELL_TYPE_COLORS_MAPPING) {
     # read data
     dea_df <- data.frame(fread(file.path(dea_results_path), header=TRUE))
+
+    # rename columns to expected, nicer names
+    if (!is.null(adj.P.Val_col)) {
+        dea_df <- dea_df %>%
+            rename(adj.P.Val = all_of(adj.P.Val_col))
+    }
+    if (!is.null(logFC_col)) {
+        dea_df <- dea_df %>%
+            rename(logFC = all_of(logFC_col))
+    }
 
     # get the features that are significant and have a logFC above the threshold
     significant_features <- dea_df %>%
@@ -241,8 +253,10 @@ get_top_differential_features <- function(dea_results_path, fdr_threshold, log2F
         filter(feature %in% significant_features)
     
     # rename groups to nicer names
-    dea_top_features_df <- dea_top_features_df %>%
-        mutate(group = DATA_TO_CELL_TYPE_COLORS_MAPPING[group])
+    if (!is.null(group_renaming_map)) {
+        dea_top_features_df <- dea_top_features_df %>%
+            mutate(group = group_renaming_map[group])
+    }
 
     return(dea_top_features_df)
 }
@@ -341,8 +355,13 @@ compute_diagonal_cluster_order <- function(mat,
                                            row_clst_method = "ward.D2",
                                            col_clst_dist = "euclidean",
                                            col_clst_method = "ward.D2",
+                                           focus = 'positive',
                                            n_clusters = 25) {
 
+    if (focus == 'negative') {
+        mat <- -mat
+    }
+    
     # Row clustering (features)
     row_hclust <- hclust(dist(mat, method = row_clst_dist), method = row_clst_method)
     row_dendro <- dendsort(as.dendrogram(row_hclust))
@@ -672,6 +691,209 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
                        dpi = 1000)
     
     return(heatmap_plot)
+}
+
+########################################################################################################################
+#### KO logFC heatmap (Papalexi) ########################################################################################
+########################################################################################################################
+build_ko_annotations <- function(col_order, col_dendro, title = NULL) {
+    # One-row color bar for KOs according to PAPALEXI_KO_COLORS
+    annotation_df <- data.frame(KO = col_order)
+    annotation_df$KO <- factor(annotation_df$KO, levels = col_order)
+
+    if (!exists("PAPALEXI_KO_COLORS")) stop("PAPALEXI_KO_COLORS not defined")
+    ko_colors <- PAPALEXI_KO_COLORS
+    # Ensure all KOs have colors; fallback to grey if missing
+    ko_colors_full <- setNames(rep("grey80", length(col_order)), col_order)
+    common <- intersect(names(ko_colors), col_order)
+    ko_colors_full[common] <- ko_colors[common]
+
+    ko_plot <- ggplot(annotation_df, aes(x = KO, y = 1, fill = KO)) +
+        geom_tile(color = 'white', linewidth = 0.5) +
+        scale_fill_manual(values = ko_colors_full, name = NULL, guide = "none") +
+        scale_x_discrete(expand = expansion(add = 0.6)) +
+        scale_y_continuous(expand = c(0, 0)) +
+        MrBiomics_void() +
+        coord_cartesian(clip = "off") +
+        theme(axis.title.y = element_blank(), plot.margin = margin(t = -10, r = 0, b = 0, l = 0, unit = "pt"))
+
+    ko_label_plot <- ggplot() +
+        annotate("text", x = 1, y = 0.5, label = "Knockout", hjust = 1, vjust = 0.5) +
+        xlim(0, 1) + ylim(0, 1) +
+        MrBiomics_void() +
+        coord_cartesian(clip = "off") +
+        theme(plot.margin = margin(t = -10, r = 0, b = 0, l = 4, unit = "pt"))
+
+    n_cols <- length(col_order)
+    dendro_data_obj <- dendro_data(col_dendro, type = "rectangle")
+    dendro_plot <- ggdendrogram(dendro_data_obj, labels = FALSE) +
+        scale_x_continuous(limits = c(0.5, n_cols + 0.5), expand = c(0, 0)) +
+        scale_y_continuous(expand = c(0, 0)) +
+        labs(title = title) +
+        MrBiomics_void() +
+        theme(plot.margin = margin(t = 0, r = 0, b = -14, l = 0, unit = "pt"))
+
+    return(list(
+        ko_label_plot = ko_label_plot,
+        ko_plot = ko_plot,
+        dendro_plot = dendro_plot
+    ))
+}
+
+plot_ko_logfc_heatmap <- function(dea_results_path,
+                                  fig_path,
+                                  fdr_threshold = 0.05,
+                                  log2FC_threshold = 1,
+                                  title = NULL,
+                                  n_clusters = 25,
+                                  q_mask = 0,
+                                  adj.P.Val_col = NULL,
+                                  label_box_size_factor = 1,
+                                  logFC_col = NULL,
+                                  group_renaming_map = NULL) {
+    heatmap_df <- get_top_differential_features(
+        dea_results_path = dea_results_path,
+        fdr_threshold = fdr_threshold,
+        log2FC_threshold = log2FC_threshold,
+        adj.P.Val_col = adj.P.Val_col,
+        logFC_col = logFC_col,
+        group_renaming_map = group_renaming_map
+    )
+
+    mat <- heatmap_df %>%
+        select(group, feature, logFC) %>%
+        pivot_wider(names_from = group, values_from = logFC, values_fill = 0) %>%
+        column_to_rownames("feature") %>%
+        as.matrix()
+
+    # Compute diagonal-friendly cluster order
+    ord <- compute_diagonal_cluster_order(
+        mat,
+        row_clst_dist = "euclidean",
+        row_clst_method = "ward.D2",
+        col_clst_dist = "euclidean",
+        col_clst_method = "ward.D2",
+        n_clusters = n_clusters, 
+        focus='negative'
+    )
+
+    feature_vector <- heatmap_df[["feature"]]
+    heatmap_df[["feature"]] <- factor(feature_vector, levels = rev(ord$row_order))
+    heatmap_df$group <- factor(heatmap_df$group, levels = ord$col_order)
+
+    # Top KO color annotations + dendrogram
+    ann_plots <- build_ko_annotations(ord$col_order, ord$col_dendro, title = title)
+
+    # Quantile masking to reduce effect of outliers (similar to ATAC heatmap)
+    if (q_mask > 0) {
+        upper_limit <- stats::quantile(heatmap_df$logFC, probs = 1 - q_mask, na.rm = TRUE)
+        lower_limit <- stats::quantile(heatmap_df$logFC, probs = q_mask, na.rm = TRUE)
+        heatmap_df$logFC <- ifelse(heatmap_df$logFC < lower_limit, lower_limit, heatmap_df$logFC)
+        heatmap_df$logFC <- ifelse(heatmap_df$logFC > upper_limit, upper_limit, heatmap_df$logFC)
+    }
+
+    # Color scale limits based on masked data
+    plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm = TRUE)
+
+    # Core heatmap (group on x, feature on y)
+    heatmap_plot <- ggplot(heatmap_df, aes(x = group, y = feature, fill = logFC)) +
+        rasterise(geom_tile(linewidth = 0)) +
+        scale_fill_distiller(
+            palette = "RdBu",
+            limits = plot_limits,
+            guide = guide_colorbar(direction = "vertical"),
+            name = "log2(FC)"
+        ) +
+        scale_x_discrete(expand = c(0, 0)) +
+        scale_y_discrete(expand = c(0, 0)) +
+        MrBiomics_theme() +
+        theme(
+            axis.text.y = element_blank(),
+            axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank(),
+            axis.ticks.y = element_blank(),
+            plot.margin = margin(t = -14, r = 0, b = -8, l = 0, unit = "pt")
+        )
+
+    # Marker labels: choose one feature per group (highest and lowest logFC among significant per group)
+    selected_features <- heatmap_df %>%
+        dplyr::group_by(group) %>%
+        dplyr::slice_max(order_by = logFC, n = 1, with_ties = FALSE) %>%
+        dplyr::ungroup() %>%
+        pull(feature)
+    
+    # KO seem to lead to more downregulation than up, so more markers to show
+    selected_features <- c(selected_features, heatmap_df %>%
+        dplyr::group_by(group) %>%
+        dplyr::slice_min(order_by = logFC, n = 2, with_ties = FALSE) %>%
+        dplyr::ungroup() %>%
+        pull(feature))
+
+    selected_features <- unique(as.character(selected_features))
+
+    # Left-side labels using handcrafted layout
+    all_features <- levels(heatmap_df$feature)
+    label_box_size <- max(1, floor(length(all_features) / max(length(selected_features), 1))) * label_box_size_factor
+    pos_df <- compute_nonoverlapping_label_positions(
+        heatmap_rows = all_features,
+        selected_features = selected_features,
+        box_size = label_box_size
+    )
+    
+    n_rows <- length(all_features)
+    pos_df$label_y_plot <- n_rows + 1 - pos_df$label_y
+    pos_df$orig_y_plot  <- n_rows + 1 - pos_df$orig_y
+    pos_df$label <- pos_df$feature
+
+    marker_label_plot <- ggplot(pos_df) +
+        geom_segment(aes(x = 0.85, xend = 1.0, y = label_y_plot, yend = orig_y_plot), size = 0.25, color = "grey40") +
+        geom_text(aes(x = 0.8, y = label_y_plot, label = label), hjust = 1) +
+        scale_y_continuous(limits = c(0.5, n_rows + 0.5), expand = c(0, 0)) +
+        scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
+        labs(y = "Differential features") +
+        MrBiomics_theme() +
+        theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.ticks = element_blank(),
+            axis.text = element_blank(),
+            axis.title.x = element_blank(),
+            axis.title.y = element_text(margin = margin(l = 10)),
+            panel.border = element_blank(),
+            panel.background = element_rect(fill = "transparent", color = NA),
+            plot.background = element_rect(fill = "transparent", color = NA)
+        ) +
+        coord_cartesian(clip = "off") +
+        theme(plot.margin = margin(0, 0, 0, 10))
+
+    # Assemble
+    plot_list <- list(
+        plot_spacer(),              ann_plots$dendro_plot,
+        ann_plots$ko_label_plot,    ann_plots$ko_plot,
+        plot_spacer(),              plot_spacer(),
+        marker_label_plot,          heatmap_plot
+    )
+
+    gp <- wrap_plots(plot_list, ncol = 2,
+                     widths = c(1.2, 3),
+                     heights = c(0.6, 0.35, 0.001, 10)) +
+        plot_layout(guides = "collect") +
+        plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
+        theme(
+            legend.position = "right",
+            legend.box = "vertical",
+            plot.margin = margin(0, 0, 0, 0),
+            panel.spacing = grid::unit(0, "pt")
+        )
+
+    ggsave_all_formats(path = fig_path,
+                       plot = gp,
+                       width = PLOT_SIZE_3_PER_ROW,
+                       height = PLOT_SIZE_3_PER_ROW,
+                       dpi = 1000)
+
+    return(gp)
 }
 
 ########################################################################################################################
@@ -1411,9 +1633,22 @@ plot_ko_ta_lollipop <- function(results_csv_path,
     max_abs_nes <- max(abs(df$NES), na.rm = TRUE)
     if (!is.finite(max_abs_nes) || max_abs_nes == 0) max_abs_nes <- 1
 
+    # Map FDR_q_val to point size (larger size = more significant)
+    if ("FDR_q_val" %in% names(df)) {
+        # clamp to (0,1] to avoid Inf and negatives, then transform
+        fdr_clamped <- pmax(pmin(df$FDR_q_val, 1), 0.0001)
+        dot_size <- -log10(fdr_clamped)
+        # keep NAs where FDR is NA
+        dot_size[!is.finite(dot_size)] <- NA_real_
+        df$dot_size <- dot_size
+    } else {
+        # fallback constant size if no FDR present
+        df$dot_size <- 3.2
+    }
+
     lollipop <- ggplot(df, aes(y = Term)) +
-        geom_segment(aes(x = 0, xend = NES, yend = Term), color = "grey80", linewidth = 0.8) +
-        geom_point(aes(x = NES, color = NES), size = 3.2, alpha = 0.9) +
+        geom_segment(aes(x = 0, xend = NES, yend = Term, linewidth = dot_size/500, alpha = abs(NES)), color = "grey80") +
+        geom_point(aes(x = NES, color = NES, size = dot_size), alpha = 0.9) +
         # significance stars overlay (centered)
         geom_point(
             data = subset(df, sig),
@@ -1426,13 +1661,16 @@ plot_ko_ta_lollipop <- function(results_csv_path,
             color = "white",
             show.legend = FALSE
         ) +
-        scale_x_continuous(limits = c(-max_abs_nes, max_abs_nes)) +
+        scale_x_continuous(limits = c(-max_abs_nes * 1.1, max_abs_nes * 1)) +
         scale_color_gradient2(
             low = as.character(RdBu_extremes["down"]),
             mid = "white",
             high = as.character(RdBu_extremes["up"]),
             name = "NES"
         ) +
+        scale_size_continuous(name = "-log10(q-adj.)", range = c(0.5, 5)) +
+        scale_alpha_continuous(name = "NES", range = c(0.2, 1), guide = "none") +
+        scale_linewidth_continuous(name = "-log10(q-adj.)", range = c(0.3, 3), guide = "none") +
         labs(x = "NES", y = NULL, title = title) +
         MrBiomics_theme() +
         theme(
@@ -1440,8 +1678,13 @@ plot_ko_ta_lollipop <- function(results_csv_path,
             panel.grid.minor.y = element_blank()
         )
 
+    # Hide size legend if FDR not available (constant size mapping)
+    if (!("FDR_q_val" %in% names(df))) {
+        lollipop <- lollipop + guides(size = "none")
+    }
+
     if (is.null(width)) {
-        width <- PLOT_SIZE_3_PER_ROW + 1
+        width <- PLOT_SIZE_3_PER_ROW
     }
 
     ggsave_all_formats(path = fig_path,
