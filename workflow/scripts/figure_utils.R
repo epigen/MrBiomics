@@ -939,25 +939,46 @@ split_long_label_at_middle <- function(labels, threshold = 30, longer_first_marg
     }, character(1))
 }
 
-filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2) {
+filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2, pos_and_neg = FALSE,
+                             dict_to_sort_by = CELL_TYPE_COLORS) {
     df_sig <- df %>%
-      filter(score > 0, statistic < fdr_threshold) 
+      filter(statistic < fdr_threshold) 
 
     if (!is.null(tissues_to_keep)) {
         df_sig <- df_sig %>%
             filter(grepl(paste(tissues_to_keep, collapse = "|"), Term))
     }
 
-    # Identify top term(s) for each cell type
-    top_hits <- df_sig %>%
-      group_by(name) %>%
-      slice_max(order_by = score, n = top_n_per_name, with_ties = FALSE) %>%
-      ungroup()
+    # find top terms for each column, but set this up to make them unique (not all the same top term)
+    top_term_strings <- c()
+    top_hits <- data.frame()
+    for (current_name in unique(df_sig$name)) {
+        # Identify top term(s) for each cell type
+        current_top_hits <- df_sig %>%
+            filter(name == current_name) %>%
+            filter(!Term %in% top_term_strings) %>%
+            group_by(name) %>%
+            slice_max(order_by = score, n = top_n_per_name, with_ties = FALSE) %>%
+            ungroup()
 
-    # Get the list of top terms
-    top_term_strings <- top_hits %>%
-      pull(Term) %>%
-      unique()
+        if (pos_and_neg) {
+            neg_hits <- df_sig %>%
+                filter(name == current_name) %>%
+                filter(!Term %in% top_term_strings) %>%
+                group_by(name) %>%
+                slice_max(order_by = -score, n = top_n_per_name, with_ties = FALSE) %>%
+                ungroup()
+            current_top_hits <- rbind(current_top_hits, neg_hits)
+        }
+
+        # Get the list of top terms
+        new_top_term_strings <- current_top_hits %>%
+            pull(Term) %>%
+            unique()
+
+        top_term_strings <- c(top_term_strings, new_top_term_strings)
+        top_hits <- rbind(top_hits, current_top_hits)
+    }
 
     # Create a mapping from term to the cell type for which it's a top hit
     term_to_top_name_map <- top_hits %>%
@@ -968,15 +989,18 @@ filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_pe
       filter(Term %in% top_term_strings)
 
     # make the terms a factor that is ordered by the order of the matching cell types in CELL_TYPE_COLORS
-    term_to_top_name_map$top_for_name <- factor(term_to_top_name_map$top_for_name, levels = names(CELL_TYPE_COLORS))
+    term_to_top_name_map$top_for_name <- factor(term_to_top_name_map$top_for_name, levels = names(dict_to_sort_by))
     term_to_top_name_map <- term_to_top_name_map %>% arrange(top_for_name)
     df_top$Term <- factor(df_top$Term, levels = unique(term_to_top_name_map$Term))
     
     return(df_top)
 }
 
-prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2) {
-    df_top <- filter_top_terms(df = df_formatted, fdr_threshold = fdr_threshold, tissues_to_keep = tissues_to_keep, top_n_per_name = top_n_per_name)
+prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2,
+                                dict_to_sort_by = CELL_TYPE_COLORS, pos_and_neg = FALSE) {
+    df_top <- filter_top_terms(df = df_formatted, fdr_threshold = fdr_threshold, tissues_to_keep = tissues_to_keep,
+                               top_n_per_name = top_n_per_name, pos_and_neg = pos_and_neg, 
+                               dict_to_sort_by = dict_to_sort_by)
 
     mat_df <- df_top %>%
       select(name, Term, score) %>%
@@ -1036,13 +1060,8 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = N
     short_term_levels <- gsub("\\s*\\(.*\\)", "", short_term_levels)
 
     # Split long labels into two lines at the space nearest the middle
-    short_term_levels <- split_long_label_at_middle(short_term_levels, threshold = 30, longer_first_margin = 5)
+    short_term_levels <- split_long_label_at_middle(short_term_levels)
 
-    # Print the mapping of original to shortened names
-    term_map_df <- data.frame(Original = original_term_levels, Shortened = short_term_levels)
-    message("Shortening term names for heatmap:")
-    print(term_map_df)
-    
     # Create a named vector for applying the new names
     term_map <- setNames(short_term_levels, original_term_levels)
 
@@ -1051,7 +1070,7 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = N
       left_join(df_formatted %>% select(name, Term, statistic), by = c("name", "Term")) %>%
       mutate(
         Term = factor(term_map[Term], levels = rev(unique(short_term_levels))),
-        name = factor(name, levels = names(CELL_TYPE_COLORS)),
+        name = factor(name, levels = intersect(names(dict_to_sort_by), unique(name))),
         sig = (statistic < fdr_threshold) & (!is.na(statistic)) & (!is.infinite(statistic)),
         neg_log10_statistic = ifelse(is.infinite(-log10(statistic)),
                                      max(
@@ -1064,7 +1083,8 @@ prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = N
     return(heatmap_df)
 }
 
-plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL, ylabel = NULL, width = NULL) {
+plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, title = NULL,
+                                    ylabel = NULL, width = NULL) {
     # mask those values where the log statistic is tiny with NaN, to drop them in the heatmap
     heatmap_df$neg_log10_statistic <- ifelse(heatmap_df$neg_log10_statistic < 1, NaN, heatmap_df$neg_log10_statistic)
     lim <- c(-1, 1) * max(abs(heatmap_df$score), na.rm = TRUE)
@@ -1118,18 +1138,26 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
                                               fill_lab,
                                               size_lab,
                                               title = NULL,
+                                              xlabel = "Cell type",
                                               ylabel = NULL,
                                               ct_clst_dist = "euclidean",
                                               ct_clst_method = "ward.D2",
                                               term_clst_dist = "euclidean",
                                               term_clst_method = "ward.D2",
                                               n_clusters = 25,
+                                              mask_tiny_p_values = TRUE,
+                                              terms_to_drop = NULL,
                                               width = NULL) {
 
     # drop the term 'Nonsense Mediated Decay', since it's a duplicate due to type with 'Nonsense-Mediated Decay'
     # and has exactly the same enrichment score and stats
     heatmap_df <- heatmap_df %>%
         filter(Term != "Nonsense Mediated Decay")
+
+    if (!is.null(terms_to_drop)) {
+        heatmap_df <- heatmap_df %>%
+            filter(!Term %in% split_long_label_at_middle(terms_to_drop))
+    }
     
     # Build term-by-celltype matrix of enrichment scores for clustering
     mat_df <- heatmap_df %>%
@@ -1151,12 +1179,12 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
     heatmap_df$name <- factor(as.character(heatmap_df$name), levels = ord$col_order)
 
     # Mask tiny p-values from size scale
-    heatmap_df$neg_log10_statistic <- ifelse(heatmap_df$neg_log10_statistic < 1, NaN, heatmap_df$neg_log10_statistic)
+    if (mask_tiny_p_values) {
+        heatmap_df$neg_log10_statistic <- ifelse(heatmap_df$neg_log10_statistic < 1, NaN, heatmap_df$neg_log10_statistic)
+    }
 
     # Color scale limits based on scores
     lim <- c(-1, 1) * max(abs(heatmap_df$score), na.rm = TRUE)
-
-    # FIXME break long term names into multiple lines, breaking at the first space after 20 characters
 
     # Bubble heatmap with significance stars (y-axis labels moved to separate plot)
     bubble <- ggplot(heatmap_df, aes(x = name, y = Term, size = neg_log10_statistic, fill = score)) +
@@ -1182,7 +1210,7 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
         scale_size_continuous(name = size_lab, range = c(0.5, 2.3)) +
         scale_x_discrete(expand = expansion(add = 0.6)) +
         scale_y_discrete(expand = expansion(add = 0.6)) +
-        labs(title = NULL, x = "Cell type", y = NULL) +
+        labs(title = NULL, x = xlabel, y = NULL) +
         coord_cartesian(clip = "off") +
         MrBiomics_theme() +
         theme(
@@ -1193,7 +1221,13 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
         )
 
     # Top annotations + dendrogram
-    ann_plots <- build_column_annotations(ord$col_order, ord$col_dendro, title = title)
+    if (xlabel == "Cell type") {
+        ann_plots <- build_column_annotations(ord$col_order, ord$col_dendro, title = title)
+    } else if (xlabel == "Knockout") {
+        ann_plots <- build_ko_annotations(ord$col_order, ord$col_dendro, title = title)
+    } else {
+        stop("Invalid xlabel")
+    }
 
     # Left-side term labels (y-axis moved out of bubble plot)
     term_levels <- levels(heatmap_df$Term)
@@ -1223,17 +1257,33 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
         ) +
         coord_cartesian(clip = "off")
 
-    # Assemble    
-    plot_list <- list(
-        plot_spacer(),              ann_plots$dendro_plot,
-        ann_plots$cell_type_label_plot, ann_plots$cell_type_plot,
-        ann_plots$lineage_label_plot,   ann_plots$lineage_plot,
-        term_label_plot,            bubble
-    )
+    # Assemble 
+    if (xlabel == "Cell type") {
+        plot_list <- list(
+            plot_spacer(),              ann_plots$dendro_plot,
+            ann_plots$cell_type_label_plot, ann_plots$cell_type_plot,
+            ann_plots$lineage_label_plot,   ann_plots$lineage_plot,
+            term_label_plot,            bubble
+        )
 
-    gp <- wrap_plots(plot_list, ncol = 2,
-                     widths = c(1.5, 1),
-                     heights = c(0.6, 0.35, 0.35, 10)) +
+        gp <- wrap_plots(plot_list, ncol = 2,
+                        widths = c(1.5, 1),
+                        heights = c(0.6, 0.35, 0.35, 10))
+    } else if (xlabel == "Knockout") {
+        plot_list <- list(
+            plot_spacer(),              ann_plots$dendro_plot,
+            ann_plots$ko_label_plot,    ann_plots$ko_plot,
+            term_label_plot,            bubble
+        )
+
+        gp <- wrap_plots(plot_list, ncol = 2,
+                        widths = c(1.5, 1),
+                        heights = c(0.6, 0.35, 10))
+    } else {
+        stop("Invalid xlabel")
+    }
+
+    gp <- gp + 
         plot_layout(guides = "collect") +
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
         theme(legend.position = "right", legend.box = "vertical", plot.margin = margin(0, 0, 0, 0),
