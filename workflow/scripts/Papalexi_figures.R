@@ -15,8 +15,6 @@ KO_enrichment_results_path_GOBP <- snakemake@input[["KO_enrichment_results_GOBP"
 KO_enrichment_results_path_Reactome <- snakemake@input[["KO_enrichment_results_Reactome"]]
 
 #### Outputs
-umap_corrected_KO_fig_path  <- snakemake@output[["umap_corrected_KO_fig"]]
-umap_corrected_phase_fig_path  <- snakemake@output[["umap_corrected_phase_fig"]]
 umap_corrected_fig_path  <- snakemake@output[["umap_corrected_fig"]]
 umap_lda_fig_path        <- snakemake@output[["umap_lda_fig"]]
 crossprediction_fig_path <- snakemake@output[["crossprediction_fig"]]
@@ -24,7 +22,7 @@ spi1_ta_lollipop_fig_path <- snakemake@output[["spi1_ta_lollipop_fig"]]
 ko_DEA_heatmap_fig_path <- snakemake@output[["ko_DEA_heatmap_fig"]]
 ko_enrichment_GOBP_fig_path <- snakemake@output[["ko_enrichment_GOBP_fig"]]
 
-dir.create(dirname(umap_corrected_KO_fig_path), recursive = TRUE, showWarnings = FALSE)
+dir.create(dirname(umap_corrected_fig_path), recursive = TRUE, showWarnings = FALSE)
 
 ko_column <- snakemake@params[["ko_column"]]
 phase_column <- snakemake@params[["phase_column"]]

@@ -219,7 +219,7 @@ umap_panels_ko_and_phase_highlights <- function(data_path,
                        width = PLOT_SIZE_3_PER_ROW + 1,
                        height = PLOT_SIZE_3_PER_ROW)
 
-    return(heatmap_plot)
+    return(gp)
 }
 
 

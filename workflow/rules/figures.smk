@@ -119,8 +119,6 @@ rule Papalexi_figures:
         KO_enrichment_results_GOBP = os.path.join("results/Papalexi2021scCRISPR/enrichment_analysis/KO/preranked_GSEApy/GO_Biological_Process_2025/KO_GO_Biological_Process_2025_all.csv"),
         KO_enrichment_results_Reactome = os.path.join("results/Papalexi2021scCRISPR/enrichment_analysis/KO/preranked_GSEApy/ReactomePathways/KO_ReactomePathways_all.csv"),
     output:
-        umap_corrected_KO_fig = os.path.join("paper/Papalexi/umap_CORRECTED_KO.pdf"),
-        umap_corrected_phase_fig = os.path.join("paper/Papalexi/umap_CORRECTED_phase.pdf"),
         umap_corrected_fig = os.path.join("paper/Papalexi/umap_CORRECTED.pdf"),
         umap_lda_fig = os.path.join("paper/Papalexi/umap_LDA.pdf"),
         crossprediction_fig = os.path.join("paper/Papalexi/crossprediction.pdf"),
