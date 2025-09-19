@@ -1,42 +1,34 @@
 #### libraries
 # source this for libraries, MrBiomics theme and utility functions
-source("workflow/scripts/figure_theme.R")
-source("workflow/scripts/figure_utils.R")
+source(snakemake@params[["figure_theme_path"]])
+source(snakemake@params[["figure_utils_path"]])
 
-# Root of the repository on the current machine
-# Change if running locally: 
-# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
-repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
+#### Inputs
+CORRECTED_umap_coords_path  <- snakemake@input[["CORRECTED_umap_coords"]]
+CORRECTED_metadata_path     <- snakemake@input[["CORRECTED_metadata"]]
+MIXSCAPE_umap_coords_path   <- snakemake@input[["MIXSCAPE_umap_coords"]]
+MIXSCAPE_metadata_path      <- snakemake@input[["MIXSCAPE_metadata"]]
+KO_crossprediction_adj_mtx_path <- snakemake@input[["KO_crossprediction_adj_mtx"]]
+SPI1_TA_results_path   <- snakemake@input[["SPI1_TA_results"]]
+KO_DEA_results_path <- snakemake@input[["KO_DEA_results"]]
+KO_enrichment_results_path_GOBP <- snakemake@input[["KO_enrichment_results_GOBP"]]
+KO_enrichment_results_path_Reactome <- snakemake@input[["KO_enrichment_results_Reactome"]]
 
-# Inputs
-CORRECTED_umap_coords_path  <- file.path(repo_root, "results/Papalexi2021scCRISPR/unsupervised_analysis/merged_CORRECTED/UMAP/UMAP_correlation_10_0.1_2_data.csv")
-CORRECTED_metadata_path     <- file.path(repo_root, "results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/CORRECTED/metadata.csv")
-MIXSCAPE_umap_coords_path   <- file.path(repo_root, "results/Papalexi2021scCRISPR/unsupervised_analysis/merged_MIXSCAPE_LDA/UMAP/UMAP_correlation_10_0.1_2_data.csv")
-MIXSCAPE_metadata_path      <- file.path(repo_root, "results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_metadata.csv")
-KO_crossprediction_adj_mtx_path <- file.path(repo_root, "results/Papalexi2021scCRISPR/special_analyses/crossprediction/adjacency_matrix.csv")
-SPI1_TA_results_path   <- file.path(repo_root, "results/Papalexi2021scCRISPR/enrichment_analysis/SPI1/preranked_GSEApy/Corces_TA_signatures/SPI1_Corces_TA_signatures.csv")
-KO_DEA_results_path <- file.path(repo_root, "results/Papalexi2021scCRISPR/dea_seurat/KO_mixscape/results.csv")
-# KO enrichment (both DBs)
-KO_enrichment_results_path_GOBP <- file.path(repo_root, "results/Papalexi2021scCRISPR/enrichment_analysis/KO/preranked_GSEApy/GO_Biological_Process_2025/KO_GO_Biological_Process_2025_all.csv")
-KO_enrichment_results_path_Reactome <- file.path(repo_root, "results/Papalexi2021scCRISPR/enrichment_analysis/KO/preranked_GSEApy/ReactomePathways/KO_ReactomePathways_all.csv")
-
-# Outputs
-umap_corrected_KO_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED_KO.pdf")
-umap_corrected_phase_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED_phase.pdf")
-umap_corrected_fig_path  <- file.path(repo_root, "paper/Papalexi/umap_CORRECTED.pdf")
-umap_lda_fig_path        <- file.path(repo_root, "paper/Papalexi/umap_LDA.pdf")
-crossprediction_fig_path <- file.path(repo_root, "paper/Papalexi/crossprediction.pdf")
-spi1_ta_lollipop_fig_path <- file.path(repo_root, "paper/Papalexi/SPI1_TA_lollipop.pdf")
-ko_DEA_heatmap_fig_path <- file.path(repo_root, "paper/Papalexi/KO_DEA_heatmap.pdf")
-# KO enrichment outputs include DB substring
-ko_enrichment_GOBP_fig_path <- file.path(repo_root, "paper/Papalexi/KO_enrichment_GOBP_bubbleplot.pdf")
-# ko_enrichment_Reactome_fig_path <- file.path(repo_root, "paper/Papalexi/KO_enrichment_Reactome_bubbleplot.pdf")
+#### Outputs
+umap_corrected_KO_fig_path  <- snakemake@output[["umap_corrected_KO_fig"]]
+umap_corrected_phase_fig_path  <- snakemake@output[["umap_corrected_phase_fig"]]
+umap_corrected_fig_path  <- snakemake@output[["umap_corrected_fig"]]
+umap_lda_fig_path        <- snakemake@output[["umap_lda_fig"]]
+crossprediction_fig_path <- snakemake@output[["crossprediction_fig"]]
+spi1_ta_lollipop_fig_path <- snakemake@output[["spi1_ta_lollipop_fig"]]
+ko_DEA_heatmap_fig_path <- snakemake@output[["ko_DEA_heatmap_fig"]]
+ko_enrichment_GOBP_fig_path <- snakemake@output[["ko_enrichment_GOBP_fig"]]
 
 dir.create(dirname(umap_corrected_KO_fig_path), recursive = TRUE, showWarnings = FALSE)
 
-ko_column <- "gene"
-phase_column <- "Phase"
-fdr_threshold <- 0.05
+ko_column <- snakemake@params[["ko_column"]]
+phase_column <- snakemake@params[["phase_column"]]
+fdr_threshold <- snakemake@params[["fdr_threshold"]]
 
 umap_corrected_panels_plot <- umap_panels_ko_and_phase_highlights(
     data_path = CORRECTED_umap_coords_path,

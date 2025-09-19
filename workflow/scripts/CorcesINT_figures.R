@@ -1,47 +1,41 @@
-source("workflow/scripts/figure_theme.R")
-source("workflow/scripts/figure_utils.R")
+source(snakemake@params[["figure_theme_path"]])
+source(snakemake@params[["figure_utils_path"]])
 
-# FIXME snakemakeify
-#### configuration ####
-# Root of the repository on the current machine
-# Change if running locally: 
-# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
-repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
-# input
-unintegrated_umap_coords_path <- file.path(repo_root, "results/CorcesINT/unsupervised_analysis/normupperquartile/UMAP/UMAP_correlation_15_0.1_2_data.csv")
-integrated_umap_coords_path <-   file.path(repo_root, "results/CorcesINT/unsupervised_analysis/normupperquartile_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv")
-unintegrated_cfa_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/normupperquartile_CFA.csv")
-integrated_cfa_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated_CFA.csv")
-norm_counts_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/normupperquartile_integrated.csv")
-metadata_path <- file.path(repo_root, "results/CorcesINT/spilterlize_integrate/all/annotation.csv")
-dea_results_path <- file.path(repo_root, "results/CorcesINT/dea_limma/normupperquartile_integrated/results.csv")
-gene_annotation_path <- file.path(repo_root, "results/CorcesRNA/rnaseq_pipeline/counts/gene_annotation.csv")
-GO_enrichment_results_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/GO_Biological_Process_2025/cell_types_GO_Biological_Process_2025_all.csv")
-Reactome_enrichment_results_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv")
-Mono_TF_EP_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/Mono_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_EP_hg38_500bp_up_100bp_down_v10clust.csv")
-Mono_TF_TA_path <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/Mono_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_TA_hg38_500bp_up_100bp_down_v10clust.csv")
-HSC_TF_EP_path  <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/HSC_EP/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_EP_hg38_500bp_up_100bp_down_v10clust.csv")
-HSC_TF_TA_path  <- file.path(repo_root, "results/CorcesINT/enrichment_analysis/HSC_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/HSC_TA_hg38_500bp_up_100bp_down_v10clust.csv")
+#### snakemake inputs ####
+unintegrated_umap_coords_path <- snakemake@input[["unintegrated_umap_coords"]]
+integrated_umap_coords_path <- snakemake@input[["integrated_umap_coords"]]
+unintegrated_cfa_path <- snakemake@input[["unintegrated_cfa"]]
+integrated_cfa_path <- snakemake@input[["integrated_cfa"]]
+norm_counts_path <- snakemake@input[["norm_counts"]]
+metadata_path <- snakemake@input[["metadata"]]
+dea_results_path <- snakemake@input[["dea_results"]]
+gene_annotation_path <- snakemake@input[["gene_annotation"]]
+GO_enrichment_results_path <- snakemake@input[["GO_enrichment_results"]]
+Reactome_enrichment_results_path <- snakemake@input[["Reactome_enrichment_results"]]
+Mono_TF_EP_path <- snakemake@input[["Mono_TF_EP"]]
+Mono_TF_TA_path <- snakemake@input[["Mono_TF_TA"]]
+HSC_TF_EP_path  <- snakemake@input[["HSC_TF_EP"]]
+HSC_TF_TA_path  <- snakemake@input[["HSC_TF_TA"]]
 
 # parameters
-adjp_th <- 0.05
-fdr_threshold <- 0.05
-lfc_th <- 1
-ave_expr_th <- 0
-max_genes_tf_plot <- 25
+adjp_th <- snakemake@params[["adjp_th"]]
+fdr_threshold <- snakemake@params[["fdr_threshold"]]
+lfc_th <- snakemake@params[["lfc_th"]]
+ave_expr_th <- snakemake@params[["ave_expr_th"]]
+max_genes_tf_plot <- snakemake@params[["max_genes_tf_plot"]]
 TFs_in_papalexi <- c(
   "ATF2", "BRD4", "CAV1", "CD86", "CMTM6", "CUL3", "ETV7", "IFNGR1", "IFNGR2", "IRF1", "IRF7", "JAK2", "CMIR", "MARCH8",
   "MYC", "NFKB1A", "PDCD1LG2", "POU2F2", "SMAD4", "SPI1", "STAT1", "STAT2", "STAT3", "STAT5A", "TNFRSF14", "UBE2L6"
 )
-# output
-unintegrated_cfa_plot_path <- file.path(repo_root, "paper/CorcesINT/unintegrated_cfa.pdf")
-integrated_cfa_plot_path <- file.path(repo_root, "paper/CorcesINT/integrated_cfa.pdf")
-integrated_umap_plot_path <- file.path(repo_root, "paper/CorcesINT/integrated_umap.pdf")
-unintegrated_umap_plot_path <- file.path(repo_root, "paper/CorcesINT/unintegrated_umap.pdf")
-epigenetic_scatter_dir <- file.path(repo_root, "paper/CorcesINT/correlation_plots")
-GO_enrichment_path <- file.path(repo_root, "paper/CorcesINT/GO_enrichment.pdf")
-Reactome_enrichment_path <- file.path(repo_root, "paper/CorcesINT/Reactome_enrichment.pdf")
-TF_plot_path <- file.path(repo_root, "paper/CorcesINT/TF_lollipop.pdf")
+# outputs
+unintegrated_cfa_plot_path <- snakemake@output[["unintegrated_cfa_plot"]]
+integrated_cfa_plot_path <- snakemake@output[["integrated_cfa_plot"]]
+integrated_umap_plot_path <- snakemake@output[["integrated_umap_plot"]]
+unintegrated_umap_plot_path <- snakemake@output[["unintegrated_umap_plot"]]
+epigenetic_scatter_dir <- snakemake@output[["epigenetic_scatter_dir"]]
+GO_enrichment_path <- snakemake@output[["GO_enrichment_plot"]]
+Reactome_enrichment_path <- snakemake@output[["Reactome_enrichment_plot"]]
+TF_plot_path <- snakemake@output[["TF_plot"]]
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
 ########################################################################################################################
@@ -347,9 +341,9 @@ Reactome_enrichment_plot <- plot_clustered_enrichment_heatmap(
     width = PLOT_SIZE_2_PER_ROW
 )
 
-dir.create(file.path(repo_root, "paper/CorcesINT/tmp"), showWarnings = FALSE)
-Reactome_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path(repo_root, "paper/CorcesINT/tmp/Reactome_enrichment_sig.csv"), row.names = FALSE)
-GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path(repo_root, "paper/CorcesINT/tmp/GO_enrichment_sig.csv"), row.names = FALSE)
+dir.create(file.path(dirname(GO_enrichment_path), "tmp"), showWarnings = FALSE)
+Reactome_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path(dirname(GO_enrichment_path), "tmp/Reactome_enrichment_sig.csv"), row.names = FALSE)
+GO_heatmap_df %>% filter(statistic < 0.05) %>% as.data.frame() %>% write.csv(file.path(dirname(GO_enrichment_path), "tmp/GO_enrichment_sig.csv"), row.names = FALSE)
 
 
 ########################################################################################################################

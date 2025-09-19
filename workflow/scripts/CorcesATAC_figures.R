@@ -5,8 +5,8 @@
 
 #### libraries
 # source this for libraries, MrBiomics theme and utility functions
-source("workflow/scripts/figure_theme.R")
-source("workflow/scripts/figure_utils.R")
+source(snakemake@params[["figure_theme_path"]])
+source(snakemake@params[["figure_utils_path"]])
 
 # FIXME snakemakeify
 # ## libraries are loaded in the source files
@@ -18,27 +18,24 @@ source("workflow/scripts/figure_utils.R")
 # ## params
 # fdr_threshold <- snakemake@params[["fdr_threshold"]]
 
-# Root of the repository on the current machine
-# Change if running locally: 
-# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
-repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
+# inputs
+CorcesATAC_umap_coords_path <- snakemake@input[["umap_coords"]]
+CorcesATAC_dea_OvA_path <- snakemake@input[["dea_ova"]]
+CorcesATAC_enrichment_results_path <- snakemake@input[["enrichment_results"]]
+CorcesATAC_crossprediction_adj_mtx_path <- snakemake@input[["crossprediction_adj_mtx"]]
 
-# input
-CorcesATAC_umap_coords_path <- file.path(repo_root, "results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv")
-CorcesATAC_dea_OvA_path <- file.path(repo_root, "results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/results.csv")
-CorcesATAC_enrichment_results_path <- file.path(repo_root, "results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv")
-CorcesATAC_crossprediction_adj_mtx_path <- file.path(repo_root, "results/CorcesATAC/special_analyses/crossprediction/adjacency_matrix.csv")
-# output
-atac_umap_path <- file.path(repo_root, "paper/CorcesATAC/umap.pdf")
-atac_dea_heatmap_path <- file.path(repo_root, "paper/CorcesATAC/differential_heatmap.pdf")
-atac_enrichment_path <- file.path(repo_root, "paper/CorcesATAC/enrichment.pdf")
-atac_crossprediction_path <- file.path(repo_root, "paper/CorcesATAC/crossprediction.pdf")
-atac_crossprediction_coordinates_path <- file.path(repo_root, "paper/CorcesATAC/crossprediction_coordinates.csv")
+# outputs
+atac_umap_path <- snakemake@output[["umap_plot"]]
+atac_dea_heatmap_path <- snakemake@output[["dea_heatmap_plot"]]
+atac_enrichment_path <- snakemake@output[["enrichment_plot"]]
+atac_crossprediction_path <- snakemake@output[["crossprediction_plot"]]
+atac_crossprediction_coordinates_path <- snakemake@output[["crossprediction_coordinates"]]
+
 # params
-fdr_threshold <- 0.05
-log2FC_threshold <- 3
-lineage_tree_cut_off <- 0.2
-hierarchy_coordinates <- TRUE
+fdr_threshold <- snakemake@params[["fdr_threshold"]]
+log2FC_threshold <- snakemake@params[["log2FC_threshold"]]
+lineage_tree_cut_off <- snakemake@params[["lineage_tree_cut_off"]]
+hierarchy_coordinates <- snakemake@params[["hierarchy_coordinates"]]
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots
 atac_umap_plot <- umap_plot(CorcesATAC_umap_coords_path, atac_umap_path, title = "ATAC")

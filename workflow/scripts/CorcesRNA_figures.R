@@ -6,8 +6,8 @@
 
 #### libraries
 # source this for libraries, MrBiomics theme and utility functions
-source("workflow/scripts/figure_theme.R")
-source("workflow/scripts/figure_utils.R")
+source(snakemake@params[["figure_theme_path"]])
+source(snakemake@params[["figure_utils_path"]])
 
 # FIXME snakemakeify
 # ## libraries are loaded in the source files
@@ -25,28 +25,24 @@ source("workflow/scripts/figure_utils.R")
 # # lineage reconstructions
 # cut_off <- snakemake@params[["cut_off"]]
 
-# Root of the repository on the current machine
-# Change if running locally: 
-# repo_root <- "/Users/rbednarsky/projects/MrBiomics"
-repo_root <- "/nobackup/lab_bock/projects/MrBiomics"
+# inputs
+CorcesRNA_umap_coords_path <- snakemake@input[["umap_coords"]]
+CorcesRNA_dea_OvA_path <- snakemake@input[["dea_ova"]]
+CorcesRNA_enrichment_results_path <- snakemake@input[["enrichment_results"]]
+CorcesRNA_crossprediction_adj_mtx_path <- snakemake@input[["crossprediction_adj_mtx"]]
 
-# input
-CorcesRNA_umap_coords_path <- file.path(repo_root, "results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv")
-CorcesRNA_dea_OvA_path <- file.path(repo_root, "results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/results.csv")
-CorcesRNA_enrichment_results_path <- file.path(repo_root, "results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv")
-CorcesRNA_crossprediction_adj_mtx_path <- file.path(repo_root, "results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv")
-# output
-rna_umap_path <- file.path(repo_root, "paper/CorcesRNA/umap.pdf")
-rna_dea_heatmap_path <- file.path(repo_root, "paper/CorcesRNA/differential_heatmap.pdf")
-rna_enrichment_path <- file.path(repo_root, "paper/CorcesRNA/enrichment.pdf")
-rna_crossprediction_path <- file.path(repo_root, "paper/CorcesRNA/crossprediction.pdf")
-rna_crossprediction_coordinates_path <- file.path(repo_root, "paper/CorcesRNA/crossprediction_coordinates.csv")
+# outputs
+rna_umap_path <- snakemake@output[["umap_plot"]]
+rna_dea_heatmap_path <- snakemake@output[["dea_heatmap_plot"]]
+rna_enrichment_path <- snakemake@output[["enrichment_plot"]]
+rna_crossprediction_path <- snakemake@output[["crossprediction_plot"]]
+rna_crossprediction_coordinates_path <- snakemake@output[["crossprediction_coordinates"]]
+
 # params
-# enrichment analysis
-fdr_threshold <- 0.05
-log2FC_threshold <- 3
-lineage_tree_cut_off <- 0.07
-hierarchy_coordinates <- TRUE
+fdr_threshold <- snakemake@params[["fdr_threshold"]]
+log2FC_threshold <- snakemake@params[["log2FC_threshold"]]
+lineage_tree_cut_off <- snakemake@params[["lineage_tree_cut_off"]]
+hierarchy_coordinates <- snakemake@params[["hierarchy_coordinates"]]
 
 ######### UMAPs (from unsupervised analysis) ############
 # Create UMAP plots

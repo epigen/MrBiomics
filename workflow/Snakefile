@@ -37,6 +37,7 @@ include: os.path.join("rules", "CorcesRNA.smk")
 include: os.path.join("rules", "CorcesATAC.smk")
 include: os.path.join("rules", "CorcesINT.smk")
 include: os.path.join("rules", "docs.smk")
+include: os.path.join("rules", "figures.smk")
 
 #### Target Rule ####
 rule all:
@@ -74,6 +75,11 @@ rule all:
         rules.CorcesRNA_plots.output,
         rules.CorcesATAC_plots.output,
         rules.CorcesINT_plots.output,
+        #### Figures ####
+        rules.CorcesRNA_figures.output,
+        rules.CorcesATAC_figures.output,
+        rules.CorcesINT_figures.output,
+        rules.Papalexi_figures.output,
     default_target: True # important for module usage
     threads: 1
     resources:
