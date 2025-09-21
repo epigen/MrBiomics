@@ -156,6 +156,14 @@ metadata/
 */.snakemake/*
 .snakemake/
 
+paper
+
 # macOS specific files
 *DS_Store*
 ._*
+
+# vscode
+settings.json
+
+# just a helper, don't want to sync this
+rsync_input_files_to_local.sh

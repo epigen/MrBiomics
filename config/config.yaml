@@ -8,8 +8,8 @@ project_name: "MrBiomics"
 
 #### Datasets and Workflows to include ###
 workflows:
-    quickstart:
-        enrichment_analysis: "config/quickstart/quickstart_enrichment_analysis_config.yaml"
+    # quickstart:
+    #     enrichment_analysis: "config/quickstart/quickstart_enrichment_analysis_config.yaml"
     digits:
         unsupervised_analysis: "config/digits/digits_unsupervised_analysis_config.yaml"
     CorcesRNA:
