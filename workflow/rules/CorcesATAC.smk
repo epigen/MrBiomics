@@ -56,7 +56,7 @@ use rule * from CorcesATAC_genome_tracks as CorcesATAC_genome_tracks_*
 #### CorcesATAC - Spilterlize & Integrate #### 
 module CorcesATAC_spilterlize_integrate:
     snakefile:
-        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.1")
+        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.2")
     config:
         config_wf["CorcesATAC_spilterlize_integrate"]
 
@@ -128,6 +128,7 @@ rule CorcesATAC_reconstruct_lineage:
         graph = os.path.join("results/CorcesATAC/special_analyses/crossprediction/graph.png"),
     params:
         group_var = "cell_type",
+        group_rm = "",
         top_features_n = 5,
         prune_th = 0.2,
         feature_annotation_var = "homer_Gene_Name",

@@ -1,0 +1,3 @@
+﻿name,data,assay,metadata,control
+KO,results/Papalexi2021scCRISPR/scrnaseq_processing_seurat/merged/NORMALIZED/object.rds,SCT,gene,NT
+KO_mixscape,results/Papalexi2021scCRISPR/mixscape_seurat/merged/FILTERED_object.rds,SCT,gene,NT

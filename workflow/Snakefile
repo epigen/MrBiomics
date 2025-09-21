@@ -36,15 +36,16 @@ for ds in config["workflows"]:
 include: os.path.join("rules", "CorcesRNA.smk")
 include: os.path.join("rules", "CorcesATAC.smk")
 include: os.path.join("rules", "CorcesINT.smk")
+include: os.path.join("rules", "Papalexi2021scCRISPR.smk")
 include: os.path.join("rules", "docs.smk")
 include: os.path.join("rules", "figures.smk")
 
 #### Target Rule ####
 rule all:
     input:
-        #### QUICKSTART ####
+        # #### QUICKSTART ####
         # rules.quickstart_enrichment_analysis_all.input,
-        #### digits Analysis ####
+        # #### digits Analysis ####
         # rules.digits_unsupervised_analysis_all.input,
         #### RNA-seq Analysis Recipe (CorcesRNA) ####
         rules.CorcesRNA_fetch_ngs_all.input,
@@ -71,10 +72,19 @@ rule all:
         rules.CorcesINT_dea_limma_all.input,
         rules.CorcesINT_plot_correlation.output, # custom rule for divergent gene visualization
         rules.CorcesINT_enrichment_analysis_all.input,
+        #### scCRISPR-seq Analysis Recipe (Papalexi2021scCRISPR) ####
+        rules.Papalexi2021scCRISPR_get_data.output, # custom rule
+        rules.Papalexi2021scCRISPR_scrnaseq_processing_seurat_all.input,
+        rules.Papalexi2021scCRISPR_mixscape_seurat_all.input,
+        rules.Papalexi2021scCRISPR_unsupervised_analysis_all.input,
+        rules.Papalexi2021scCRISPR_dea_seurat_all.input,
+        rules.Papalexi2021scCRISPR_enrichment_analysis_all.input,
+        rules.Papalexi2021scCRISPR_functional_similarity.output, # custom rule
         #### Custom rules used only for docs/wiki (keep commented) ####
-        rules.CorcesRNA_plots.output,
-        rules.CorcesATAC_plots.output,
-        rules.CorcesINT_plots.output,
+        # rules.CorcesRNA_plots.output,
+        # rules.CorcesATAC_plots.output,
+        # rules.CorcesINT_plots.output,
+        # rules.Papalexi2021scCRISPR_plots.output,
         #### Figures ####
         rules.CorcesRNA_figures.output,
         rules.CorcesATAC_figures.output,

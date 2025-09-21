@@ -33,7 +33,7 @@ use rule * from CorcesRNA_genome_tracks as CorcesRNA_genome_tracks_*
 #### CorcesRNA - Spilterlize & Integrate #### 
 module CorcesRNA_spilterlize_integrate:
     snakefile:
-        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.1")
+        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.2")
     config:
         config_wf["CorcesRNA_spilterlize_integrate"]
 
@@ -78,6 +78,7 @@ rule CorcesRNA_reconstruct_lineage:
         graph = os.path.join("results/CorcesRNA/special_analyses/crossprediction/graph.png"),
     params:
         group_var = "cell_type",
+        group_rm = "",
         top_features_n = 5,
         prune_th = 0.2,
         feature_annotation_var = "external_gene_name",

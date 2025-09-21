@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# This method was first introduced by [Farlik, Halbritter, et al.](https://doi.org/10.1016/j.stem.2016.10.019) to computationally reconstruct the human hematopoietic lineage from **DNA methylation** profiles. It was later adapted by [Traxler, Reichl, et al.](https://doi.org/10.1016/j.cels.2025.101346) to infer functional relationships between gene knockouts from **scCRISPR-seq** perturbation signatures, successfully validated by identifying members of known protein complexes.
+
 ####libraries
 import os
 import pathlib
@@ -30,6 +32,7 @@ graph_path = snakemake.output["graph"]
 
 # params
 group_var = snakemake.params["group_var"]
+group_rm = snakemake.params["group_rm"]
 top_features_n = snakemake.params["top_features_n"]
 prune_th = snakemake.params["prune_th"]
 feature_annotation_var = snakemake.params["feature_annotation_var"]
@@ -37,9 +40,15 @@ feature_annotation_var = snakemake.params["feature_annotation_var"]
 ### Load & prepare data and metadata
 data = pd.read_csv(data_path, index_col=0, header=0)
 metadata = pd.read_csv(metadata_path, index_col=0, header=0)
-feature_annotation = pd.read_csv(feature_annotation_path, index_col=0, header=0)
 
-# sort them the same
+if feature_annotation_path:
+    feature_annotation = pd.read_csv(feature_annotation_path, index_col=0, header=0)
+
+# remove a group from metadata
+if group_rm!="":
+    metadata = metadata[metadata[group_var] != group_rm]
+
+# sort (and filter) them the same
 data = data.loc[:,metadata.index]
 
 # Prepare data for training
@@ -95,7 +104,6 @@ clf.fit(X, y)
 
 # Get top features (i.e., coefficients by importances) for each class  
 top_features_per_class = {}
-
 # Iterate over each class from the fitted model
 for i, class_name in enumerate(clf.classes_):
     # Get coefficients for the current class. For multinomial logistic regression, coef_ has shape (n_classes, n_features)
@@ -105,17 +113,22 @@ for i, class_name in enumerate(clf.classes_):
     # Use np.argsort to get indices that would sort the array, then take the last {top_features_n} i.e., largest
     top_features_per_class[class_name] = data.index[np.argsort(class_coeffs)[-top_features_n:]][::-1] # Reverse to show most important first
 
-# Create a mapping dictionary
-feature_name_map = feature_annotation[feature_annotation_var].to_dict()
-# Iterate through the original dictionary and map features to annotation
-top_features_mapped = {}
-for class_name, features in top_features_per_class.items():
-    # For each list of feature IDs, create a new list with the corresponding alternative names.
-    # The .get(feature, feature) method ensures that if an ID is not found in the map, the original ID is used instead.
-    top_features_mapped[class_name] = [feature_name_map.get(feature, feature) for feature in features]
-
 # save top features
-pd.DataFrame(top_features_mapped).to_csv(top_features_path)
+if feature_annotation_path:
+    # Create a mapping dictionary
+    feature_name_map = feature_annotation[feature_annotation_var].to_dict()
+    # Iterate through the original dictionary and map features to annotation
+    top_features_mapped = {}
+    for class_name, features in top_features_per_class.items():
+        # For each list of feature IDs, create a new list with the corresponding alternative names.
+        # The .get(feature, feature) method ensures that if an ID is not found in the map, the original ID is used instead.
+        top_features_mapped[class_name] = [feature_name_map.get(feature, feature) for feature in features]
+    
+    # save top features
+    pd.DataFrame(top_features_mapped).to_csv(top_features_path)
+else:
+    # save top features
+    pd.DataFrame(top_features_per_class).to_csv(top_features_path)
 
 #################################################################
 #### HIERARCHICAL VISUALIZATION WITH GRAPHVIZ ####

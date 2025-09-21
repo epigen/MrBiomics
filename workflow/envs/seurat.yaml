@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - r-seurat=5.3.0
+  - r-seurat-data=0.2.2.9002
+  - r-matrix=1.7_4
