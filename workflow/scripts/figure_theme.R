@@ -190,13 +190,6 @@ remove_term_suffix <- function(db, terms){
 
                       
 ### DEFINITIONS (e.g., shapes, colors,...)
-IRONMAN_COLORS <- c(
-    "red"="#AA0505",
-    "darkred"="#6A0C0B",
-    "gold"="#B97D10",
-    "yellow"="#FBCA03",
-    "lightblue"="#67C7EB"
-)
 
 ## CorcesRNA & CorcesATAC
 # blue green violet: https://coolors.co/0e536c-3b8dac-51aacc-67c7eb-977cba-c73188-7fc493-96c03a-86ac35-566e21
