@@ -33,7 +33,7 @@ use rule * from CorcesRNA_genome_tracks as CorcesRNA_genome_tracks_*
 #### CorcesRNA - Spilterlize & Integrate #### 
 module CorcesRNA_spilterlize_integrate:
     snakefile:
-        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.2")
+        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.3")
     config:
         config_wf["CorcesRNA_spilterlize_integrate"]
 
