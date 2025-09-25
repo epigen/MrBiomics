@@ -30,7 +30,7 @@ rule CorcesINT_merge_counts:
 #### CorcesINT - Spilterlize & Integrate #### 
 module CorcesINT_spilterlize_integrate:
     snakefile:
-        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.3")
+        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.4")
     config:
         config_wf["CorcesINT_spilterlize_integrate"]
 
@@ -48,7 +48,7 @@ use rule * from CorcesINT_unsupervised_analysis as CorcesINT_unsupervised_analys
 #### CorcesINT - Differential Expression Analysis #### 
 module CorcesINT_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.2.0")
+        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.2.1")
     config:
         config_wf["CorcesINT_dea_limma"]
 
