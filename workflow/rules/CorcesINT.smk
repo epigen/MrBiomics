@@ -30,7 +30,7 @@ rule CorcesINT_merge_counts:
 #### CorcesINT - Spilterlize & Integrate #### 
 module CorcesINT_spilterlize_integrate:
     snakefile:
-        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.4")
+        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.5")
     config:
         config_wf["CorcesINT_spilterlize_integrate"]
 
