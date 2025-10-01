@@ -12,7 +12,7 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 - **How**: **Systematic Functional Knowledge Management**. Leverage the latest developments in workflow management to (re-)use and combine independent computational modules into arbitrarily complex analyses to benefit from modern innovation methods (e.g., fast prototyping, design thinking, and agile concepts).
 - **What**: **Independent** and **single-purpose** computational **Modules**, implemented as Snakemake workflows, encode standard approaches that are used to scale, automate, and parallelize analyses. **Recipes** combine modules into end-to-end best practice workflows, thereby accelerating analyses to the point of the unknown. Snakemake's module functionality enables **Projects** to combine modules, recipes and custom code into arbitrarily complex multi-omics analyses at scale. 
 
-![Illustration of MrBiomics Modules, Recipes and Projects](docs/Figure1.png) *Illustration of MrBiomics Modules, Recipes and Projects*
+![Illustration of MrBiomics Modules, Recipes and Projects](docs/Figure1.png) *Illustration of MrBiomics **Modules**, **Recipes** and **Projects** applied to a case study on human hematopoiesis*
 
 > [!NOTE]  
 > Altogether this enables complex, portable, transparent, reproducible, and documented analyses of multi-mics data at scale.
