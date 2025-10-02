@@ -33,7 +33,7 @@ use rule * from CorcesRNA_genome_tracks as CorcesRNA_genome_tracks_*
 #### CorcesRNA - Spilterlize & Integrate #### 
 module CorcesRNA_spilterlize_integrate:
     snakefile:
-        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.2")
+        github("epigen/spilterlize_integrate", path="workflow/Snakefile", tag="v3.0.5")
     config:
         config_wf["CorcesRNA_spilterlize_integrate"]
 
@@ -51,7 +51,7 @@ use rule * from CorcesRNA_unsupervised_analysis as CorcesRNA_unsupervised_analys
 #### CorcesRNA - Differential Expression Analysis #### 
 module CorcesRNA_dea_limma:
     snakefile:
-        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.2.0")
+        github("epigen/dea_limma", path="workflow/Snakefile", tag="v2.2.1")
     config:
         config_wf["CorcesRNA_dea_limma"]
 
