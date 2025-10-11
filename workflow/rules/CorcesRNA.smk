@@ -15,7 +15,7 @@ use rule * from CorcesRNA_fetch_ngs as CorcesRNA_fetch_ngs_*
 ### CorcesRNA - RNA-seq processing ####
 module CorcesRNA_rnaseq_pipeline:
     snakefile:
-        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.2.1")
+        github("epigen/rnaseq_pipeline", path="workflow/Snakefile", tag="v1.2.2")
     config:
         config_wf["CorcesRNA_rnaseq_pipeline"]
 
