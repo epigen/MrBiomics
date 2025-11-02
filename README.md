@@ -1,4 +1,5 @@
-# 🚀🧬 MrBiomics: <ins>M</ins>odules & <ins>R</ins>ecipes augment <ins>Bio</ins>informatics for Multi-<ins>Omics</ins> Analyses
+# 🚀🧬 MrBiomics: Composable <ins>m</ins>odules and <ins>r</ins>ecipes automate <ins>bi</ins>oinformatics for multi-<ins>omics</ins> analyses
+
 > _"For many outcomes, roughly 80% of consequences come from 20% of causes (the "vital few")."_ - The Pareto Principle by Vilfredo Pareto
 
 Get 80% of all standard (biomedical) data science analyses done semi-automated with 20% of the effort, by leveraging [Snakemake's](https://snakemake.github.io/) module functionality to use and combine pre-existing workflows into arbitrarily complex analyses.
@@ -9,7 +10,7 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 # ⏳ TL;DR - More Time for Science!
 > _"Programming is about trying to make the future less painful. It’s about making things easier for our teammates."_ from _The Pragmatic Programmer_ by Andy Hunt & Dave Thomas
 - **Why**: Time is the most precious resource. By taking care of efficiency (i.e., maximum output with limited resources) scientists can re-distribute their time to focus on effectiveness (i.e., the biggest impact possible).
-- **How**: **Systematic Functional Knowledge Management**. Leverage the latest developments in workflow management to (re-)use and combine independent computational modules into arbitrarily complex analyses to benefit from modern innovation methods (e.g., fast prototyping, design thinking, and agile concepts).
+- **How**: **Functional Knowledge Management**. Leverage the latest developments in workflow management to (re-)use and combine independent computational modules into arbitrarily complex analyses to benefit from modern innovation methods (e.g., fast prototyping, design thinking, and agile concepts).
 - **What**: **Independent** and **single-purpose** computational **Modules**, implemented as Snakemake workflows, encode standard approaches that are used to scale, automate, and parallelize analyses. **Recipes** combine modules into end-to-end best practice workflows, thereby accelerating analyses to the point of the unknown. Snakemake's module functionality enables **Projects** to combine modules, recipes and custom code into arbitrarily complex multi-omics analyses at scale. 
 
 ![Illustration of MrBiomics Modules, Recipes and Projects](docs/Figure1.png) *Illustration of MrBiomics **Modules**, **Recipes** and **Projects** applied to a case study on human hematopoiesis*
@@ -119,8 +120,8 @@ Three components are required to use a module within your Snakemake workflow (i.
     - [Singularity](https://docs.sylabs.io/guides/3.5/user-guide/index.html#) 
 
 # ⭐ Star History of Modules
-[![Star History Chart](https://api.star-history.com/svg?repos=epigen/atacseq_pipeline,epigen/unsupervised_analysis,epigen/enrichment_analysis,epigen/spilterlize_integrate,epigen/dea_limma,epigen/dea_seurat,epigen/scrnaseq_processing_seurat,epigen/mixscape_seurat,epigen/genome_tracks&type=Timeline)](https://star-history.com/#epigen/atacseq_pipeline&epigen/unsupervised_analysis&epigen/enrichment_analysis&epigen/spilterlize_integrate&epigen/dea_limma&epigen/dea_seurat&epigen/scrnaseq_processing_seurat&epigen/mixscape_seurat&epigen/genome_tracks&epigen/fetch_ngs&epigen/rnaseq_pipeline&Timeline)\
-Only 9/11 modules shown. Click on the image to see them all.
+[![Star History Chart](https://api.star-history.com/svg?repos=epigen/MrBiomics,epigen/atacseq_pipeline,epigen/unsupervised_analysis,epigen/enrichment_analysis,epigen/spilterlize_integrate,epigen/dea_limma,epigen/dea_seurat,epigen/scrnaseq_processing_seurat,epigen/mixscape_seurat,epigen/genome_tracks,epigen/fetch_ngs,epigen/rnaseq_pipeline&type=Timeline)](https://star-history.com/#epigen/MrBiomics&epigen/atacseq_pipeline&epigen/unsupervised_analysis&epigen/enrichment_analysis&epigen/spilterlize_integrate&epigen/dea_limma&epigen/dea_seurat&epigen/scrnaseq_processing_seurat&epigen/mixscape_seurat&epigen/genome_tracks&epigen/fetch_ngs&epigen/rnaseq_pipeline&Timeline)\
+*Click on the image for an interactive view.*
 
 # 📑 Publications
 The following publications have successfully used MrBiomics Modules (red) and/or Recipes (blue):
