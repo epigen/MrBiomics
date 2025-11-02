@@ -231,10 +231,16 @@ for(ct in unique(metadata$cell_type)){
              stroke = 0,
              show.legend = FALSE)) +
     # overlay divergent classes (larger, more opaque – foreground)
+    # split into unlabeled and labeled points to ensure geom_text_repel coordinates match
     rasterise(geom_point(data = df_div %>% filter(markers == ""),
              aes(colour = category, size = log10_adjp),
              alpha = 0.5,
              stroke = 0)) +
+    # plot labeled points separately (must match geom_text_repel data for proper alignment)
+    geom_point(data = df_div %>% filter(markers != ""),
+             aes(colour = category, size = log10_adjp),
+             alpha = 0.5,
+             stroke = 0) +
     # colour palette 
     scale_colour_manual(
     values = cat_cols,
@@ -257,25 +263,29 @@ for(ct in unique(metadata$cell_type)){
     ) +
     # annotate divergent HAEMATOPOIESIS_MARKERS
     geom_text_repel(
+        data = df_div %>% filter(markers != ""),
         color = "black",
-        box.padding = 0.15,
+        box.padding = 0.3,
+        label.padding = 0.15,
+        point.size = 1e-6,
+        point.padding = 0,
         min.segment.length = 0,
         max.overlaps = Inf,
+        force = 2,
+        force_pull = 1.5,
         seed = 42,
+        segment.colour = "black",
+        segment.size = 0.3,
+        segment.alpha = 0.95,
+        segment.linetype = 1,
+        arrow = NULL,
         show.legend = FALSE
     ) +
-    # # redraw labeled points on top so labels don't occlude points
-    # geom_point(
-    #     data = df %>% filter(markers != ""),
-    #     aes(colour = category, size = log10_adjp),
-    #     alpha = 0.5,
-    #     stroke = 0
-    # ) +
     # axis titles
     labs(
-    title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
-    x = "Chromatin accessibility\n(normalized & integrated)",
-    y = "Gene expression\n(normalized & integrated)"
+      title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
+      x = "Chromatin accessibility\n(normalized & integrated)",
+      y = "Gene expression\n(normalized & integrated)"
     ) +
     MrBiomics_theme() + 
     theme(aspect.ratio = 1)

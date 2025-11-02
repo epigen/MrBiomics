@@ -546,6 +546,9 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         heatmap_df$logFC <- ifelse(heatmap_df$logFC > upper_limit, upper_limit, heatmap_df$logFC)
     }
 
+    # Replace non-finite values with zeros so tiles are drawn instead of blank gaps
+    heatmap_df$logFC[!is.finite(heatmap_df$logFC)] <- 0
+
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm=TRUE)
 
     dendro_plot <- ann_plots$dendro_plot
@@ -686,7 +689,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     ggsave_all_formats(path = fig_path,
                        plot = gp,
-                       width = PLOT_SIZE_3_PER_ROW,
+                       width = PLOT_SIZE_3_PER_ROW+1,
                        height = PLOT_SIZE_3_PER_ROW, 
                        dpi = 1000)
     
@@ -792,11 +795,26 @@ plot_ko_logfc_heatmap <- function(dea_results_path,
         heatmap_df$logFC <- ifelse(heatmap_df$logFC > upper_limit, upper_limit, heatmap_df$logFC)
     }
 
+    # Replace non-finite values with zeros to avoid blank tiles/artifacts in PDF output
+    heatmap_df$logFC[!is.finite(heatmap_df$logFC)] <- 0
+
     # Color scale limits based on masked data
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm = TRUE)
 
+    # Ensure complete tile grid: add missing (group, feature) pairs with logFC = 0
+    all_pairs <- expand.grid(
+        group = levels(heatmap_df$group),
+        feature = levels(heatmap_df$feature),
+        stringsAsFactors = FALSE
+    )
+    all_pairs$group <- factor(all_pairs$group, levels = levels(heatmap_df$group))
+    all_pairs$feature <- factor(all_pairs$feature, levels = levels(heatmap_df$feature))
+    heatmap_df_plot <- all_pairs %>%
+        dplyr::left_join(heatmap_df %>% dplyr::select(group, feature, logFC), by = c("group", "feature")) %>%
+        dplyr::mutate(logFC = ifelse(is.na(logFC), 0, logFC))
+
     # Core heatmap (group on x, feature on y)
-    heatmap_plot <- ggplot(heatmap_df, aes(x = group, y = feature, fill = logFC)) +
+    heatmap_plot <- ggplot(heatmap_df_plot, aes(x = group, y = feature, fill = logFC)) +
         rasterise(geom_tile(linewidth = 0)) +
         scale_fill_distiller(
             palette = "RdBu",
@@ -867,17 +885,16 @@ plot_ko_logfc_heatmap <- function(dea_results_path,
         coord_cartesian(clip = "off") +
         theme(plot.margin = margin(0, 0, 0, 10))
 
-    # Assemble
+    # Assemble (use 3-row layout; remove zero-height spacer row to avoid PDF artifacts)
     plot_list <- list(
         plot_spacer(),              ann_plots$dendro_plot,
         ann_plots$ko_label_plot,    ann_plots$ko_plot,
-        plot_spacer(),              plot_spacer(),
         marker_label_plot,          heatmap_plot
     )
 
     gp <- wrap_plots(plot_list, ncol = 2,
                      widths = c(1.2, 3),
-                     heights = c(0.6, 0.35, 0.001, 10)) +
+                     heights = c(0.6, 0.35, 10)) +
         plot_layout(guides = "collect") +
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
         theme(
