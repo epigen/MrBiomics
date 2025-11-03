@@ -193,7 +193,7 @@ umap_panels_ko_and_phase_highlights <- function(data_path,
         ggplot(df, aes(x = UMAP_1, y = UMAP_2)) +
             rasterise(geom_point(color = background_grey, size = point_size_all, alpha = 0.5, shape = 16)) +
             rasterise(geom_point(data = df_phase, color = phase_col, size = point_size_highlight, alpha = 0.5, shape = 16)) +
-            labs(subtitle = phase_name) +
+            labs(subtitle = paste0("Cell cycle phase ", phase_name)) +
             panel_theme
     }
 
@@ -546,6 +546,9 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
         heatmap_df$logFC <- ifelse(heatmap_df$logFC > upper_limit, upper_limit, heatmap_df$logFC)
     }
 
+    # Replace non-finite values with zeros so tiles are drawn instead of blank gaps
+    heatmap_df$logFC[!is.finite(heatmap_df$logFC)] <- 0
+
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm=TRUE)
 
     dendro_plot <- ann_plots$dendro_plot
@@ -556,7 +559,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
             palette = "RdBu",
             limits = plot_limits,
             guide = guide_colorbar(direction = "vertical"),  # , barheight = grid::unit(2, "cm"), barwidth = grid::unit(0.25, "cm")
-            name = "log2(FC)"
+            name = "log2(fold change)"
         ) +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
@@ -686,7 +689,7 @@ plot_differential_features_heatmap <- function(dea_results_path, fig_path, fdr_t
 
     ggsave_all_formats(path = fig_path,
                        plot = gp,
-                       width = PLOT_SIZE_3_PER_ROW,
+                       width = PLOT_SIZE_3_PER_ROW+1,
                        height = PLOT_SIZE_3_PER_ROW, 
                        dpi = 1000)
     
@@ -792,17 +795,32 @@ plot_ko_logfc_heatmap <- function(dea_results_path,
         heatmap_df$logFC <- ifelse(heatmap_df$logFC > upper_limit, upper_limit, heatmap_df$logFC)
     }
 
+    # Replace non-finite values with zeros to avoid blank tiles/artifacts in PDF output
+    heatmap_df$logFC[!is.finite(heatmap_df$logFC)] <- 0
+
     # Color scale limits based on masked data
     plot_limits <- c(-1, 1) * max(abs(heatmap_df$logFC), na.rm = TRUE)
 
+    # Ensure complete tile grid: add missing (group, feature) pairs with logFC = 0
+    all_pairs <- expand.grid(
+        group = levels(heatmap_df$group),
+        feature = levels(heatmap_df$feature),
+        stringsAsFactors = FALSE
+    )
+    all_pairs$group <- factor(all_pairs$group, levels = levels(heatmap_df$group))
+    all_pairs$feature <- factor(all_pairs$feature, levels = levels(heatmap_df$feature))
+    heatmap_df_plot <- all_pairs %>%
+        dplyr::left_join(heatmap_df %>% dplyr::select(group, feature, logFC), by = c("group", "feature")) %>%
+        dplyr::mutate(logFC = ifelse(is.na(logFC), 0, logFC))
+
     # Core heatmap (group on x, feature on y)
-    heatmap_plot <- ggplot(heatmap_df, aes(x = group, y = feature, fill = logFC)) +
+    heatmap_plot <- ggplot(heatmap_df_plot, aes(x = group, y = feature, fill = logFC)) +
         rasterise(geom_tile(linewidth = 0)) +
         scale_fill_distiller(
             palette = "RdBu",
             limits = plot_limits,
             guide = guide_colorbar(direction = "vertical"),
-            name = "log2(FC)"
+            name = "log2(fold change)"
         ) +
         scale_x_discrete(expand = c(0, 0)) +
         scale_y_discrete(expand = c(0, 0)) +
@@ -867,17 +885,16 @@ plot_ko_logfc_heatmap <- function(dea_results_path,
         coord_cartesian(clip = "off") +
         theme(plot.margin = margin(0, 0, 0, 10))
 
-    # Assemble
+    # Assemble (use 3-row layout; remove zero-height spacer row to avoid PDF artifacts)
     plot_list <- list(
         plot_spacer(),              ann_plots$dendro_plot,
         ann_plots$ko_label_plot,    ann_plots$ko_plot,
-        plot_spacer(),              plot_spacer(),
         marker_label_plot,          heatmap_plot
     )
 
     gp <- wrap_plots(plot_list, ncol = 2,
                      widths = c(1.2, 3),
-                     heights = c(0.6, 0.35, 0.001, 10)) +
+                     heights = c(0.6, 0.35, 10)) +
         plot_layout(guides = "collect") +
         plot_annotation(theme = theme(plot.margin = margin(0, 0, 0, 0))) &
         theme(
@@ -899,7 +916,7 @@ plot_ko_logfc_heatmap <- function(dea_results_path,
 ########################################################################################################################
 #### ENRICHMENT HEATMAP #################################################################################################
 ########################################################################################################################
-split_long_label_at_middle <- function(labels, threshold = 30, longer_first_margin = 5) {
+split_long_label_at_middle <- function(labels, threshold = 35, longer_first_margin = 5) {
     vapply(labels, function(s) {
         s <- as.character(s)
         if (is.na(s)) return(NA_character_)
@@ -940,9 +957,15 @@ split_long_label_at_middle <- function(labels, threshold = 30, longer_first_marg
 }
 
 filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2, pos_and_neg = FALSE,
-                             dict_to_sort_by = CELL_TYPE_COLORS) {
+                             dict_to_sort_by = CELL_TYPE_COLORS, max_term_length = 70, max_terms = 20) {
     df_sig <- df %>%
       filter(statistic < fdr_threshold) 
+
+    # Filter out terms that are too long
+    if (!is.null(max_term_length) && is.finite(max_term_length)) {
+        df_sig <- df_sig %>%
+            filter(nchar(as.character(Term)) <= max_term_length)
+    }
 
     if (!is.null(tissues_to_keep)) {
         df_sig <- df_sig %>%
@@ -980,9 +1003,16 @@ filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_pe
         top_hits <- rbind(top_hits, current_top_hits)
     }
 
+    # Randomly sample terms if there are more than max_terms
+    if (!is.null(max_terms) && is.finite(max_terms) && length(top_term_strings) > max_terms) {
+        set.seed(42)
+        top_term_strings <- sample(top_term_strings, size = max_terms, replace = FALSE)
+    }
+
     # Create a mapping from term to the cell type for which it's a top hit
     term_to_top_name_map <- top_hits %>%
-      select(Term, top_for_name = name)
+      select(Term, top_for_name = name) %>%
+      filter(Term %in% top_term_strings)
 
     # Filter original dataframe for top terms and add the 'top_for_name' info
     df_top <- df %>%
@@ -997,10 +1027,10 @@ filter_top_terms <- function(df, fdr_threshold, tissues_to_keep = NULL, top_n_pe
 }
 
 prepare_for_heatmap <- function(df_formatted, fdr_threshold, tissues_to_keep = NULL, top_n_per_name = 2,
-                                dict_to_sort_by = CELL_TYPE_COLORS, pos_and_neg = FALSE) {
+                                dict_to_sort_by = CELL_TYPE_COLORS, pos_and_neg = FALSE, max_term_length = 50, max_terms = 20) {
     df_top <- filter_top_terms(df = df_formatted, fdr_threshold = fdr_threshold, tissues_to_keep = tissues_to_keep,
                                top_n_per_name = top_n_per_name, pos_and_neg = pos_and_neg, 
-                               dict_to_sort_by = dict_to_sort_by)
+                               dict_to_sort_by = dict_to_sort_by, max_term_length = max_term_length, max_terms = max_terms)
 
     mat_df <- df_top %>%
       select(name, Term, score) %>%
@@ -1109,7 +1139,7 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
         name = fill_lab,
         guide = guide_colorbar(direction = "vertical")
       ) +
-      scale_size_continuous(name = size_lab, range = c(0.5, 3)) +
+      scale_size_continuous(name = size_lab, range = c(0.5, 2.5)) +
     #   guides(size = guide_legend(keyheight = grid::unit(0.4, "lines"), keywidth = grid::unit(0.6, "lines"))) +
       labs(title = title, x = "Cell type", y = ylabel) +
       # ensure square tiles
@@ -1117,11 +1147,11 @@ plot_enrichment_heatmap <- function(heatmap_df, fig_path, fill_lab, size_lab, ti
       MrBiomics_theme() + 
       theme(
         axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1), 
-        axis.text.y = element_text(size = FONT_SIZE_SMALL),
+        axis.text.y = element_text(size = FONT_SIZE_SMALL, lineheight = 0.6),
       )
 
     if (is.null(width)) {
-        width <- PLOT_SIZE_3_PER_ROW + 2
+        width <- PLOT_SIZE_3_PER_ROW + 3
     }
 
     # Save plot
@@ -1207,7 +1237,7 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
             name = fill_lab,
             guide = guide_colorbar(direction = "vertical")
         ) +
-        scale_size_continuous(name = size_lab, range = c(0.5, 2.3)) +
+        scale_size_continuous(name = size_lab, range = c(0.5, 2)) +
         scale_x_discrete(expand = expansion(add = 0.6)) +
         scale_y_discrete(expand = expansion(add = 0.6)) +
         labs(title = NULL, x = xlabel, y = NULL) +
@@ -1237,7 +1267,7 @@ plot_clustered_enrichment_heatmap <- function(heatmap_df,
     n_rows <- length(term_levels)
     term_labels_df <- data.frame(Term = term_levels, y = seq_len(n_rows))
     term_label_plot <- ggplot(term_labels_df, aes(y = y)) +
-        geom_text(aes(x = 0.98, label = Term), hjust = 1) +
+        geom_text(aes(x = 0.98, label = Term), hjust = 1, lineheight = 0.8) +
         scale_y_continuous(limits = c(0.5, n_rows + 0.5), expand = c(0, 0)) +
         scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
         labs(y = ylabel) +
@@ -1718,9 +1748,9 @@ plot_ko_ta_lollipop <- function(results_csv_path,
             high = as.character(RdBu_extremes["up"]),
             name = "NES"
         ) +
-        scale_size_continuous(name = "-log10(q-adj.)", range = c(0.5, 5)) +
+        scale_size_continuous(name = "-log10(p-adj.)", range = c(0.5, 5)) +
         scale_alpha_continuous(name = "NES", range = c(0.2, 1), guide = "none") +
-        scale_linewidth_continuous(name = "-log10(q-adj.)", range = c(0.3, 3), guide = "none") +
+        scale_linewidth_continuous(name = "-log10(p-adj.)", range = c(0.3, 3), guide = "none") +
         labs(x = "NES", y = NULL, title = title) +
         MrBiomics_theme() +
         theme(

@@ -4,12 +4,14 @@ rule CorcesRNA_figures:
     input:
         umap_coords = os.path.join("results/CorcesRNA/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"),
         dea_ova = os.path.join("results/CorcesRNA/dea_limma/normCQN_OvA_cell_type/results.csv"),
-        enrichment_results = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv"),
+        enrichment_results_azimuth = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/Azimuth_2023/cell_types_Azimuth_2023_all.csv"),
+        enrichment_results_reactome = os.path.join("results/CorcesRNA/enrichment_analysis/cell_types/preranked_GSEApy/ReactomePathways/cell_types_ReactomePathways_all.csv"),
         crossprediction_adj_mtx = os.path.join("results/CorcesRNA/special_analyses/crossprediction/adjacency_matrix.csv"),
     output:
         umap_plot = os.path.join("paper/CorcesRNA/umap.pdf"),
         dea_heatmap_plot = os.path.join("paper/CorcesRNA/differential_heatmap.pdf"),
-        enrichment_plot = os.path.join("paper/CorcesRNA/enrichment.pdf"),
+        enrichment_azimuth_plot = os.path.join("paper/CorcesRNA/enrichment_azimuth.pdf"),
+        enrichment_reactome_plot = os.path.join("paper/CorcesRNA/enrichment_reactome.pdf"),
         crossprediction_plot = os.path.join("paper/CorcesRNA/crossprediction.pdf"),
         crossprediction_coordinates = os.path.join("paper/CorcesRNA/crossprediction_coordinates.csv"),
     params:
@@ -36,12 +38,14 @@ rule CorcesATAC_figures:
     input:
         umap_coords = os.path.join("results/CorcesATAC/unsupervised_analysis/normCQN_integrated/UMAP/UMAP_correlation_15_0.1_2_data.csv"),
         dea_ova = os.path.join("results/CorcesATAC/dea_limma/normCQN_OvA_cell_type/results.csv"),
-        enrichment_results = os.path.join("results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv"),
+        enrichment_results_azimuth = os.path.join("results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/Azimuth_2023/cell_types_up_Azimuth_2023_all.csv"),
+        enrichment_results_reactome = os.path.join("results/CorcesATAC/enrichment_analysis/cell_types_up/GREAT/ReactomePathways/cell_types_up_ReactomePathways_all.csv"),
         crossprediction_adj_mtx = os.path.join("results/CorcesATAC/special_analyses/crossprediction/adjacency_matrix.csv"),
     output:
         umap_plot = os.path.join("paper/CorcesATAC/umap.pdf"),
         dea_heatmap_plot = os.path.join("paper/CorcesATAC/differential_heatmap.pdf"),
-        enrichment_plot = os.path.join("paper/CorcesATAC/enrichment.pdf"),
+        enrichment_azimuth_plot = os.path.join("paper/CorcesATAC/enrichment_azimuth.pdf"),
+        enrichment_reactome_plot = os.path.join("paper/CorcesATAC/enrichment_reactome.pdf"),
         crossprediction_plot = os.path.join("paper/CorcesATAC/crossprediction.pdf"),
         crossprediction_coordinates = os.path.join("paper/CorcesATAC/crossprediction_coordinates.csv"),
     params:

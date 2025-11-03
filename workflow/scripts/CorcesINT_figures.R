@@ -23,10 +23,7 @@ fdr_threshold <- snakemake@params[["fdr_threshold"]]
 lfc_th <- snakemake@params[["lfc_th"]]
 ave_expr_th <- snakemake@params[["ave_expr_th"]]
 max_genes_tf_plot <- snakemake@params[["max_genes_tf_plot"]]
-TFs_in_papalexi <- c(
-  "ATF2", "BRD4", "CAV1", "CD86", "CMTM6", "CUL3", "ETV7", "IFNGR1", "IFNGR2", "IRF1", "IRF7", "JAK2", "CMIR", "MARCH8",
-  "MYC", "NFKB1A", "PDCD1LG2", "POU2F2", "SMAD4", "SPI1", "STAT1", "STAT2", "STAT3", "STAT5A", "TNFRSF14", "UBE2L6"
-)
+
 # outputs
 unintegrated_cfa_plot_path <- snakemake@output[["unintegrated_cfa_plot"]]
 integrated_cfa_plot_path <- snakemake@output[["integrated_cfa_plot"]]
@@ -36,6 +33,11 @@ epigenetic_scatter_dir <- snakemake@output[["epigenetic_scatter_dir"]]
 GO_enrichment_path <- snakemake@output[["GO_enrichment_plot"]]
 Reactome_enrichment_path <- snakemake@output[["Reactome_enrichment_plot"]]
 TF_plot_path <- snakemake@output[["TF_plot"]]
+
+TFs_in_papalexi <- c(
+  "ATF2", "BRD4", "CAV1", "CD86", "CMTM6", "CUL3", "ETV7", "IFNGR1", "IFNGR2", "IRF1", "IRF7", "JAK2", "CMIR", "MARCH8",
+  "MYC", "NFKB1A", "PDCD1LG2", "POU2F2", "SMAD4", "SPI1", "STAT1", "STAT2", "STAT3", "STAT5A", "TNFRSF14", "UBE2L6"
+)
 ########################################################################################################################
 ### LOAD DATA ##########################################################################################################
 ########################################################################################################################
@@ -57,81 +59,67 @@ integrated_cfa_data <- V1_to_rowname(data.frame(fread(file.path(integrated_cfa_p
 ########################################################################################################################
 ### UMAP PLOT ##########################################################################################################
 ########################################################################################################################
-unintegrated_umap_plot <- umap_plot(unintegrated_umap_coords_path, unintegrated_umap_plot_path, title = "Unintegrated",
+unintegrated_umap_plot <- umap_plot(unintegrated_umap_coords_path, unintegrated_umap_plot_path,
+                                    title = "Before integration of modalities (normalized)",
                                     modality_by_shape = TRUE)
-integrated_umap_plot <- umap_plot(integrated_umap_coords_path, integrated_umap_plot_path, title = "Integrated",
-                                    modality_by_shape = TRUE)
+integrated_umap_plot <- umap_plot(integrated_umap_coords_path, integrated_umap_plot_path,
+                                  title = "After integration of modalities",
+                                  modality_by_shape = TRUE)
 
 ########################################################################################################################
 ### CFA PLOT ##########################################################################################################
 ########################################################################################################################
-plot_cfa_heatmap <- function(cfa_mat, title, path, var_max=NULL, nPCs=10, 
-                             metadata_rows=c('cell_type', 'modality', 'donor')
+plot_cfa_heatmap <- function(cfa_mat, title, path, fill_max=NULL, nPCs=10, 
+                             metadata_rows=c('donor', 'modality', 'cell_type')
                              ){
   var_explained_df <- t(cfa_mat['var_explained', 1:nPCs]) %>%
       as.data.frame() %>%
       rownames_to_column(var = 'PC') %>%
-      mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))))
+      mutate(PC = factor(PC, levels = colnames(cfa_mat)))
   cfa_mat <- cfa_mat[metadata_rows, 1:nPCs]
 
-  if (is.null(var_max)) {
-      x_max <- max(var_explained_df$var_explained, na.rm = TRUE)
-  } else {
-      x_max <- var_max
-  }
+  # build PC axis labels including variance explained (percent if in [0,1])
+  is_fraction <- max(var_explained_df$var_explained, na.rm = TRUE) <= 1.00001
+  pc_lab_df <- var_explained_df %>%
+      mutate(var_pct = if (is_fraction) 100 * var_explained else var_explained) %>%
+      mutate(label = paste0(PC, " (", formatC(var_pct, format = "f", digits = 1), "%)") )
+  pc_labels <- setNames(pc_lab_df$label, pc_lab_df$PC)
 
   # unstack cfa_mat, remembering rownames and colnames
   cfa_mat_long <- cfa_mat %>%
       rownames_to_column(var = "metadata_type") %>%
       pivot_longer(cols = -metadata_type, names_to = "PC", values_to = "stat") %>%
-      mutate(PC = factor(PC, levels = rev(colnames(cfa_mat))),
+      mutate(PC = factor(PC, levels = colnames(cfa_mat)),
               metadata_type = factor(metadata_type, levels = metadata_rows),
               text_color = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "white", "black"),
               text_fontface = ifelse(stat > (min(stat) + 0.75 * (max(stat) - min(stat))), "bold", "plain")
               )
 
-  # barplot of var_explained
-  var_explained_plot <- ggplot(var_explained_df, aes(y = PC, x = var_explained)) +
-      geom_bar(stat = "identity", fill = 'grey80') +
-      MrBiomics_theme() +
-      scale_x_continuous(limits = c(0, x_max), breaks = c(0, x_max/2, x_max),
-                          labels = function(x) format(x, digits = 2)) +
-      theme(
-          axis.text.y = element_blank(),
-          axis.title.y = element_blank(),
-          panel.grid.minor = element_blank(),
-          panel.grid.major.y = element_blank(),
-          panel.grid.major.x = element_line(),
-          panel.border = element_blank(),
-          plot.margin = margin(5.5, 5.5, 5.5, 5.5)
-      ) +
-      labs(title = NULL, x = "Variance explained", y = NULL)
-
-  cfa_heatmap <- ggplot(cfa_mat_long, aes(x = metadata_type, y = PC, fill = stat)) +
+  # transposed heatmap (PC on x, metadata on y)
+  cfa_heatmap <- ggplot(cfa_mat_long, aes(x = PC, y = metadata_type, fill = stat)) +
       geom_tile(linewidth = 0) +
       geom_text(aes(label = round(stat, 1), color = text_color, fontface = text_fontface)) +
-      scale_fill_gradient(low = "white", high = as.character(RdBu_extremes["up"]), name='-log10(p-adj.)\nfor association\nof PC &\nmetadata') +
+      scale_fill_gradient(low = "white", high = as.character(RdBu_extremes["up"]), 
+                          name='-log10(p-adj.)\nfor association\nof PC &\nmetadata',
+                          limits = c(0, fill_max)) +
       scale_color_identity(guide = "none") +
-      scale_x_discrete(labels = function(x) tools::toTitleCase(gsub("_", " ", x)), expand = c(0, 0)) +
-      scale_y_discrete(expand = c(0, 0)) +
+      scale_x_discrete(labels = function(x) pc_labels[x], expand = c(0, 0)) +
+      scale_y_discrete(labels = function(x) tools::toTitleCase(gsub("_", " ", x)), expand = c(0, 0)) +
       MrBiomics_theme() +
       theme(
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
-          axis.text.y = element_blank(),
+          axis.text.y = element_text(),
           axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
           plot.title = element_text(hjust = 0.5),
           legend.position = "right",
           plot.margin = margin(5.5, 5.5, 5.5, 5.5)
       ) +
       coord_fixed() +
-      labs(title = title, y = paste0("PC(1-", ncol(cfa_mat), ")"), x = NULL)
+      labs(title = title, x = NULL, y = NULL)
 
-  cfa_plot <- cfa_heatmap + var_explained_plot + plot_spacer() + guide_area() +
-      plot_layout(ncol = 4, widths = c(2, 2, 0.2, 1.4), guides = "collect") +
-      plot_annotation(theme = theme(plot.margin = margin(10, 20, 10, 10))) &
-      theme(plot.margin = margin(5.5, 5.5, 5.5, 5.5), legend.box.margin = margin(5.5, 5.5, 5.5, 10),
-              legend.margin = margin(5.5, 5.5, 5.5, 5.5))
+  # no bar chart; return the heatmap directly
+  cfa_plot <- cfa_heatmap
 
   ggsave_all_formats(path = path,
                       plot = cfa_plot,
@@ -140,12 +128,19 @@ plot_cfa_heatmap <- function(cfa_mat, title, path, var_max=NULL, nPCs=10,
   return(cfa_plot)
 }
 
-var_max <- max(unintegrated_cfa_data['var_explained',], integrated_cfa_data['var_explained',])
+# unified fill scale across unintegrated and integrated
+nPCs_to_show <- 5
+metadata_rows_for_cfa <- c('cell_type', 'modality', 'donor')
+fill_max <- max(
+    suppressWarnings(as.numeric(unlist(unintegrated_cfa_data[metadata_rows_for_cfa, 1:nPCs_to_show]))),
+    suppressWarnings(as.numeric(unlist(integrated_cfa_data[metadata_rows_for_cfa, 1:nPCs_to_show]))),
+    na.rm = TRUE
+)
 
-unintegrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=unintegrated_cfa_data, title='Unintegrated',
-     path=unintegrated_cfa_plot_path, var_max=var_max, nPCs=10)
-integrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=integrated_cfa_data, title='Integrated',
-     path=integrated_cfa_plot_path, var_max=var_max, nPCs=10)
+unintegrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=unintegrated_cfa_data, title='Before integration',
+     path=unintegrated_cfa_plot_path, fill_max=fill_max, nPCs=nPCs_to_show)
+integrated_cfa_plot <- plot_cfa_heatmap(cfa_mat=integrated_cfa_data, title='After integration',
+     path=integrated_cfa_plot_path, fill_max=fill_max, nPCs=nPCs_to_show)
 
 
 
@@ -236,10 +231,16 @@ for(ct in unique(metadata$cell_type)){
              stroke = 0,
              show.legend = FALSE)) +
     # overlay divergent classes (larger, more opaque – foreground)
+    # split into unlabeled and labeled points to ensure geom_text_repel coordinates match
     rasterise(geom_point(data = df_div %>% filter(markers == ""),
              aes(colour = category, size = log10_adjp),
              alpha = 0.5,
              stroke = 0)) +
+    # plot labeled points separately (must match geom_text_repel data for proper alignment)
+    geom_point(data = df_div %>% filter(markers != ""),
+             aes(colour = category, size = log10_adjp),
+             alpha = 0.5,
+             stroke = 0) +
     # colour palette 
     scale_colour_manual(
     values = cat_cols,
@@ -262,25 +263,29 @@ for(ct in unique(metadata$cell_type)){
     ) +
     # annotate divergent HAEMATOPOIESIS_MARKERS
     geom_text_repel(
+        data = df_div %>% filter(markers != ""),
         color = "black",
-        box.padding = 0.15,
+        box.padding = 0.3,
+        label.padding = 0.15,
+        point.size = 1e-6,
+        point.padding = 0,
         min.segment.length = 0,
         max.overlaps = Inf,
+        force = 2,
+        force_pull = 1.5,
         seed = 42,
+        segment.colour = "black",
+        segment.size = 0.3,
+        segment.alpha = 0.95,
+        segment.linetype = 1,
+        arrow = NULL,
         show.legend = FALSE
     ) +
-    # # redraw labeled points on top so labels don't occlude points
-    # geom_point(
-    #     data = df %>% filter(markers != ""),
-    #     aes(colour = category, size = log10_adjp),
-    #     alpha = 0.5,
-    #     stroke = 0
-    # ) +
     # axis titles
     labs(
-    title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
-    x = "Chromatin accessibility\n(normalized & integrated)",
-    y = "Gene expression\n(normalized & integrated)"
+      title = paste0(ct,"\n",sprintf("Pearson's R = %.2f", r_val)),
+      x = "Chromatin accessibility\n(normalized & integrated)",
+      y = "Gene expression\n(normalized & integrated)"
     ) +
     MrBiomics_theme() + 
     theme(aspect.ratio = 1)
@@ -312,7 +317,7 @@ GO_enrichment_plot <- plot_clustered_enrichment_heatmap(
     heatmap_df = GO_heatmap_df,
     fig_path = GO_enrichment_path,
     fill_lab = "NES",
-    size_lab = "-log10(q-adj.)",
+    size_lab = "-log10(p-adj.)",
     title = "",
     ylabel = "Enrichment term\n(preranked GSEA,\nGOBP 2025)",
     ct_clst_dist = "euclidean",
@@ -330,7 +335,7 @@ Reactome_enrichment_plot <- plot_clustered_enrichment_heatmap(
     heatmap_df = Reactome_heatmap_df,
     fig_path = Reactome_enrichment_path,
     fill_lab = "NES",
-    size_lab = "-log10(q-adj.)",
+    size_lab = "-log10(p-adj.)",
     title = "",
     ylabel = "Enrichment term\n(preranked GSEA, Reactome)",
     ct_clst_dist = "euclidean",
