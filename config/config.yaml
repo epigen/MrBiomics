@@ -8,34 +8,34 @@ project_name: "MrBiomics"
 
 #### Datasets and Workflows to include ###
 workflows:
-    # quickstart:
-    #     enrichment_analysis: "config/quickstart/quickstart_enrichment_analysis_config.yaml"
-    digits:
-        unsupervised_analysis: "config/digits/digits_unsupervised_analysis_config.yaml"
-    CorcesRNA:
-        fetch_ngs: "config/CorcesRNA/CorcesRNA_fetch_ngs_config.yaml"
-        rnaseq_pipeline: "config/CorcesRNA/CorcesRNA_rnaseq_pipeline_config.yaml"
-        genome_tracks: "config/CorcesRNA/CorcesRNA_genome_tracks_config.yaml"
-        spilterlize_integrate: "config/CorcesRNA/CorcesRNA_spilterlize_integrate_config.yaml"
-        unsupervised_analysis: "config/CorcesRNA/CorcesRNA_unsupervised_analysis_config.yaml"
-        dea_limma: "config/CorcesRNA/CorcesRNA_dea_limma_config.yaml"
-        enrichment_analysis: "config/CorcesRNA/CorcesRNA_enrichment_analysis_config.yaml"
-    CorcesATAC:
-        fetch_ngs: "config/CorcesATAC/CorcesATAC_fetch_ngs_config.yaml"
-        atacseq_pipeline: "config/CorcesATAC/CorcesATAC_atacseq_pipeline_config.yaml"
-        genome_tracks: "config/CorcesATAC/CorcesATAC_genome_tracks_config.yaml"
-        spilterlize_integrate: "config/CorcesATAC/CorcesATAC_spilterlize_integrate_config.yaml"
-        unsupervised_analysis: "config/CorcesATAC/CorcesATAC_unsupervised_analysis_config.yaml"
-        dea_limma: "config/CorcesATAC/CorcesATAC_dea_limma_config.yaml"
-        enrichment_analysis: "config/CorcesATAC/CorcesATAC_enrichment_analysis_config.yaml"
-    CorcesINT:
-        spilterlize_integrate: "config/CorcesINT/CorcesINT_spilterlize_integrate_config.yaml"
-        unsupervised_analysis: "config/CorcesINT/CorcesINT_unsupervised_analysis_config.yaml"
-        dea_limma: "config/CorcesINT/CorcesINT_dea_limma_config.yaml"
-        enrichment_analysis: "config/CorcesINT/CorcesINT_enrichment_analysis_config.yaml"
-    Papalexi2021scCRISPR:
-        scrnaseq_processing_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_scrnaseq_processing_seurat_config.yaml"
-        mixscape_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_mixscape_seurat_config.yaml"
-        unsupervised_analysis: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_unsupervised_analysis_config.yaml"
-        dea_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_dea_seurat_config.yaml"
-        enrichment_analysis: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_enrichment_analysis_config.yaml"
+    quickstart:
+        enrichment_analysis: "config/quickstart/quickstart_enrichment_analysis_config.yaml"
+    # digits:
+    #     unsupervised_analysis: "config/digits/digits_unsupervised_analysis_config.yaml"
+    # CorcesRNA:
+    #     fetch_ngs: "config/CorcesRNA/CorcesRNA_fetch_ngs_config.yaml"
+    #     rnaseq_pipeline: "config/CorcesRNA/CorcesRNA_rnaseq_pipeline_config.yaml"
+    #     genome_tracks: "config/CorcesRNA/CorcesRNA_genome_tracks_config.yaml"
+    #     spilterlize_integrate: "config/CorcesRNA/CorcesRNA_spilterlize_integrate_config.yaml"
+    #     unsupervised_analysis: "config/CorcesRNA/CorcesRNA_unsupervised_analysis_config.yaml"
+    #     dea_limma: "config/CorcesRNA/CorcesRNA_dea_limma_config.yaml"
+    #     enrichment_analysis: "config/CorcesRNA/CorcesRNA_enrichment_analysis_config.yaml"
+    # CorcesATAC:
+    #     fetch_ngs: "config/CorcesATAC/CorcesATAC_fetch_ngs_config.yaml"
+    #     atacseq_pipeline: "config/CorcesATAC/CorcesATAC_atacseq_pipeline_config.yaml"
+    #     genome_tracks: "config/CorcesATAC/CorcesATAC_genome_tracks_config.yaml"
+    #     spilterlize_integrate: "config/CorcesATAC/CorcesATAC_spilterlize_integrate_config.yaml"
+    #     unsupervised_analysis: "config/CorcesATAC/CorcesATAC_unsupervised_analysis_config.yaml"
+    #     dea_limma: "config/CorcesATAC/CorcesATAC_dea_limma_config.yaml"
+    #     enrichment_analysis: "config/CorcesATAC/CorcesATAC_enrichment_analysis_config.yaml"
+    # CorcesINT:
+    #     spilterlize_integrate: "config/CorcesINT/CorcesINT_spilterlize_integrate_config.yaml"
+    #     unsupervised_analysis: "config/CorcesINT/CorcesINT_unsupervised_analysis_config.yaml"
+    #     dea_limma: "config/CorcesINT/CorcesINT_dea_limma_config.yaml"
+    #     enrichment_analysis: "config/CorcesINT/CorcesINT_enrichment_analysis_config.yaml"
+    # Papalexi2021scCRISPR:
+    #     scrnaseq_processing_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_scrnaseq_processing_seurat_config.yaml"
+    #     mixscape_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_mixscape_seurat_config.yaml"
+    #     unsupervised_analysis: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_unsupervised_analysis_config.yaml"
+    #     dea_seurat: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_dea_seurat_config.yaml"
+    #     enrichment_analysis: "config/Papalexi2021scCRISPR/Papalexi2021scCRISPR_enrichment_analysis_config.yaml"

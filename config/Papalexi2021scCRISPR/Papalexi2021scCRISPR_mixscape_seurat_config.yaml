@@ -25,7 +25,7 @@ CalcPerturbSig:
     gene_col: "gene"
     nt_term: "NT"
     n_neighbors: 20
-    ndims: 10
+    ndims: 40
     split_by_col: ""
 
 # parameters for https://satijalab.org/seurat/reference/runmixscape

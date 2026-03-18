@@ -1,6 +1,25 @@
 # Snakemake file for creating plots for the recipes and documentation in the wiki
 
 
+# Copy input to outputs to include the plots in the repo and wiki
+# This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
+# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
+rule quickstart_plots:
+    input:
+        # put here summary plots
+        "docs/quickstart/...",
+    output:
+        # put here summary plots
+        "docs/quickstart/...",
+    resources:
+        mem_mb="1000",
+    threads: config.get("threads", 1)
+    log:
+        "logs/rules/quickstart_plots.log",
+    run:
+        for i, o in zip(input, output):
+            shell(f"cp {i} {o}")
+
 #### CorcesRNA - Copy selected plots for documentation and visualization in wiki (custom rule) ####
 # Define the mapping of input to output files
 CorcesRNA_plots_map = {

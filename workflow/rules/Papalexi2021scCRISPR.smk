@@ -23,7 +23,7 @@ rule Papalexi2021scCRISPR_get_data:
 #### Papalexi2021scCRISPR - scRNA-seq Processing ####
 module Papalexi2021scCRISPR_scrnaseq_processing_seurat:
     snakefile:
-        github("epigen/scrnaseq_processing_seurat", path="workflow/Snakefile", tag="v3.0.5")
+        github("epigen/scrnaseq_processing_seurat", path="workflow/Snakefile", tag="v3.0.7")
     config:
         config_wf["Papalexi2021scCRISPR_scrnaseq_processing_seurat"]
 
@@ -32,7 +32,7 @@ use rule * from Papalexi2021scCRISPR_scrnaseq_processing_seurat as Papalexi2021s
 #### Papalexi2021scCRISPR - Mixscape Perturbation Analysis #### 
 module Papalexi2021scCRISPR_mixscape_seurat:
     snakefile:
-        github("epigen/mixscape_seurat", path="workflow/Snakefile", tag="v2.0.2")
+        github("epigen/mixscape_seurat", path="workflow/Snakefile", tag="v2.0.3")
     config:
         config_wf["Papalexi2021scCRISPR_mixscape_seurat"]
 
