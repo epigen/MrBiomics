@@ -1,0 +1,16 @@
+name: mrbiomics-formatting
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Python + tools
+  - python=3.11
+  - black
+  - snakefmt
+
+  # R + styler
+  - r-base
+  - r-styler
+
+  # Node.js for prettier
+  - nodejs
