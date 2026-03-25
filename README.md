@@ -18,7 +18,7 @@ conda activate snakemake
 snakemake --software-deployment-method conda --cores 1
 ```
 
-This creates a Snakemake environment, clones the repository, activates the environment, and executes the current default quickstart workflow. If you want to learn more about the underlying analysis, start with the [Quickstart wiki page](../../wiki/Quickstart).
+This creates a Snakemake environment, clones the repository, activates the environment, and executes the current default quickstart workflow. It will take around 10 minutes to run because it will download conda environments. If you want to learn more about the underlying analysis, start with the [Quickstart wiki page](../../wiki/Quickstart).
 
 # ⏳ TL;DR - More Time for Science!
 > _"Programming is about trying to make the future less painful. It’s about making things easier for our teammates."_ from _The Pragmatic Programmer_ by Andy Hunt & Dave Thomas
