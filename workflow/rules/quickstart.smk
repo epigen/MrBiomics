@@ -11,6 +11,3 @@ module quickstart_enrichment_analysis:
 use rule * from quickstart_enrichment_analysis as quickstart_enrichment_analysis_*
 
 
-rule quickstart_all:
-    input:
-        rules.quickstart_enrichment_analysis_all.input
