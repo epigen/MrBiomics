@@ -44,7 +44,7 @@ include: os.path.join("rules", "quickstart.smk")
 rule all:
     input:
         # #### QUICKSTART ####
-        rules.quickstart_enrichment_analysis_all.input,
+        rules.quickstart_all.input,
         # #### digits Analysis ####
         # rules.digits_unsupervised_analysis_all.input,
         #### RNA-seq Analysis Recipe (CorcesRNA) ####

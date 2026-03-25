@@ -1,6 +1,6 @@
 
 ##### RESOURCES #####
-mem: '4000'
+mem: 4000
 threads: 1
 
 ##### GENERAL #####
@@ -21,9 +21,7 @@ genome: 'hg38'
 #     Enrichr (https://maayanlab.cloud/Enrichr/#libraries)
 # JSON example content: { "MyDB_Term1": ["geneA","geneB","geneC"],"MyDB_Term2": ["geneX","geneY","geneZ"]}
 local_databases:
-    GO_Biological_Process_2023: "docs/quickstart/GO_Biological_Process_2023.gmt"
-    GO_Cellular_Component_2023: "docs/quickstart/GO_Cellular_Component_2023.gmt"
-    GO_Molecular_Function_2023: "docs/quickstart/GO_Molecular_Function_2023.gmt"
+    Azimuth_2023: "resources/Azimuth_2023.gmt"
 
 ## LOLA compatible region set databases
 # loaded using loadRegionDB() (https://code.databio.org/LOLA/reference/loadRegionDB.html)
@@ -102,9 +100,9 @@ column_names:
         term: 'Term'
     GREAT:
         top_n: 25
-        p_value: "p_value_hyper" # or binomial test result: p_value
-        adj_pvalue: "p_adjust_hyper" # or binomial test result: p_adjust
-        effect_size: "fold_enrichment_hyper" # or binomial test result: fold_enrichment
+        p_value: "p_value" # or binomial test result: p_value
+        adj_pvalue: "p_adjust" # or binomial test result: p_adjust
+        effect_size: "fold_enrichment" # or binomial test result: fold_enrichment
         overlap: "observed_region_hits" # or binomial test result: observed_gene_hits
         term: "description"
     LOLA:
@@ -135,13 +133,13 @@ column_names:
 adjp_th:
     ORA_GSEApy: 0.05
     preranked_GSEApy: 0.05
-    GREAT: 0.01
+    GREAT: 0.05
     LOLA: 0.01
     pycisTarget: 5 # keep results greater(!) than provided threshold
     RcisTarget: 5 # keep results greater(!) than provided threshold
 
 # number of top terms per feature set within each group for all overview plots (adjusted p-value, effect-size and bubble-heatmap)
-top_terms_n: 5
+top_terms_n: 1
 
 # cap for adjusted p-value plotting: -log10(adjusted p-value) > adjp_cap -> adjp_cap
 adjp_cap: 4
