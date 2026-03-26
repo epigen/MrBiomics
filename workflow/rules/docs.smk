@@ -4,15 +4,17 @@
 # Copy input to outputs to include the plots in the repo and wiki
 # This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
 # have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
+quickstart_plots_map = {
+    "hematopoietic.png": "results/quickstart/enrichment_analysis/hematopoietic/GREAT/Azimuth_2023/hematopoietic_Azimuth_2023_summary_specificTerms.png",
+}
+
 rule quickstart_plots:
     input:
-        # put here summary plots
-        "docs/quickstart/...",
+        [quickstart_plots_map[plot] for plot in quickstart_plots_map]
     output:
-        # put here summary plots
-        "docs/quickstart/...",
+        [f"docs/quickstart/{plot}" for plot in quickstart_plots_map]
     resources:
-        mem_mb="1000",
+        mem_mb=1000,
     threads: config.get("threads", 1)
     log:
         "logs/rules/quickstart_plots.log",
@@ -52,7 +54,7 @@ rule CorcesRNA_plots:
     output:
         [f"docs/CorcesRNA/{plot}" for plot in CorcesRNA_plots_map]
     resources:
-        mem_mb="1000",
+        mem_mb=1000,
     threads: config.get("threads", 1)
     log:
         "logs/rules/CorcesRNA_plots.log",
@@ -92,7 +94,7 @@ rule CorcesATAC_plots:
     output:
         [f"docs/CorcesATAC/{plot}" for plot in CorcesATAC_plots_map]
     resources:
-        mem_mb="1000",
+        mem_mb=1000,
     threads: config.get("threads", 1)
     log:
         "logs/rules/CorcesATAC_plots.log",
@@ -130,7 +132,7 @@ rule CorcesINT_plots:
     output:
         [f"docs/CorcesINT/{plot}" for plot in CorcesINT_plots_map]
     resources:
-        mem_mb="1000",
+        mem_mb=1000,
     threads: config.get("threads", 1)
     log:
         "logs/rules/CorcesINT_plots.log",

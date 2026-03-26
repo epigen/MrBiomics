@@ -1,2 +1,5 @@
 name,features_path,background_name,background_path,group
-GDS289,docs/quickstart/GDS289_scores.csv,,,COPD
+Bcell,docs/quickstart/data/Bcell_up_features.bed,all_regions,docs/quickstart/data/ALL_features.bed,hematopoietic
+Ery,docs/quickstart/data/Ery_up_features.bed,all_regions,docs/quickstart/data/ALL_features.bed,hematopoietic
+Mono,docs/quickstart/data/Mono_up_features.bed,all_regions,docs/quickstart/data/ALL_features.bed,hematopoietic
+CD8,docs/quickstart/data/CD8Tcell_up_features.bed,all_regions,docs/quickstart/data/ALL_features.bed,hematopoietic
