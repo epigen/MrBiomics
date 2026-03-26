@@ -1,18 +1,15 @@
-# Snakemake file for creating plots for the recipes and documentation in the wiki
+# Snakemake file for creating plots for the documentation in the wiki (including recipes)
 
+# All rules copy input to outputs to include the plots in the repo and thereby wiki
+# These rules can only be used for docs after all(!) results (including untracked ones: volcano and unsupervised analysis plots)
+# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration, and comment again after execution)
 
-# Copy input to outputs to include the plots in the repo and wiki
-# This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
-# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
-quickstart_plots_map = {
-    "hematopoietic.png": "results/quickstart/enrichment_analysis/hematopoietic/GREAT/Azimuth_2023/hematopoietic_Azimuth_2023_summary_specificTerms.png",
-}
-
+#### Quickstart - Copy selected plot for documentation and visualization in wiki (custom rule) ####
 rule quickstart_plots:
     input:
-        [quickstart_plots_map[plot] for plot in quickstart_plots_map]
+        "results/quickstart/enrichment_analysis/hematopoietic/GREAT/Azimuth_2023/hematopoietic_Azimuth_2023_summary_specificTerms.png"
     output:
-        [f"docs/quickstart/{plot}" for plot in quickstart_plots_map]
+        "docs/quickstart/hematopoietic.png",
     resources:
         mem_mb=1000,
     threads: config.get("threads", 1)
@@ -45,9 +42,7 @@ CorcesRNA_plots_map = {
     "crossprediction_graph.png": "results/CorcesRNA/special_analyses/crossprediction/graph.png",
 }
 
-# Copy input to outputs to include the plots in the repo and wiki
-# This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
-# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
+# Rule copies inputs to outputs to include the plots in the docs
 rule CorcesRNA_plots:
     input:
         [CorcesRNA_plots_map[plot] for plot in CorcesRNA_plots_map]
@@ -85,9 +80,7 @@ CorcesATAC_plots_map = {
     "crossprediction_graph.png": "results/CorcesATAC/special_analyses/crossprediction/graph.png",
 }
 
-# Copy input to outputs to include the plots in the repo and wiki
-# This rule can only be used for docs after all results (including untracked ones: volcano and unsupervised analysis plots)
-# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
+# Rule copies inputs to outputs to include the plots in the docs
 rule CorcesATAC_plots:
     input:
         [CorcesATAC_plots_map[plot] for plot in CorcesATAC_plots_map]
@@ -123,9 +116,7 @@ CorcesINT_plots_map = {
     "Mono_TA.png": "results/CorcesINT/enrichment_analysis/Mono_TA/RcisTarget/hg38_500bp_up_100bp_down_v10clust/Mono_TA_hg38_500bp_up_100bp_down_v10clust.png",
 }
 
-# Copy input to outputs to include the plots in the repo and wiki
-# This rule can only be used for docs after all results (including untracked ones: volcano and unsuervised analysis plots)
-# have been generated (i.e. leave commented in the Snakefile's target rule until the end/last iteration)
+# Rule copies inputs to outputs to include the plots in the docs
 rule CorcesINT_plots:
     input:
         [CorcesINT_plots_map[plot] for plot in CorcesINT_plots_map]

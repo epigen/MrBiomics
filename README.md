@@ -7,8 +7,9 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 > [!IMPORTANT]  
 > If you use **MrBiomics**, please don't forget to give credit to the authors by citing this original repository and the respective **Modules** and **Recipes**.
 
-# ⚡ Getting started quickly !
-To get everything set up from scratch for the built-in quickstart, run:
+# ⚡ Quickstart: 5 Lines to Your First Analysis!
+
+Stop wrestling with complicated setups and start discovering new biology! Get **MrBiomics** up and running from scratch in exactly **5 lines of code**:
 
 ```bash
 conda create -n snakemake -c conda-forge -c bioconda snakemake
@@ -18,7 +19,14 @@ conda activate snakemake
 snakemake --software-deployment-method conda --cores 1
 ```
 
-This creates a Snakemake environment, clones the repository, activates the environment, and executes the current default quickstart workflow. It will take around 10 minutes to run because it will download conda environments. If you want to learn more about the underlying analysis, start with the [Quickstart wiki page](../../wiki/Quickstart).
+**🎉 Boom! You're analyzing data!**
+This simple snippet creates your Snakemake environment, fetches **MrBiomics**, and executes the built-in quickstart analysis.
+
+> [!TIP]
+> 
+> ⏳ **Grab a coffee!** It takes around **10 minutes** to run the first time as it automatically installs all the required software for you.
+
+Curious about the magic that just happened? Dive deeper and explore **MrBiomics'** capabilities on our [**Quickstart wiki page**](../../wiki/Quickstart)!
 
 # ⏳ TL;DR - More Time for Science!
 > _"Programming is about trying to make the future less painful. It’s about making things easier for our teammates."_ from _The Pragmatic Programmer_ by Andy Hunt & Dave Thomas
