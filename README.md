@@ -7,12 +7,12 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 > [!IMPORTANT]  
 > If you use **MrBiomics**, please don't forget to give credit to the authors by citing this original repository and the respective **Modules** and **Recipes**.
 
-# ⚡ Quickstart: 5 Lines to Your First Analysis!
+# ⚡ Quickstart: 5 Commands to Your First Analysis Results!
 
-Stop wrestling with complicated setups and start discovering new biology! Get **MrBiomics** up and running from scratch in exactly **5 lines of code**:
+Stop wrestling with complicated setups and start discovering new biology! Get **MrBiomics** up and running from scratch (assuming `conda` is installed) in exactly **5 lines of code**:
 
 ```bash
-conda create -n snakemake -c conda-forge -c bioconda snakemake
+conda create -y -n snakemake -c conda-forge -c bioconda snakemake
 git clone https://github.com/epigen/MrBiomics.git
 cd MrBiomics
 conda activate snakemake
@@ -26,7 +26,7 @@ This simple snippet creates your Snakemake environment, fetches **MrBiomics**, a
 > 
 > ⏳ **Grab a coffee!** It takes around **10 minutes** to run the first time as it automatically installs all the required software for you.
 
-Curious about the magic that just happened? Dive deeper and explore **MrBiomics'** capabilities on our [**Quickstart wiki page**](../../wiki/Quickstart)!
+Curious about the magic that just happened? Dive deeper and explore **MrBiomics'** capabilities starting with our [**Quickstart**](../../wiki/Quickstart)!
 
 # ⏳ TL;DR - More Time for Science!
 > _"Programming is about trying to make the future less painful. It’s about making things easier for our teammates."_ from _The Pragmatic Programmer_ by Andy Hunt & Dave Thomas
