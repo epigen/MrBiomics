@@ -12,7 +12,7 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 Stop wrestling with complicated setups and start discovering new biology! Get **MrBiomics** up and running from scratch (assuming `conda` is installed) with exactly **5 commands**:
 
 ```bash
-conda create -y -n snakemake -c conda-forge -c bioconda snakemake
+conda create -y -n snakemake -c conda-forge -c bioconda snakemake=8.25.3
 git clone https://github.com/epigen/MrBiomics.git
 cd MrBiomics
 conda activate snakemake
