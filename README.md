@@ -7,9 +7,9 @@ Get 80% of all standard (biomedical) data science analyses done semi-automated w
 > [!IMPORTANT]  
 > If you use **MrBiomics**, please don't forget to give credit to the authors by citing this original repository and the respective **Modules** and **Recipes**.
 
-# ⚡ Quickstart: 5 Commands to Your First Analysis Results!
+# ⚡ Quickstart: 5 Commands to Your First Results!
 
-Stop wrestling with complicated setups and start discovering new biology! Get **MrBiomics** up and running from scratch (assuming `conda` is installed) in exactly **5 lines of code**:
+Stop wrestling with complicated setups and start discovering new biology! Get **MrBiomics** up and running from scratch (assuming `conda` is installed) with exactly **5 commands**:
 
 ```bash
 conda create -y -n snakemake -c conda-forge -c bioconda snakemake
