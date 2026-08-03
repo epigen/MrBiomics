@@ -8,7 +8,7 @@
 ### Quickstart - Enrichment Analysis ####
 module quickstart_enrichment_analysis:
     snakefile:
-        github("epigen/enrichment_analysis", path="workflow/Snakefile", tag="main")
+        github("epigen/enrichment_analysis", path="workflow/Snakefile", tag="v3.0.1")
     config:
         config_wf["quickstart_enrichment_analysis"]
 
